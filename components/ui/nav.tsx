@@ -35,6 +35,16 @@ export default function Nav() {
           </Link>
         </li>
         <li className="relative group">
+          <a
+            href="https://katpool.xyz"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center px-3 py-2 text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
+          >
+            <span>Home</span>
+          </a>
+        </li>
+        <li className="relative group">
           <Link
             href="/connect"
             className={`flex items-center px-3 py-2 text-sm font-medium transition-colors ${pathname === '/connect'
