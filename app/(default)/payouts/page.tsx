@@ -1,18 +1,16 @@
+import { Suspense } from 'react'
+import PayoutsCard from './payouts-card'
+
 export const metadata = {
   title: 'Payouts - Kat Pool',
   description: 'Where Kaspa Miners Thrive',
 }
 
-import PayoutsCard from './payouts-card'
-
 export default function Payouts() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-[96rem] mx-auto">
-
       {/* Page header */}
       <div className="sm:flex sm:justify-between sm:items-center mb-8">
-
-        {/* Left: Title */}
         <div className="mb-4 sm:mb-0">
           <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Miner Payout History</h1>
         </div>
@@ -20,10 +18,21 @@ export default function Payouts() {
 
       {/* Cards */}
       <div className="grid grid-cols-12 gap-6">
-
-        {/* Table (Top Products) */}
-        <PayoutsCard />
-
+        <Suspense fallback={
+          <div className="col-span-full bg-white dark:bg-gray-800 shadow-sm rounded-xl p-6">
+            <div className="animate-pulse flex space-x-4">
+              <div className="flex-1 space-y-4 py-1">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }>
+          <PayoutsCard />
+        </Suspense>
       </div>
     </div>
   )
