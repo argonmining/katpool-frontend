@@ -136,7 +136,12 @@ export default function AnalyticsCard02() {
 
       {/* Card footer */}
       <div className="text-right px-5 pb-4">
-        <Link className="text-sm font-medium text-primary-500 hover:text-primary-600 dark:hover:text-primary-400" href="#0">Full Payout History -&gt;</Link>
+        <Link 
+          className="text-sm font-medium text-primary-500 hover:text-primary-600 dark:hover:text-primary-400" 
+          href={`/payouts?wallet=${searchParams.get('wallet') || ''}`}
+        >
+          Full Payout History -&gt;
+        </Link>
       </div>
     </div>
   )
