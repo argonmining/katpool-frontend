@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Notifications from '@/components/elements/dropdown-notifications'
 import DropdownHelp from '@/components/elements/dropdown-help'
-import ThemeToggle from '@/components/elements/theme-toggle'
 import Nav from './nav'
 
 export default function Header({
@@ -26,7 +25,6 @@ export default function Header({
           <div className="flex items-center space-x-3">
             <Notifications align="right" />
             <DropdownHelp align="right" />
-            <ThemeToggle />
           </div>
         </div>
       </div>
