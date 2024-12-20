@@ -56,7 +56,7 @@ export default function Nav() {
         <li className="relative group">
           <Link
             href={minerLink}
-            className={`flex items-center px-3 py-2 text-sm font-medium transition-colors ${pathname === '/dashboard/analytics'
+            className={`flex items-center px-3 py-2 text-sm font-medium transition-colors ${pathname === '/miner'
                 ? 'text-primary-500'
                 : 'text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400'
               }`}
@@ -67,7 +67,7 @@ export default function Nav() {
         <li className="relative group">
           <Link
             href="/pool"
-            className={`flex items-center px-3 py-2 text-sm font-medium transition-colors ${pathname === '/finance/transactions'
+            className={`flex items-center px-3 py-2 text-sm font-medium transition-colors ${pathname === '/pool'
                 ? 'text-primary-500'
                 : 'text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400'
               }`}
@@ -84,6 +84,17 @@ export default function Nav() {
               }`}
           >
             <span>Top Miners</span>
+          </Link>
+        </li>
+        <li className="relative group">
+          <Link
+            href="/payouts"
+            className={`flex items-center px-3 py-2 text-sm font-medium transition-colors ${pathname === '/payouts'
+                ? 'text-primary-500'
+                : 'text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400'
+              }`}
+          >
+            <span>Payouts</span>
           </Link>
         </li>
         <li className="relative group">
