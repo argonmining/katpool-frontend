@@ -11,28 +11,51 @@ export default function AnalyticsCard01() {
   const searchParams = useSearchParams()
   const walletAddress = searchParams.get('wallet')
 
+  // Generate dates for the last 7 days with 6-hour intervals
+  const generateTimeLabels = () => {
+    const labels = []
+    const data = []
+    const now = new Date()
+    
+    // Go back 7 days and start from midnight
+    const startDate = new Date(now)
+    startDate.setDate(startDate.getDate() - 6)
+    startDate.setHours(0, 0, 0, 0)
+
+    // Generate 28 points (7 days * 4 six-hour intervals)
+    for (let i = 0; i < 28; i++) {
+      const date = new Date(startDate)
+      date.setHours(date.getHours() + (i * 6))
+      
+      // Format the label
+      const formattedDate = date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        hour12: true
+      })
+      
+      labels.push(formattedDate)
+      
+      // Generate realistic-looking hashrate data
+      const baseHashrate = 45 // Base hashrate in TH/s
+      const variance = Math.random() * 10 - 5 // Random variance between -5 and +5
+      const timeOfDayFactor = Math.sin(date.getHours() * Math.PI / 12) * 2 // Slight daily pattern
+      data.push(Math.max(baseHashrate + variance + timeOfDayFactor, 0))
+    }
+
+    return { labels, data }
+  }
+
+  const { labels, data } = generateTimeLabels()
+
   const chartData = {
-    labels: [
-      '12-01-2022', '01-01-2023', '02-01-2023',
-      '03-01-2023', '04-01-2023', '05-01-2023',
-      '06-01-2023', '07-01-2023', '08-01-2023',
-      '09-01-2023', '10-01-2023', '11-01-2023',
-      '12-01-2023', '01-01-2024', '02-01-2024',
-      '03-01-2024', '04-01-2024', '05-01-2024',
-      '06-01-2024', '07-01-2024', '08-01-2024',
-      '09-01-2024', '10-01-2024', '11-01-2024',
-      '12-01-2024', '01-01-2025',
-    ],
+    labels: labels,
     datasets: [
-      // Indigo line
+      // Single line for aggregate hashrate
       {
-        label: 'Current',
-        data: [
-          5000, 8700, 7500, 12000, 11000, 9500, 10500,
-          10000, 15000, 9000, 10000, 7000, 22000, 7200,
-          9800, 9000, 10000, 8000, 15000, 12000, 11000,
-          13000, 11000, 15000, 17000, 18000,
-        ],
+        label: 'Total Hashrate',
+        data: data,
         fill: true,
         backgroundColor: function (context: any) {
           const chart = context.chart;
@@ -53,27 +76,7 @@ export default function AnalyticsCard01() {
         pointHoverBorderWidth: 0,
         clip: 20,
         tension: 0.2,
-      },
-      // Gray line
-      {
-        label: 'Previous',
-        data: [
-          8000, 5000, 6500, 5000, 6500, 12000, 8000,
-          9000, 8000, 8000, 12500, 10000, 10000, 12000,
-          11000, 16000, 12000, 10000, 10000, 14000, 9000,
-          10000, 15000, 12500, 14000, 11000,
-        ],
-        borderColor: `rgba(${hexToRGB(tailwindConfig.theme.colors.gray[500])}, 0.25)`,
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 3,
-        pointBackgroundColor: `rgba(${hexToRGB(tailwindConfig.theme.colors.gray[500])}, 0.25)`,
-        pointHoverBackgroundColor: `rgba(${hexToRGB(tailwindConfig.theme.colors.gray[500])}, 0.25)`,
-        pointBorderWidth: 0,
-        pointHoverBorderWidth: 0,
-        clip: 20,
-        tension: 0.2,
-      },
+      }
     ],
   }
 
