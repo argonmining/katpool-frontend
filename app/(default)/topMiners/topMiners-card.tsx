@@ -115,9 +115,6 @@ export default function TopMinersCard() {
                     <SortableHeader label="First Seen" sortKey="firstSeen" />
                   </div>
                 </th>
-                <th className="p-2 whitespace-nowrap">
-                  <div className="font-semibold text-center">Details</div>
-                </th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
@@ -127,7 +124,12 @@ export default function TopMinersCard() {
                     <div className="text-left font-medium">#{miner.rank}</div>
                   </td>
                   <td className="p-2 whitespace-nowrap">
-                    <div className="text-left text-gray-500">{miner.wallet}</div>
+                    <Link 
+                      href={`/miner?wallet=${miner.wallet}`}
+                      className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
+                    >
+                      {miner.wallet}
+                    </Link>
                   </td>
                   <td className="p-2 whitespace-nowrap">
                     <div className="text-center font-medium">{miner.hashrate.toFixed(1)} TH/s</div>
@@ -146,16 +148,6 @@ export default function TopMinersCard() {
                   </td>
                   <td className="p-2 whitespace-nowrap">
                     <div className="text-center">{miner.firstSeen} days ago</div>
-                  </td>
-                  <td className="p-2 whitespace-nowrap">
-                    <div className="text-center">
-                      <Link 
-                        href={`/miner?wallet=${miner.wallet}`}
-                        className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
-                      >
-                        View
-                      </Link>
-                    </div>
                   </td>
                 </tr>
               ))}

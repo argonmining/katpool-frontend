@@ -4,7 +4,8 @@ import type {
   UtxoResponse, 
   NetworkInfo, 
   BlockModel,
-  TxModel 
+  TxModel,
+  HalvingInfo
 } from './types';
 
 const BASE_URL = 'https://api.kaspa.org';
@@ -80,6 +81,32 @@ export const KaspaAPI = {
       return await api('/info/blockreward', {
         query: { stringOnly },
       });
+    },
+
+    getMarketCap: async (stringOnly: boolean = false) => {
+      return await api('/info/marketcap', {
+        query: { stringOnly },
+      });
+    },
+
+    getFeeEstimate: async () => {
+      return await api('/info/fee-estimate');
+    },
+
+    getMaxHashrate: async () => {
+      return await api('/info/hashrate/max');
+    },
+
+    getHealth: async () => {
+      return await api('/info/health');
+    },
+
+    getTotalSupply: async () => {
+      return await api('/info/coinsupply/total');
+    },
+
+    getHalvingInfo: async (): Promise<HalvingInfo> => {
+      return await api('/info/halving');
     },
   },
 

@@ -105,7 +105,7 @@ export default function AnalyticsCard02() {
                   <div className="font-medium text-right text-green-500">$344.51</div>
                 </td>
               </tr>
-              {/* New Row */}
+              {/* Row */}
               <tr>
                 <td className="py-2">
                   <div className="text-left text-gray-500">0x2b4a...e9c8</div>
@@ -117,31 +117,21 @@ export default function AnalyticsCard02() {
                   <div className="font-medium text-right text-green-500">$264.92</div>
                 </td>
               </tr>
-              {/* New Row */}
-              <tr>
-                <td className="py-2">
-                  <div className="text-left text-gray-500">0x8f1d...b2e7</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">543.67 KAS</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-green-500">$190.28</div>
-                </td>
-              </tr>
             </tbody>
           </table>
         </div>
       </div>
 
       {/* Card footer */}
-      <div className="text-right px-5 pb-4">
-        <Link 
-          className="text-sm font-medium text-primary-500 hover:text-primary-600 dark:hover:text-primary-400" 
-          href={`/payouts?wallet=${searchParams.get('wallet') || ''}`}
-        >
-          Full Payout History -&gt;
-        </Link>
+      <div className="px-5 py-4">
+        <div className="flex justify-end">
+          <Link 
+            className="text-sm font-medium text-primary-500 hover:text-primary-600 dark:hover:text-primary-400" 
+            href={`/payouts?wallet=${searchParams.get('wallet') || ''}`}
+          >
+            Full Payout History →
+          </Link>
+        </div>
       </div>
     </div>
   )

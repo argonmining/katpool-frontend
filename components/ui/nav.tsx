@@ -22,7 +22,7 @@ export default function Nav() {
       <ul className="flex grow justify-start flex-wrap items-center">
         <li className="relative group">
           <Link
-            href="/"
+            href="https://katpool.xyz"
             className={`flex items-center px-3 py-2 text-sm font-medium transition-colors`}
           >
             <Image
@@ -30,17 +30,9 @@ export default function Nav() {
               alt="Navigation Logo"
               width={128}
               height={32}
-              className={`mr-6 ${pathname === '/' ? 'opacity-100' : 'opacity-75'}`}
+              className={`mr-6 ${pathname === '/' ? 'opacity-100' : 'opacity-100'}`}
             />
           </Link>
-        </li>
-        <li className="relative group">
-          <a
-            href="https://katpool.xyz"
-            className="flex items-center px-3 py-2 text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
-          >
-            <span>Home</span>
-          </a>
         </li>
         <li className="relative group">
           <Link
@@ -50,7 +42,7 @@ export default function Nav() {
                 : 'text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400'
               }`}
           >
-            <span>Get Started</span>
+            <span>Getting Started</span>
           </Link>
         </li>
         <li className="relative group">
@@ -84,17 +76,6 @@ export default function Nav() {
               }`}
           >
             <span>Top Miners</span>
-          </Link>
-        </li>
-        <li className="relative group">
-          <Link
-            href="/payouts"
-            className={`flex items-center px-3 py-2 text-sm font-medium transition-colors ${pathname === '/payouts'
-                ? 'text-primary-500'
-                : 'text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400'
-              }`}
-          >
-            <span>Payouts</span>
           </Link>
         </li>
         <li className="relative group">

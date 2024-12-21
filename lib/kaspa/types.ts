@@ -21,15 +21,18 @@ export interface UtxoResponse {
 }
 
 export interface NetworkInfo {
-  networkName: string;
-  blockCount: string;
-  headerCount: string;
-  tipHashes: string[];
-  difficulty: number;
-  pastMedianTime: string;
-  virtualParentHashes: string[];
-  pruningPointHash: string;
-  virtualDaaScore: string;
+  daaScore: number
+  tps: number
+  bps: number
+  networkName: string
+  blockCount: number
+  headerCount: number
+  tipHashes: string[]
+  difficulty: number
+  pastMedianTime: number
+  virtualParentHashes: string[]
+  pruningPointHash: string
+  virtualDaaScore: number
 }
 
 export interface BlockModel {
@@ -94,4 +97,10 @@ export interface TxOutput {
   script_public_key_address: string;
   script_public_key_type: string;
   accepting_block_hash?: string;
+}
+
+export interface HalvingInfo {
+  nextHalvingTimestamp: number;
+  nextHalvingDate: string;
+  nextHalvingAmount: number;
 } 

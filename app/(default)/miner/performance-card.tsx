@@ -6,6 +6,7 @@ import { chartAreaGradient } from '@/components/charts/chartjs-config'
 
 // Import utilities
 import { tailwindConfig, hexToRGB } from '@/components/utils/utils'
+import { subDays } from 'date-fns'
 
 export default function AnalyticsCard01() {
   const searchParams = useSearchParams()
@@ -27,15 +28,8 @@ export default function AnalyticsCard01() {
       const date = new Date(startDate)
       date.setHours(date.getHours() + (i * 6))
       
-      // Format the label
-      const formattedDate = date.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        hour12: true
-      })
-      
-      labels.push(formattedDate)
+      // Store the actual timestamp for the x-axis
+      labels.push(date.getTime())
       
       // Generate realistic-looking hashrate data
       const baseHashrate = 45 // Base hashrate in TH/s
@@ -52,10 +46,12 @@ export default function AnalyticsCard01() {
   const chartData = {
     labels: labels,
     datasets: [
-      // Single line for aggregate hashrate
       {
         label: 'Total Hashrate',
-        data: data,
+        data: data.map((value, index) => ({
+          x: labels[index],
+          y: value
+        })),
         fill: true,
         backgroundColor: function (context: any) {
           const chart = context.chart;
@@ -78,6 +74,82 @@ export default function AnalyticsCard01() {
         tension: 0.2,
       }
     ],
+  }
+
+  const chartOptions = {
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          parser: 'yyyy-MM-dd HH:mm',
+          unit: 'day',
+          displayFormats: {
+            day: 'MMM D'
+          },
+          tooltipFormat: 'MMM D, ha'
+        },
+        grid: {
+          display: false,
+        },
+        border: {
+          display: false,
+        },
+        ticks: {
+          maxTicksLimit: 7,
+          maxRotation: 0,
+          color: '#64748b', // slate-500
+          font: {
+            size: 12
+          },
+          autoSkip: true
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          display: true,
+          color: '#e2e8f0' // slate-200
+        },
+        border: {
+          display: false,
+        },
+        ticks: {
+          callback: (value: number) => `${value} TH/s`,
+          color: '#64748b', // slate-500
+          font: {
+            size: 12
+          }
+        }
+      }
+    },
+    plugins: {
+      tooltip: {
+        callbacks: {
+          title: (context: any) => {
+            const date = new Date(context[0].parsed.x);
+            return date.toLocaleString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            });
+          },
+          label: (context: any) => {
+            return `Hashrate: ${context.parsed.y.toFixed(1)} TH/s`;
+          }
+        }
+      },
+      legend: {
+        display: false
+      }
+    },
+    interaction: {
+      intersect: false,
+      mode: 'nearest'
+    },
+    maintainAspectRatio: false,
+    responsive: true
   }
 
   return (
@@ -153,8 +225,12 @@ export default function AnalyticsCard01() {
       </div>
       {/* Chart built with Chart.js 3 */}
       <div className="grow">
-        {/* Change the height attribute to adjust the chart height */}
-        <LineChart03 data={chartData} width={800} height={300} />
+        <LineChart03 
+          data={chartData} 
+          width={800} 
+          height={300} 
+          options={chartOptions} 
+        />
       </div>
     </div>
   )

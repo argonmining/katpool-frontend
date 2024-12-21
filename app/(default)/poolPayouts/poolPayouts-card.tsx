@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState } from 'react'
 import Link from 'next/link'
 
 type SortDirection = 'asc' | 'desc'
@@ -17,29 +16,9 @@ interface Payout {
   blockHeight: number
 }
 
-export default function PayoutsCard() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [walletAddress, setWalletAddress] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+export default function PoolPayoutsCard() {
   const [sortKey, setSortKey] = useState<SortKey>('timestamp')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
-
-  useEffect(() => {
-    // Handle wallet address initialization
-    const queryWallet = searchParams.get('wallet')
-    const savedWallet = localStorage.getItem('kaspaWalletAddress')
-    
-    if (queryWallet) {
-      setWalletAddress(queryWallet)
-      setIsLoading(false)
-    } else if (savedWallet) {
-      router.push(`/payouts?wallet=${savedWallet}`)
-      setWalletAddress(savedWallet)
-    } else {
-      setIsLoading(false)
-    }
-  }, [router, searchParams])
 
   // Generate placeholder data
   const placeholderData: Payout[] = Array.from({ length: 50 }, (_, i): Payout => {
@@ -87,28 +66,10 @@ export default function PayoutsCard() {
     </div>
   )
 
-  if (isLoading) {
-    return (
-      <div className="relative col-span-full bg-white dark:bg-gray-800 shadow-sm rounded-xl p-4">
-        <div className="text-center text-gray-500 dark:text-gray-400">
-          Loading...
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="relative col-span-full bg-white dark:bg-gray-800 shadow-sm rounded-xl">
-      {!walletAddress && (
-        <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl z-10 flex items-center justify-center">
-          <div className="text-gray-500 dark:text-gray-400 text-sm font-medium">
-            Enter a wallet address to view payout history
-          </div>
-        </div>
-      )}
-
       <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-        <h2 className="font-semibold text-gray-800 dark:text-gray-100">Payout History</h2>
+        <h2 className="font-semibold text-gray-800 dark:text-gray-100">Pool Payout History</h2>
       </header>
       
       <div className="p-3">

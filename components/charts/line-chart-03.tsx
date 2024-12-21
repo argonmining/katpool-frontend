@@ -20,12 +20,14 @@ interface LineChart03Props {
   data: ChartData
   width: number
   height: number
+  options?: any
 }
 
 export default function LineChart03({
   data,
   width,
-  height
+  height,
+  options
 }: LineChart03Props) {
 
   const [chart, setChart] = useState<Chart | null>(null)
@@ -42,6 +44,7 @@ export default function LineChart03({
       type: 'line',
       data: data,
       options: {
+        ...options,
         layout: {
           padding: 20,
         },
@@ -94,6 +97,7 @@ export default function LineChart03({
             backgroundColor: darkMode ? tooltipBgColor.dark : tooltipBgColor.light,
             borderColor: darkMode ? tooltipBorderColor.dark : tooltipBorderColor.light,                
           },
+          ...options?.plugins,
         },
         interaction: {
           intersect: false,
