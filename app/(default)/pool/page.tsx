@@ -7,7 +7,7 @@ import StatCard from './stat-card'
 import PoolMinersOverTime from './poolMinersOverTime'
 import PoolHashrateOverTime from './poolHashrateOverTime'
 import KaspaHashrateOverTime from './kaspaHashrateOverTime'
-import FeesVSPayouts from './feesVSPayouts'
+import KRC20vsKaspaPayouts from './krc20vsKaspaPayouts'
 import MinerTypes from './minerTypes'
 import PoolPayouts from './poolPayouts'
 import RecentBlocks from './recentBlocks'
@@ -140,7 +140,7 @@ export default function PoolDashboard() {
         <PoolMinersOverTime />
         <PoolHashrateOverTime />
         <KaspaHashrateOverTime />
-        <FeesVSPayouts />
+        <KRC20vsKaspaPayouts />
         <RecentBlocks />  
         <MinerTypes />
         <PoolPayouts />
