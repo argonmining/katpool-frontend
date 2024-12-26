@@ -45,8 +45,8 @@ export default function DropdownAnnouncements({ align }: {
                 {({ active }) => (
                   <Link className={`block py-2 px-4 ${active && 'bg-gray-50 dark:bg-gray-700/20'}`} href="#0">
                     <span className="block text-sm mb-2">
-                      📣 <span className="font-medium text-gray-800 dark:text-gray-100">Edit your information in a swipe</span> Sint occaecat cupidatat non proident,
-                      sunt in culpa qui officia deserunt mollit anim.
+                      🎉 <span className="font-medium text-gray-800 dark:text-gray-100">Kat Pool Open Beta is Live!</span> We're excited to announce 
+                      that Kat Pool is now in Open Beta. During this testing phase, all pool fees are set to zero. Thank you for helping us test and improve our platform.
                     </span>
                     <span className="block text-xs font-medium text-gray-400 dark:text-gray-500">Feb 12, 2024</span>
                   </Link>
@@ -56,13 +56,14 @@ export default function DropdownAnnouncements({ align }: {
                 {({ active }) => (
                   <Link className={`block py-2 px-4 ${active && 'bg-gray-50 dark:bg-gray-700/20'}`} href="#0">
                     <span className="block text-sm mb-2">
-                      📣 <span className="font-medium text-gray-800 dark:text-gray-100">Edit your information in a swipe</span> Sint occaecat cupidatat non proident,
-                      sunt in culpa qui officia deserunt mollit anim.
+                      💎 <span className="font-medium text-gray-800 dark:text-gray-100">KRC20 Payouts Coming Soon</span> Our team is actively developing 
+                      KRC20 token payout functionality. Stay tuned for this exciting feature that will be available in the near future.
                     </span>
                     <span className="block text-xs font-medium text-gray-400 dark:text-gray-500">Feb 9, 2024</span>
                   </Link>
                 )}
               </MenuItem>
+              {/* Third announcement commented out
               <MenuItem as="li" className="border-b border-gray-200 dark:border-gray-700/60 last:border-0">
                 {({ active }) => (
                   <Link className={`block py-2 px-4 ${active && 'bg-gray-50 dark:bg-gray-700/20'}`} href="#0">
@@ -74,6 +75,7 @@ export default function DropdownAnnouncements({ align }: {
                   </Link>
                 )}
               </MenuItem>
+              */}
             </MenuItems>
           </Transition>
         </>
