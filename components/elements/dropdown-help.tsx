@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { Menu, MenuButton, MenuItems, MenuItem, Transition } from '@headlessui/react'
+import Image from 'next/image'
+import NachoIcon from '../../public/images/nacho.svg'
 
 export default function DropdownHelp({ align }: {
   align?: 'left' | 'right'
@@ -53,9 +55,13 @@ export default function DropdownHelp({ align }: {
               <MenuItem as="li">
                 {({ active }) => (
                   <Link className={`font-medium text-sm flex items-center py-1 px-3 ${active ? 'text-primary-600 dark:text-primary-400' : 'text-primary-500'}`} href="https://NachoWyborski.xyz">
-                    <svg className="w-3 h-3 fill-current text-primary-500 shrink-0 mr-2" viewBox="0 0 12 12">
-                      <path d="M10.5 0h-9A1.5 1.5 0 000 1.5v9A1.5 1.5 0 001.5 12h9a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0010.5 0zM10 7L8.207 5.207l-3 3-1.414-1.414 3-3L5 2h5v5z" />
-                    </svg>
+                    <Image
+                      src={NachoIcon}
+                      alt="Nacho Icon"
+                      className="w-3 h-3 text-primary-500 shrink-0 mr-2"
+                      width={12}
+                      height={12}
+                    />
                     <span>Nacho the Kat</span>
                   </Link>
                 )}
