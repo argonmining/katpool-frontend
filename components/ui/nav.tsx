@@ -94,9 +94,9 @@ export default function Nav() {
         </ul>
       </nav>
 
-      {/* Mobile Navigation - Only visible on mobile */}
-      <nav className="lg:hidden">
-        <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800">
+      {/* Mobile Navigation */}
+      <nav className="flex lg:hidden fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-lg z-50">
+        <div className="flex items-center justify-between w-full px-4 py-3">
           <Link href="https://katpool.xyz" className="flex-shrink-0">
             <Image
               src="/images/navlogo.png"
@@ -104,12 +104,13 @@ export default function Nav() {
               width={96}
               height={24}
               priority
-              className="opacity-100 w-auto h-auto"
+              className="w-24 h-auto"
             />
           </Link>
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 p-2 ml-auto"
+            className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
+            aria-label="Toggle menu"
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
@@ -119,7 +120,7 @@ export default function Nav() {
 
         {/* Mobile Menu Dropdown */}
         {isMobileMenuOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-lg z-50">
+          <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-lg">
             <ul className="px-2 py-3 space-y-1">
               <li>
                 <Link
