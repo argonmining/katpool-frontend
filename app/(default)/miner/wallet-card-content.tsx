@@ -58,7 +58,7 @@ export default function WalletCardContent() {
       <div className="px-5 py-3">
         <form 
           onSubmit={handleSubmit}
-          className="flex flex-col w-full"
+          className="flex flex-row gap-2 w-full"
         >
           <div className="grow">
             <input
@@ -76,14 +76,14 @@ export default function WalletCardContent() {
               }}
             />
             {!isValid && walletAddress && (
-              <p className="text-red-500 text-xs mt-1">
+              <p className="text-red-500 text-xs mt-1 absolute">
                 Please enter a valid Kaspa address (format: kaspa:...)
               </p>
             )}
           </div>
           <button
             type="submit"
-            className="btn bg-primary-500 hover:bg-primary-600 text-white mt-2 whitespace-nowrap"
+            className="btn bg-primary-500 hover:bg-primary-600 text-white whitespace-nowrap"
           >
             Search
           </button>
