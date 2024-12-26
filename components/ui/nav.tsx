@@ -97,7 +97,7 @@ export default function Nav() {
       </nav>
 
       {/* Mobile Navigation */}
-      <nav className="flex lg:hidden fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-lg z-[100]">
+      <nav className="flex lg:hidden fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-lg z-[9999]">
         <div className="flex items-center justify-between w-full px-4 py-3">
           <Link href="https://katpool.xyz" className="flex-shrink-0">
             <Image
@@ -195,9 +195,6 @@ export default function Nav() {
           </div>
         )}
       </nav>
-
-      {/* Add padding to the top of the page content to account for fixed navbar */}
-      <div className="lg:hidden h-[60px]"></div>
     </>
   )
 } 

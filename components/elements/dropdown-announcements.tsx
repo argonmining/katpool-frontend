@@ -23,14 +23,16 @@ export default function DropdownAnnouncements({ align }: {
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path d="M3 11h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H3zm3-4h8L19 3v16l-5-4H6z" />
-              <path d="M17 11h4" />
+              <path d="M18.71 10.83C19.46 9.55 20 8.08 20 6.5C20 3.46 17.54 1 14.5 1C12.92 1 11.45 1.54 10.17 2.29L18.71 10.83Z" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M10.17 2.29C8.52 3.27 7.31 4.87 6.84 6.75L18.25 18.16C20.13 17.69 21.73 16.48 22.71 14.83L10.17 2.29Z" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M6.84 6.75C6.37 8.63 5.16 10.23 3.51 11.21L15.63 23.33C17.28 22.35 18.88 21.14 19.86 19.49L6.84 6.75Z" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M3.51 11.21C1.86 12.19 1 13.79 1 15.5C1 18.54 3.46 21 6.5 21C8.21 21 9.81 20.14 10.79 18.49L3.51 11.21Z" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-gray-100 dark:border-gray-900 rounded-full"></div>
           </MenuButton>
           <Transition
             as="div"
-            className={`origin-top-right z-10 absolute top-full -mr-48 sm:mr-0 min-w-[20rem] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 py-1.5 rounded-lg shadow-lg overflow-hidden mt-1 ${
+            className={`origin-top-right z-10 absolute top-full -mr-2 sm:mr-0 min-w-[20rem] max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 py-1.5 rounded-lg shadow-lg overflow-hidden mt-1 ${
               align === 'right' ? 'right-0' : 'left-0'
             }`}
             enter="transition ease-out duration-200 transform"
