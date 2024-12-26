@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import Notifications from '../elements/dropdown-announcements'
+import Announcements from '../elements/dropdown-announcements'
 import DropdownHelp from '../elements/dropdown-help'
 
 export default function Nav() {
@@ -111,7 +111,7 @@ export default function Nav() {
           </Link>
           <div className="flex items-center space-x-2">
             {/* Announcements Dropdown */}
-            <Notifications align="right" />
+            <Announcements align="right" />
             {/* Help Dropdown */}
             <DropdownHelp align="right" />
             {/* Hamburger Menu */}

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Menu, MenuButton, MenuItems, MenuItem, Transition } from '@headlessui/react'
 
-export default function DropdownNotifications({ align }: {
+export default function DropdownAnnouncements({ align }: {
   align?: 'left' | 'right'
 }) {
   return (
@@ -15,7 +15,7 @@ export default function DropdownNotifications({ align }: {
               open && 'bg-gray-200 dark:bg-gray-800'
             }`}
           >
-            <span className="sr-only">Notifications</span>
+            <span className="sr-only">Announcements</span>
             <svg
               className="fill-current text-gray-500/80 dark:text-gray-400/80"
               width={16}
