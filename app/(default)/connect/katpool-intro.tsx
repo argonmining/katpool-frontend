@@ -22,10 +22,10 @@ export default function KatpoolIntro() {
         {/* Header Section */}
         <div className="border-b border-gray-200 dark:border-gray-700/60 pb-6">
           <div className="mb-2 text-2xl font-bold text-gray-800 dark:text-gray-100">
-            Hey there 👋, welcome to Kat Pool!
+            👋 Welcome to Kat Pool!
           </div>
           <div className="text-lg text-gray-600 dark:text-gray-400">
-            Let's get you set up and mining. Follow the steps below to connect your IceRiver, Bitmain, or Goldshell ASIC to Kat Pool.
+            Let's get you set up and mining. Follow the steps below to point your ASIC to Kat Pool. IceRiver and Bitmain ASICs are currently supported. Goldeshell ASIC support is coming soon.
           </div>
         </div>
 
