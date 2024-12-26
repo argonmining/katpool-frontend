@@ -20,13 +20,10 @@ export default function DropdownAnnouncements({ align }: {
               className="fill-current text-gray-500/80 dark:text-gray-400/80"
               width={16}
               height={16}
-              viewBox="0 0 24 24"
+              viewBox="0 0 16 16"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path d="M18.71 10.83C19.46 9.55 20 8.08 20 6.5C20 3.46 17.54 1 14.5 1C12.92 1 11.45 1.54 10.17 2.29L18.71 10.83Z" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M10.17 2.29C8.52 3.27 7.31 4.87 6.84 6.75L18.25 18.16C20.13 17.69 21.73 16.48 22.71 14.83L10.17 2.29Z" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M6.84 6.75C6.37 8.63 5.16 10.23 3.51 11.21L15.63 23.33C17.28 22.35 18.88 21.14 19.86 19.49L6.84 6.75Z" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M3.51 11.21C1.86 12.19 1 13.79 1 15.5C1 18.54 3.46 21 6.5 21C8.21 21 9.81 20.14 10.79 18.49L3.51 11.21Z" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0v-.214c-2.162-1.241-4.49-1.843-6.912-2.083l.405 2.712A1 1 0 0 1 5.51 15.1h-.548a1 1 0 0 1-.916-.599l-1.85-3.49-.202-.003A2.014 2.014 0 0 1 0 9V7a2.02 2.02 0 0 1 1.992-2.013 75 75 0 0 0 2.483-.075c3.043-.154 6.148-.849 8.525-2.199zm1 0v11a.5.5 0 0 0 1 0v-11a.5.5 0 0 0-1 0m-1 1.35c-2.344 1.205-5.209 1.842-8 2.033v4.233q.27.015.537.036c2.568.189 5.093.744 7.463 1.993zm-9 6.215v-4.13a95 95 0 0 1-1.992.052A1.02 1.02 0 0 0 1 7v2c0 .55.448 1.002 1.006 1.009A61 61 0 0 1 4 10.065m-.657.975 1.609 3.037.01.024h.548l-.002-.014-.443-2.966a68 68 0 0 0-1.722-.082z"/>
             </svg>
             <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-gray-100 dark:border-gray-900 rounded-full"></div>
           </MenuButton>
