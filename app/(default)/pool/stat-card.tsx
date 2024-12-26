@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect, useState } from 'react'
 import { KaspaAPI } from '@/lib/kaspa/api'
+import Image from 'next/image'
 
 interface StatCardProps {
   dataType: 'daaScore' | 'supply' | 'difficulty' | 'blockCount' | 'hashrate' | 
@@ -9,7 +10,7 @@ interface StatCardProps {
             'poolHashrate' | 'poolBlocks' | 'poolMiners' | 'pool24hBlocks' |
             'price'
   label: string
-  icon: ReactNode
+  icon: ReactNode | 'kaspa'
 }
 
 export default function StatCard({ dataType, label, icon }: StatCardProps) {
@@ -116,7 +117,17 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
       <div className="px-5 pt-5 pb-4">
         <header className="flex items-center mb-2">
           <div className="text-primary-500">
-            {icon}
+            {icon === 'kaspa' ? (
+              <Image
+                src="/images/kaspa-dark.svg"
+                alt="Kaspa Logo"
+                width={24}
+                height={24}
+                className="w-6 h-6"
+              />
+            ) : (
+              icon
+            )}
           </div>
           <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase ml-2">{label}</div>
         </header>
