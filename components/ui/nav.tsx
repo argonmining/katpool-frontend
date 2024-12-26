@@ -4,6 +4,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import Notifications from '../elements/dropdown-announcements'
+import DropdownHelp from '../elements/dropdown-help'
 
 export default function Nav() {
   const pathname = usePathname()
@@ -108,22 +110,14 @@ export default function Nav() {
             />
           </Link>
           <div className="flex items-center space-x-2">
-            {/* Search Icon */}
-            <Link href="/search" className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-3.5-3.5m2.5-5.5a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/>
-              </svg>
-            </Link>
-            {/* Announcements Icon (Megaphone) */}
-            <Link href="/announcements" className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 11h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H3zm3-4h8L19 3v16l-5-4H6zm14 4h-3"/>
-              </svg>
-            </Link>
-            {/* Hamburger Menu (mobile only) */}
+            {/* Announcements Dropdown */}
+            <Notifications align="right" />
+            {/* Help Dropdown */}
+            <DropdownHelp align="right" />
+            {/* Hamburger Menu */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 lg:hidden"
+              className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
               aria-label="Toggle menu"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
