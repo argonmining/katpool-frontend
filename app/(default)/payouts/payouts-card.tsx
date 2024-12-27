@@ -108,7 +108,7 @@ export default function PayoutsCard() {
       )}
 
       <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-        <h2 className="font-semibold text-gray-800 dark:text-gray-100">
+        <h2 className="font-semibold text-gray-800 dark:text-gray-100 break-all">
           {walletAddress 
             ? `Payout History for ${walletAddress}`
             : 'Payout History'
