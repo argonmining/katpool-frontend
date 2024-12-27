@@ -81,7 +81,7 @@ export default function KatpoolIntro() {
                 <div>
                   <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Wallet/Worker Format</div>
                   <code className="block text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-3 py-1 rounded-md font-mono text-sm break-all">
-                    [yourkaspaaddress].[yourworkername]
+                    YourKaspaWalletAddress.AnyWorkerName
                   </code>
                 </div>
                 <div>
