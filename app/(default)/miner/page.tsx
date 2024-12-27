@@ -31,10 +31,10 @@ export default function MinerDashboard() {
           <RewardsCard />
         </Suspense>
         <Suspense fallback={<div className="col-span-full sm:col-span-6 bg-gray-100 dark:bg-gray-800 rounded-xl h-[400px] animate-pulse"/>}>
-          <SharesCard />
+          <EarningsCard />
         </Suspense>
         <Suspense fallback={<div className="col-span-full sm:col-span-6 bg-gray-100 dark:bg-gray-800 rounded-xl h-[400px] animate-pulse"/>}>
-          <EarningsCard />
+          <SharesCard />
         </Suspense>
         <Suspense fallback={<div className="col-span-full bg-gray-100 dark:bg-gray-800 rounded-xl h-[400px] animate-pulse"/>}>
           <WorkersCard />
