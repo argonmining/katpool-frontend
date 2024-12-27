@@ -61,7 +61,7 @@ export default function KatpoolIntro() {
                   <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Pool Address</div>
                   <div className="flex items-center">
                     <code className="text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-3 py-1 rounded-md font-mono text-sm break-all">
-                      stratum+tcp://kas.katpool.xyz:4444
+                      stratum+tcp://...Coming Soon
                     </code>
                     <button 
                       className="ml-2 flex-shrink-0 text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 group relative"
