@@ -16,7 +16,7 @@ export default function KatpoolIntro() {
     }
   }
 
-  return(
+  return (
     <div className="col-span-10 col-start-2 bg-white dark:bg-gray-800 shadow-sm rounded-xl">
       <div className="px-8 py-6">
         {/* Header Section */}
@@ -61,9 +61,9 @@ export default function KatpoolIntro() {
                   <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Pool Address</div>
                   <div className="flex items-center">
                     <code className="text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-3 py-1 rounded-md font-mono text-sm break-all">
-                      stratum+tcp://...Coming Soon
+                      stratum+tcp://kas.katpool.xyz:8888
                     </code>
-                    <button 
+                    <button
                       className="ml-2 flex-shrink-0 text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 group relative"
                       onClick={handleCopy}
                     >
@@ -111,7 +111,7 @@ export default function KatpoolIntro() {
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Video Tutorial</h3>
           <div className="aspect-w-16 aspect-h-9 bg-gray-100 dark:bg-gray-900/50 rounded-lg overflow-hidden">
             {/* Replace the src with your actual YouTube embed URL */}
-            <iframe 
+            <iframe
               className="w-full h-full"
               src="about:blank" // Replace with actual YouTube embed URL
               title="KatPool Setup Tutorial"
