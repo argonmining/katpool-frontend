@@ -14,36 +14,20 @@ const formatHashrate = (hashrate: number): string => {
   }
 
   try {
-    // Convert to BigInt for precise calculations, keeping 6 decimal places of precision
-    // Multiply by 1M to preserve 6 decimal places in BigInt calculations
-    const hashrateBase = BigInt(Math.round(hashrate * 1000000));
-    
-    // Constants for unit conversions (also scaled by 1M)
-    const MH = BigInt(1000000); // 1 GH/s = 1000 MH/s
-    const KH = MH * BigInt(1000); // 1 MH/s = 1000 KH/s
-    const TH = BigInt(1000); // 1000 GH/s = 1 TH/s
-    const PH = TH * BigInt(1000); // 1000 TH/s = 1 PH/s
-    const EH = PH * BigInt(1000); // 1000 PH/s = 1 EH/s
-
-    // Format with proper unit
-    if (hashrateBase < MH) { // < 1 MH/s
-      const value = Number(hashrateBase * BigInt(1000)) / 1000000000;
-      return `${value.toFixed(2)} KH/s`;
-    } else if (hashrateBase < BigInt(1000000000)) { // < 1 GH/s
-      const value = Number(hashrateBase) / 1000000;
-      return `${value.toFixed(2)} MH/s`;
-    } else if (hashrateBase < BigInt(1000000000000)) { // < 1 TH/s
-      const value = Number(hashrateBase) / 1000000;
-      return `${value.toFixed(2)} GH/s`;
-    } else if (hashrateBase < BigInt(1000000000000000)) { // < 1 PH/s
-      const value = Number(hashrateBase / TH) / 1000000;
-      return `${value.toFixed(2)} TH/s`;
-    } else if (hashrateBase < BigInt(1000000000000000000)) { // < 1 EH/s
-      const value = Number(hashrateBase / PH) / 1000000;
-      return `${value.toFixed(2)} PH/s`;
+    // Since input is in GH/s, we need to adjust our thresholds
+    // Convert the GH/s value to the appropriate unit
+    if (hashrate < 0.001) { // < 0.001 GH/s (< 1 MH/s)
+      return `${(hashrate * 1000000).toFixed(2)} KH/s`;
+    } else if (hashrate < 1) { // < 1 GH/s
+      return `${(hashrate * 1000).toFixed(2)} MH/s`;
+    } else if (hashrate < 1000) { // < 1 TH/s
+      return `${hashrate.toFixed(2)} GH/s`;
+    } else if (hashrate < 1000000) { // < 1 PH/s
+      return `${(hashrate / 1000).toFixed(2)} TH/s`;
+    } else if (hashrate < 1000000000) { // < 1 EH/s
+      return `${(hashrate / 1000000).toFixed(2)} PH/s`;
     } else {
-      const value = Number(hashrateBase / EH) / 1000000;
-      return `${value.toFixed(2)} EH/s`;
+      return `${(hashrate / 1000000000).toFixed(2)} EH/s`;
     }
   } catch (error) {
     console.error('Error formatting hashrate:', error);
@@ -141,11 +125,15 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
               }
               
               const rawHashrate = Number(data.data.result[0].value[1]);
+              console.log('Raw hashrate from API:', rawHashrate);
+              
               if (!Number.isFinite(rawHashrate)) {
                 throw new Error('Invalid hashrate value received');
               }
               
-              result = formatHashrate(rawHashrate);
+              const formattedResult = formatHashrate(rawHashrate);
+              console.log('Formatted hashrate:', formattedResult);
+              result = formattedResult;
             } catch (error) {
               console.error('Error fetching pool hashrate:', error);
               result = 'Error';
