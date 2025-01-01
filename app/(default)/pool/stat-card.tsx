@@ -3,6 +3,53 @@
 import { ReactNode, useEffect, useState } from 'react'
 import { KaspaAPI } from '@/lib/kaspa/api'
 import Image from 'next/image'
+import { $fetch } from 'ofetch'
+
+// Utility function to safely format hashrate with proper units
+const formatHashrate = (hashrate: number): string => {
+  // Handle invalid inputs
+  if (!Number.isFinite(hashrate) || hashrate < 0) {
+    console.error('Invalid hashrate value:', hashrate);
+    return 'Error';
+  }
+
+  try {
+    // Convert to BigInt for precise calculations, keeping 6 decimal places of precision
+    // Multiply by 1M to preserve 6 decimal places in BigInt calculations
+    const hashrateBase = BigInt(Math.round(hashrate * 1000000));
+    
+    // Constants for unit conversions (also scaled by 1M)
+    const MH = BigInt(1000000); // 1 GH/s = 1000 MH/s
+    const KH = MH * BigInt(1000); // 1 MH/s = 1000 KH/s
+    const TH = BigInt(1000); // 1000 GH/s = 1 TH/s
+    const PH = TH * BigInt(1000); // 1000 TH/s = 1 PH/s
+    const EH = PH * BigInt(1000); // 1000 PH/s = 1 EH/s
+
+    // Format with proper unit
+    if (hashrateBase < MH) { // < 1 MH/s
+      const value = Number(hashrateBase * BigInt(1000)) / 1000000000;
+      return `${value.toFixed(2)} KH/s`;
+    } else if (hashrateBase < BigInt(1000000000)) { // < 1 GH/s
+      const value = Number(hashrateBase) / 1000000;
+      return `${value.toFixed(2)} MH/s`;
+    } else if (hashrateBase < BigInt(1000000000000)) { // < 1 TH/s
+      const value = Number(hashrateBase) / 1000000;
+      return `${value.toFixed(2)} GH/s`;
+    } else if (hashrateBase < BigInt(1000000000000000)) { // < 1 PH/s
+      const value = Number(hashrateBase / TH) / 1000000;
+      return `${value.toFixed(2)} TH/s`;
+    } else if (hashrateBase < BigInt(1000000000000000000)) { // < 1 EH/s
+      const value = Number(hashrateBase / PH) / 1000000;
+      return `${value.toFixed(2)} PH/s`;
+    } else {
+      const value = Number(hashrateBase / EH) / 1000000;
+      return `${value.toFixed(2)} EH/s`;
+    }
+  } catch (error) {
+    console.error('Error formatting hashrate:', error);
+    return 'Error';
+  }
+};
 
 interface StatCardProps {
   dataType: 'daaScore' | 'supply' | 'difficulty' | 'blockCount' | 'hashrate' | 
@@ -83,7 +130,26 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             }
             break
           case 'poolHashrate':
-            result = '123.45 TH/s'
+            try {
+              const data = await $fetch('http://kas.katpool.xyz:8080/api/v1/query?query=pool_hash_rate_GHps', {
+                retry: 1,
+                timeout: 5000,
+              });
+              
+              if (data.status !== 'success' || !data.data?.result?.[0]?.value?.[1]) {
+                throw new Error('Invalid response format');
+              }
+              
+              const rawHashrate = Number(data.data.result[0].value[1]);
+              if (!Number.isFinite(rawHashrate)) {
+                throw new Error('Invalid hashrate value received');
+              }
+              
+              result = formatHashrate(rawHashrate);
+            } catch (error) {
+              console.error('Error fetching pool hashrate:', error);
+              result = 'Error';
+            }
             break
           case 'poolBlocks':
             result = '12,345'
