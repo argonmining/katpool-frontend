@@ -176,8 +176,8 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
               <Image
                 src="/images/kaspa-dark.svg"
                 alt="Kaspa Logo"
-                width={28}
-                height={28}
+                width={32}
+                height={32}
                 className="w-7 h-7"
               />
             ) : (
