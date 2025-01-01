@@ -39,7 +39,7 @@ export default function FeesVSPayout() {
       {/* Blur overlay */}
       <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl z-10 flex items-center justify-center">
         <div className="text-gray-500 dark:text-gray-400 text-sm font-medium text-center px-4">
-          KRC20 Payout Feature Under Development
+          KRC20 Payout Feature is Under Development
         </div>
       </div>
 

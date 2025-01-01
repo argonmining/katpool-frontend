@@ -100,7 +100,7 @@ export default function KatpoolIntro() {
             <div>
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Save and Start Mining</h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Save your configuration and wait a few minutes. Your miner should connect to KatPool and begin mining.
+                Save your configuration and wait a few minutes. Your miner should connect to Kat Pool and begin mining.
               </p>
             </div>
           </div>
@@ -114,7 +114,7 @@ export default function KatpoolIntro() {
             <iframe
               className="w-full h-full"
               src="about:blank" // Replace with actual YouTube embed URL
-              title="KatPool Setup Tutorial"
+              title="Kat Pool Setup Tutorial"
               style={{ border: 0 }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
