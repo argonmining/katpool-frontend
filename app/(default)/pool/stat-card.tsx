@@ -14,9 +14,10 @@ const formatHashrate = (hashrate: number): string => {
   }
 
   try {
-    // Since input is in GH/s, we need to adjust our thresholds
-    // Convert the GH/s value to the appropriate unit
-    if (hashrate < 0.001) { // < 0.001 GH/s (< 1 MH/s)
+    // Input is in GH/s, convert down or up in steps of 1000
+    if (hashrate < 0.000001) { // < 0.000001 GH/s (< 1 KH/s)
+      return `${(hashrate * 1000000000).toFixed(2)} H/s`;
+    } else if (hashrate < 0.001) { // < 0.001 GH/s (< 1 MH/s)
       return `${(hashrate * 1000000).toFixed(2)} KH/s`;
     } else if (hashrate < 1) { // < 1 GH/s
       return `${(hashrate * 1000).toFixed(2)} MH/s`;
