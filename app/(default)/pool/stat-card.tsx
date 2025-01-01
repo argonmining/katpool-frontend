@@ -131,7 +131,7 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             break
           case 'poolHashrate':
             try {
-              const data = await $fetch('http://kas.katpool.xyz:8080/api/v1/query?query=pool_hash_rate_GHps', {
+              const data = await $fetch('/api/pool/hashrate', {
                 retry: 1,
                 timeout: 5000,
               });
