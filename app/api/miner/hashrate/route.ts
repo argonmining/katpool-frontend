@@ -3,6 +3,21 @@ import { NextResponse } from 'next/server';
 export const runtime = 'edge';
 export const revalidate = 0; // Disable caching
 
+type PoolResponse = {
+  status: string;
+  data: {
+    resultType: string;
+    result: Array<{
+      metric: {
+        __name__: string;
+        wallet_address: string;
+        [key: string]: string;
+      };
+      values: Array<[number, string]>;
+    }>;
+  };
+};
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -40,12 +55,18 @@ export async function GET(request: Request) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as PoolResponse;
     console.log('Pool API response:', JSON.stringify(data));
 
-    if (data.status !== 'success' || !data.data?.result?.[0]?.values) {
-      console.error('Invalid pool API response:', data);
-      throw new Error('Invalid response from pool API');
+    // Check if we have any data points
+    if (!data.data?.result?.[0]?.values?.length) {
+      return NextResponse.json({
+        status: 'success',
+        data: {
+          resultType: 'matrix',
+          result: []
+        }
+      });
     }
 
     return NextResponse.json(data);
