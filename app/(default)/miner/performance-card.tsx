@@ -41,8 +41,14 @@ export default function AnalyticsCard01() {
         timeout: 10000,
       });
 
+      console.log('API Response:', response);
+
+      if (!response || response.error) {
+        throw new Error(response?.error || 'Invalid response format');
+      }
+
       if (!response.status || response.status !== 'success' || !response.data?.result?.[0]?.values) {
-        console.error('Invalid response:', response);
+        console.error('Invalid response structure:', response);
         throw new Error('Invalid response format');
       }
 
@@ -51,7 +57,7 @@ export default function AnalyticsCard01() {
           timestamp,
           value: Number(value)
         })
-      ).sort((a: HashRateData, b: HashRateData) => a.timestamp - b.timestamp); // Ensure timestamps are in order
+      ).sort((a: HashRateData, b: HashRateData) => a.timestamp - b.timestamp);
 
       if (values.length === 0) {
         throw new Error('No data available');
