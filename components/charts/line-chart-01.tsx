@@ -64,14 +64,8 @@ export default function LineChart01({
               }
             },
             display: false,
-            adapters: {
-              date: {
-                locale: 'en'
-              }
-            },
             ticks: {
-              source: 'data',
-              autoSkip: false
+              source: 'data'
             }
           },
         },

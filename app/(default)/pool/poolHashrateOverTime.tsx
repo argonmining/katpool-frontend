@@ -50,7 +50,7 @@ export default function PoolHashrateOverTime() {
       setCurrentHashrate(formatHashrate(averageHashrate));
 
       setChartData({
-        labels: values.map(d => d.timestamp),
+        labels: values.map(d => d.timestamp * 1000),
         datasets: [
           {
             data: values.map(d => ({
