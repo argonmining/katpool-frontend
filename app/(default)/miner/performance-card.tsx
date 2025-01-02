@@ -49,11 +49,12 @@ export default function AnalyticsCard01() {
         throw new Error(response?.error || 'Failed to fetch data');
       }
 
-      if (!response.status || response.status !== 'success' || !response.data?.result?.[0]?.values) {
+      if (!response.data?.result?.[0]?.values) {
         console.error('Invalid response structure:', response);
-        throw new Error('Invalid response format');
+        throw new Error('No data available');
       }
 
+      // Parse the response data
       const values: HashRateData[] = response.data.result[0].values.map(
         ([timestamp, value]: [number, string]) => ({
           timestamp,

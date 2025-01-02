@@ -3,21 +3,6 @@ import { NextResponse } from 'next/server';
 export const runtime = 'edge';
 export const revalidate = 0; // Disable caching
 
-type PoolResponse = {
-  status: string;
-  data: {
-    resultType: string;
-    result: Array<{
-      metric: {
-        __name__: string;
-        wallet_address: string;
-        [key: string]: string;
-      };
-      values: Array<[number, string]>;
-    }>;
-  };
-};
-
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -55,20 +40,10 @@ export async function GET(request: Request) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json() as PoolResponse;
+    const data = await response.json();
     console.log('Pool API response:', JSON.stringify(data));
 
-    // Check if we have any data points
-    if (!data.data?.result?.[0]?.values?.length) {
-      return NextResponse.json({
-        status: 'success',
-        data: {
-          resultType: 'matrix',
-          result: []
-        }
-      });
-    }
-
+    // Pass through the raw response
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error('Error in miner hashrate API:', error);
