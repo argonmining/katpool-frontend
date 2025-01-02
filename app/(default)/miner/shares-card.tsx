@@ -58,10 +58,11 @@ export default function AnalyticsCard03() {
         )).sort();
 
         // Format dates for labels
-        const labels = timestamps.map(timestamp => {
-          const date = new Date(timestamp * 1000);
-          return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD for Chart.js to parse
-        });
+        const labels = timestamps.map(timestamp => 
+          new Date(timestamp * 1000).toLocaleDateString('en-US', { 
+            weekday: 'short'  // Show as Mon, Tue, etc.
+          })
+        );
 
         // Create datasets for each miner
         const datasets = results.map((result, index) => {
@@ -74,15 +75,9 @@ export default function AnalyticsCard03() {
             }),
             backgroundColor: COLORS[colorIndex].bg,
             hoverBackgroundColor: COLORS[colorIndex].hover,
-            stack: 'stack1',
             barPercentage: 0.7,
             categoryPercentage: 0.7,
-            borderRadius: {
-              topLeft: 4,
-              topRight: 4,
-              bottomLeft: index === 0 ? 4 : 0, // Only round bottom corners for first dataset
-              bottomRight: index === 0 ? 4 : 0,
-            },
+            borderRadius: 4,
           };
         });
 

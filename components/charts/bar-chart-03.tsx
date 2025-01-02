@@ -71,7 +71,7 @@ export default function BarChart03({
             stacked: true,
             type: 'time',
             time: {
-              parser: 'YYYY-MM-DD',
+              parser: 'ddd',
               unit: 'day',
               displayFormats: {
                 day: 'ddd',
@@ -96,8 +96,14 @@ export default function BarChart03({
           },
           tooltip: {
             callbacks: {
-              title: () => '', // Disable tooltip title
-              label: (context) => formatThousands(context.parsed.y),
+              title: (context) => {
+                // Show the date
+                return context[0].label;
+              },
+              label: (context) => {
+                // Show miner ID and its share value
+                return `${context.dataset.label}: ${formatThousands(context.parsed.y)}`;
+              },
             },
             bodyColor: darkMode ? tooltipBodyColor.dark : tooltipBodyColor.light,
             backgroundColor: darkMode ? tooltipBgColor.dark : tooltipBgColor.light,
