@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import EditMenu from '@/components/elements/edit-menu'
+import TimeRangeMenu from '@/components/elements/time-range-menu'
 import LineChart01 from '@/components/charts/line-chart-01'
 import { chartAreaGradient } from '@/components/charts/chartjs-config'
 import { tailwindConfig, hexToRGB, formatHashrate } from '@/components/utils/utils'
@@ -45,15 +45,18 @@ export default function PoolHashrateOverTime() {
         })
       );
 
-      // Set current hashrate from the latest value
-      const lastValue = values[values.length - 1];
-      setCurrentHashrate(formatHashrate(lastValue.value));
+      // Calculate average hashrate
+      const averageHashrate = values.reduce((sum, item) => sum + item.value, 0) / values.length;
+      setCurrentHashrate(formatHashrate(averageHashrate));
 
       setChartData({
-        labels: values.map(d => new Date(d.timestamp * 1000).toLocaleString()),
+        labels: values.map(d => d.timestamp),
         datasets: [
           {
-            data: values.map(d => d.value),
+            data: values.map(d => ({
+              x: d.timestamp * 1000,
+              y: d.value
+            })),
             fill: true,
             backgroundColor: function(context: any) {
               const chart = context.chart;
@@ -66,8 +69,8 @@ export default function PoolHashrateOverTime() {
             },
             borderColor: tailwindConfig.theme.colors.primary[500],
             borderWidth: 2,
-            pointRadius: 0,
-            pointHoverRadius: 3,
+            pointRadius: 3,
+            pointHoverRadius: 5,
             pointBackgroundColor: tailwindConfig.theme.colors.primary[500],
             pointHoverBackgroundColor: tailwindConfig.theme.colors.primary[500],
             pointBorderWidth: 0,
@@ -108,34 +111,9 @@ export default function PoolHashrateOverTime() {
       <div className="px-5 pt-5">
         <header className="flex justify-between items-start mb-2">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Pool Hashrate over Time</h2>
-          <EditMenu align="right" className="relative inline-flex">
-            <li>
-              <button
-                className="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex py-1 px-3"
-                onClick={() => handleRangeChange('30d')}
-              >
-                Last 30 Days
-              </button>
-            </li>
-            <li>
-              <button
-                className="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex py-1 px-3"
-                onClick={() => handleRangeChange('90d')}
-              >
-                Last 3 Months
-              </button>
-            </li>
-            <li>
-              <button
-                className="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex py-1 px-3"
-                onClick={() => handleRangeChange('180d')}
-              >
-                Last 6 Months
-              </button>
-            </li>
-          </EditMenu>
+          <TimeRangeMenu align="right" onRangeChange={handleRangeChange} />
         </header>
-        <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Last 7 Days</div>
+        <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Last 7 Days Average</div>
         <div className="flex items-start">
           {isLoading ? (
             <div className="h-8 w-28 bg-gray-100 dark:bg-gray-700/50 animate-pulse rounded"></div>
