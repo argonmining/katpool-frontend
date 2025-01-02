@@ -2,13 +2,48 @@
 
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { $fetch } from 'ofetch'
 
 export default function AnalyticsCard02() {
   const searchParams = useSearchParams()
   const walletAddress = searchParams.get('wallet')
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [pendingBalance, setPendingBalance] = useState<string>('--')
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!walletAddress) return;
+
+      try {
+        setIsLoading(true);
+        const response = await $fetch(`/api/miner/balance?wallet=${walletAddress}`, {
+          retry: 3,
+          retryDelay: 1000,
+          timeout: 10000,
+        });
+
+        if (!response || response.error) {
+          throw new Error(response?.error || 'Failed to fetch data');
+        }
+
+        setPendingBalance(Number(response.data.balance).toFixed(2));
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching balance:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load data');
+        setPendingBalance('--');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [walletAddress]);
 
   return (
-    <div className="relative flex flex-col col-span-full xl:col-span-4 bg-white dark:bg-gray-800 shadow-sm rounded-xl">
+    <div className="relative flex flex-col col-span-full sm:col-span-6 xl:col-span-4 bg-white dark:bg-gray-800 shadow-sm rounded-xl">
       {/* Blur overlay */}
       {!walletAddress && (
         <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl z-10 flex items-center justify-center">
@@ -19,25 +54,20 @@ export default function AnalyticsCard02() {
       )}
 
       <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-        <h2 className="font-semibold text-gray-800 dark:text-gray-100">Miner Rewards</h2>
+        <h2 className="font-semibold text-gray-800 dark:text-gray-100">Rewards</h2>
       </header>
-
-      {/* Live pending balance */}
-      <div className="px-5 py-3">
-        <div className="flex items-center">
-          {/* Red dot */}
-          <div className="relative flex items-center justify-center w-3 h-3 mr-3" aria-hidden="true">
-            <div className="relative inline-flex rounded-full w-1.5 h-1.5 bg-red-500"></div>
-          </div>            
-          {/* Pending balance */}
-          <div>
-            <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">--</div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Pending Balance</div>
-          </div>
+      <div className="grow px-5 pt-3 pb-1">
+        <div className="flex items-start">
+          <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">{pendingBalance} KAS</div>
         </div>
+        <div className="text-sm text-gray-500">Pending Balance</div>
       </div>
-
-      {/* Table */}
+      <div className="grow px-5 pt-3 pb-1">
+        <div className="flex items-start">
+          <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">{pendingBalance} KAS</div>
+        </div>
+        <div className="text-sm text-gray-500">Pending Balance</div>
+      </div>
       <div className="grow px-5 pt-3 pb-1">
         <div className="overflow-x-auto">
           <table className="table-auto w-full dark:text-gray-300">
@@ -69,68 +99,8 @@ export default function AnalyticsCard02() {
                   <div className="font-medium text-right text-green-500">--</div>
                 </td>
               </tr>
-              {/* Row */}
-              <tr>
-                <td className="py-2">
-                  <div className="text-left text-gray-500">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-green-500">--</div>
-                </td>
-              </tr>
-              {/* Row */}
-              <tr>
-                <td className="py-2">
-                  <div className="text-left text-gray-500">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-green-500">--</div>
-                </td>
-              </tr>
-              {/* Row */}
-              <tr>
-                <td className="py-2">
-                  <div className="text-left text-gray-500">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-green-500">--</div>
-                </td>
-              </tr>
-              {/* Row */}
-              <tr>
-                <td className="py-2">
-                  <div className="text-left text-gray-500">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-green-500">--</div>
-                </td>
-              </tr>
             </tbody>
           </table>
-        </div>
-      </div>
-
-      {/* Card footer */}
-      <div className="px-5 py-4">
-        <div className="flex justify-end">
-          <Link 
-            className="text-sm font-medium text-primary-500 hover:text-primary-600 dark:hover:text-primary-400" 
-            href={`/payouts?wallet=${searchParams.get('wallet') || ''}`}
-          >
-            Full Payout History →
-          </Link>
         </div>
       </div>
     </div>
