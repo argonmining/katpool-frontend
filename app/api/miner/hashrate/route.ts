@@ -11,14 +11,7 @@ export async function GET(request: Request) {
     if (!wallet) {
       return NextResponse.json(
         { error: 'Wallet address is required' },
-        { 
-          status: 400,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-          }
-        }
+        { status: 400 }
       );
     }
 
@@ -55,38 +48,12 @@ export async function GET(request: Request) {
       throw new Error('Invalid response from pool API');
     }
 
-    return NextResponse.json(data, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      }
-    });
-  } catch (error) {
+    return NextResponse.json(data);
+  } catch (error: unknown) {
     console.error('Error in miner hashrate API:', error);
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { 
-          status: 500,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-          }
-        }
-      );
-    }
     return NextResponse.json(
-      { error: 'Failed to fetch miner hashrate' },
-      { 
-        status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        }
-      }
+      { error: error instanceof Error ? error.message : 'Failed to fetch miner hashrate' },
+      { status: 500 }
     );
   }
 } 

@@ -36,15 +36,17 @@ export default function AnalyticsCard01() {
     
     try {
       setIsLoading(true);
-      const response = await $fetch(`/api/miner/hashrate?wallet=${encodeURIComponent(walletAddress)}`, {
-        retry: 1,
+      const response = await $fetch(`/api/miner/hashrate?wallet=${walletAddress}`, {
+        retry: 3,
+        retryDelay: 1000,
         timeout: 10000,
       });
 
       console.log('API Response:', response);
 
       if (!response || response.error) {
-        throw new Error(response?.error || 'Invalid response format');
+        console.error('API Error:', response?.error || 'No response');
+        throw new Error(response?.error || 'Failed to fetch data');
       }
 
       if (!response.status || response.status !== 'success' || !response.data?.result?.[0]?.values) {
