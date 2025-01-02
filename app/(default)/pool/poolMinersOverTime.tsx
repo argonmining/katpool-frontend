@@ -3,32 +3,22 @@
 import EditMenu from '@/components/elements/edit-menu'
 import LineChart01 from '@/components/charts/line-chart-01'
 import { chartAreaGradient } from '@/components/charts/chartjs-config'
-
-// Import utilities
 import { tailwindConfig, hexToRGB } from '@/components/utils/utils'
 
 export default function poolMinersOverTime() {
+  // Generate dates for the last 7 days
+  const dates = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (6 - i));
+    return date.toISOString().split('T')[0];
+  });
 
   const chartData = {
-    labels: [
-      '12-01-2022', '01-01-2023', '02-01-2023',
-      '03-01-2023', '04-01-2023', '05-01-2023',
-      '06-01-2023', '07-01-2023', '08-01-2023',
-      '09-01-2023', '10-01-2023', '11-01-2023',
-      '12-01-2023', '01-01-2024', '02-01-2024',
-      '03-01-2024', '04-01-2024', '05-01-2024',
-      '06-01-2024', '07-01-2024', '08-01-2024',
-      '09-01-2024', '10-01-2024', '11-01-2024',
-      '12-01-2024', '01-01-2025',
-    ],
+    labels: dates,
     datasets: [
-      // Indigo line
       {
         data: [
-          732, 610, 610, 504, 504, 504, 349,
-          349, 504, 342, 504, 610, 391, 192,
-          154, 273, 191, 191, 126, 263, 349,
-          252, 423, 622, 470, 532,
+          245, 288, 274, 258, 269, 283, 290
         ],
         fill: true,
         backgroundColor: function(context: any) {
@@ -50,26 +40,7 @@ export default function poolMinersOverTime() {
         pointHoverBorderWidth: 0,
         clip: 20,
         tension: 0.2,
-      },
-      // Gray line
-      {
-        data: [
-          532, 532, 532, 404, 404, 314, 314,
-          314, 314, 314, 234, 314, 234, 234,
-          314, 314, 314, 388, 314, 202, 202,
-          202, 202, 314, 720, 642,
-        ],
-        borderColor: `rgba(${hexToRGB(tailwindConfig.theme.colors.gray[500])}, 0.25)`,
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 3,
-        pointBackgroundColor: `rgba(${hexToRGB(tailwindConfig.theme.colors.gray[500])}, 0.25)`,
-        pointHoverBackgroundColor: `rgba(${hexToRGB(tailwindConfig.theme.colors.gray[500])}, 0.25)`,
-        pointBorderWidth: 0,
-        pointHoverBorderWidth: 0,        
-        clip: 20,
-        tension: 0.2,
-      },
+      }
     ],
   }
 
@@ -78,13 +49,10 @@ export default function poolMinersOverTime() {
       <div className="px-5 pt-5">
         <header className="flex justify-between items-start mb-2">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Pool Miners over Time</h2>
-          {/* Menu button */}
-          <EditMenu align="right" />
         </header>
-        <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">All Time High</div>
+        <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Last 7 Days Average</div>
         <div className="flex items-start">
-          <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">24,780</div>
-          <div className="text-sm font-medium text-green-700 px-1.5 bg-green-500/20 rounded-full">+49%</div>
+          <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">273</div>
         </div>
       </div>
       {/* Chart built with Chart.js 3 */}
