@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import LineChart03 from '@/components/charts/line-chart-03'
 import { chartAreaGradient } from '@/components/charts/chartjs-config'
-import { tailwindConfig, hexToRGB, formatHashrate } from '@/components/utils/utils'
+import { tailwindConfig, hexToRGB, formatHashrate, formatHashrateCompact } from '@/components/utils/utils'
 import { $fetch } from 'ofetch'
 
 interface HashRateData {
@@ -89,13 +89,13 @@ export default function AnalyticsCard01() {
 
       // Set current hashrate (most recent value)
       const lastValue = values[values.length - 1];
-      setCurrentHashrate(formatHashrate(lastValue.value));
+      setCurrentHashrate(formatHashrateCompact(lastValue.value));
 
       // Calculate averages for different time periods
-      setTwoHourAvg(formatHashrate(calculateTimeRangeAverage(values, 2)));
-      setTwelveHourAvg(formatHashrate(calculateTimeRangeAverage(values, 12)));
-      setTwentyFourHourAvg(formatHashrate(calculateTimeRangeAverage(values, 24)));
-      setFortyEightHourAvg(formatHashrate(calculateTimeRangeAverage(values, 48)));
+      setTwoHourAvg(formatHashrateCompact(calculateTimeRangeAverage(values, 2)));
+      setTwelveHourAvg(formatHashrateCompact(calculateTimeRangeAverage(values, 12)));
+      setTwentyFourHourAvg(formatHashrateCompact(calculateTimeRangeAverage(values, 24)));
+      setFortyEightHourAvg(formatHashrateCompact(calculateTimeRangeAverage(values, 48)));
 
       // Update chart data
       setChartData({
