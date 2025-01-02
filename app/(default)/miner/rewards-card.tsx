@@ -28,7 +28,13 @@ export default function AnalyticsCard02() {
           throw new Error(response?.error || 'Failed to fetch data');
         }
 
-        setPendingBalance(Number(response.data.balance).toFixed(2));
+        if (response.status !== 'success' || !response.data?.result?.[0]?.value?.[1]) {
+          throw new Error('Invalid response format');
+        }
+
+        const rawBalance = response.data.result[0].value[1];
+        const balance = Number(BigInt(rawBalance)) / (10 ** 8);
+        setPendingBalance(balance.toFixed(2));
         setError(null);
       } catch (error) {
         console.error('Error fetching balance:', error);

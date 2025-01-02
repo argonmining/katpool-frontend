@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { $fetch } from 'ofetch'
 
-export const revalidate = 10;
+export const runtime = 'edge'
+export const revalidate = 10
 
 export async function GET(request: Request) {
   try {
@@ -10,39 +10,32 @@ export async function GET(request: Request) {
 
     if (!wallet) {
       return NextResponse.json(
-        { error: 'Wallet parameter is required' },
+        { error: 'Wallet address is required' },
         { status: 400 }
       )
     }
 
-    const response = await $fetch(`http://kas.katpool.xyz:8080/api/v1/query`, {
-      query: {
-        query: `miner_balances{wallet="${wallet}"}`,
-      },
-      retry: 3,
-      retryDelay: 1000,
-      timeout: 10000,
+    const url = new URL('http://kas.katpool.xyz:8080/api/v1/query')
+    url.searchParams.append('query', `miner_balances{wallet="${wallet}"}`)
+
+    const response = await fetch(url, {
       next: { revalidate: 10 }
     })
 
-    if (!response || !response.data || !response.data.result || !response.data.result[0]?.value) {
-      throw new Error('Invalid response format')
+    if (!response.ok) {
+      console.error('Pool API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        url: url.toString()
+      })
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    // Extract the balance value and convert it from 8 decimal places
-    const rawBalance = response.data.result[0].value[1]
-    // Convert to string, divide by 10^8 while avoiding floating point issues
-    const balance = Number(BigInt(rawBalance)) / (10 ** 8)
+    const data = await response.json()
+    return NextResponse.json(data)
 
-    return NextResponse.json({
-      status: 'success',
-      data: {
-        balance: balance.toString()
-      }
-    })
-
-  } catch (error) {
-    console.error('Error fetching miner balance:', error)
+  } catch (error: unknown) {
+    console.error('Error in miner balance API:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to fetch miner balance' },
       { status: 500 }
