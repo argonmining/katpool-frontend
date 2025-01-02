@@ -71,10 +71,10 @@ export default function BarChart03({
             stacked: true,
             type: 'time',
             time: {
-              parser: 'MM-DD-YYYY',
-              unit: 'month',
+              parser: 'YYYY-MM-DD',
+              unit: 'day',
               displayFormats: {
-                month: 'MMM',
+                day: 'ddd',
               },
             },
             border: {
