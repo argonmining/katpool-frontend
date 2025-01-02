@@ -1,11 +1,70 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { $fetch } from 'ofetch'
+
+interface SharesData {
+  metric: {
+    __name__: string;
+    miner_id: string;
+    wallet_address: string;
+    [key: string]: string;
+  };
+  values: [number, string][];
+}
 
 export default function AnalyticsCard11() {
   const searchParams = useSearchParams()
   const walletAddress = searchParams.get('wallet')
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [workers, setWorkers] = useState<SharesData[]>([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!walletAddress) return;
+
+      try {
+        setIsLoading(true);
+        const response = await $fetch(`/api/miner/shares?wallet=${walletAddress}`, {
+          retry: 3,
+          retryDelay: 1000,
+          timeout: 10000,
+        });
+
+        if (!response || response.error) {
+          throw new Error(response?.error || 'Failed to fetch data');
+        }
+
+        const results: SharesData[] = response.data.result;
+        if (!results || results.length === 0) {
+          throw new Error('No data available');
+        }
+
+        setWorkers(results);
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching worker data:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [walletAddress]);
+
+  const formatTimeAgo = (timestamp: number) => {
+    const now = Math.floor(Date.now() / 1000);
+    const diff = now - timestamp;
+
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+  };
 
   return (
     <div className="relative col-span-full bg-white dark:bg-gray-800 shadow-sm rounded-xl">
@@ -22,234 +81,96 @@ export default function AnalyticsCard11() {
         <h2 className="font-semibold text-gray-800 dark:text-gray-100">Worker Details</h2>
       </header>
       <div className="p-3">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-[300px]">
+            <div className="animate-pulse text-gray-400 dark:text-gray-500">Loading...</div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center h-[300px] text-red-500">{error}</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="table-auto w-full dark:text-gray-300">
+              {/* Table header */}
+              <thead className="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700 dark:bg-opacity-50 rounded-sm">
+                <tr>
+                  <th className="p-2 whitespace-nowrap w-1/4">
+                    <div className="font-semibold text-left">Worker Name</div>
+                  </th>
+                  <th className="p-2 whitespace-nowrap w-[11%]">
+                    <div className="font-semibold text-left">15min Hashrate</div>
+                  </th>
+                  <th className="p-2 whitespace-nowrap w-[11%]">
+                    <div className="font-semibold text-center">1h Hashrate</div>
+                  </th>
+                  <th className="p-2 whitespace-nowrap w-[11%]">
+                    <div className="font-semibold text-center">12h Hashrate</div>
+                  </th>
+                  <th className="p-2 whitespace-nowrap w-[11%]">
+                    <div className="font-semibold text-center">24h Hashrate</div>
+                  </th>
+                  <th className="p-2 whitespace-nowrap w-[11%]">
+                    <div className="font-semibold text-center">Accepted Shares</div>
+                  </th>
+                  <th className="p-2 whitespace-nowrap w-[10%]">
+                    <div className="font-semibold text-center">Last Share</div>
+                  </th>
+                  <th className="p-2 whitespace-nowrap w-[10%]">
+                    <div className="font-semibold text-center">Online For</div>
+                  </th>
+                </tr>
+              </thead>
+              {/* Table body */}
+              <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
+                {workers.map((worker) => {
+                  // Get the most recent share timestamp
+                  const lastShareTimestamp = worker.values[worker.values.length - 1][0];
+                  const lastShareValue = worker.values[worker.values.length - 1][1];
+                  const isOnline = Date.now() / 1000 - lastShareTimestamp < 300; // 5 minutes threshold
 
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="table-auto w-full dark:text-gray-300">
-            {/* Table header */}
-            <thead className="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700 dark:bg-opacity-50 rounded-sm">
-              <tr>
-                <th className="p-2 whitespace-nowrap w-1/4">
-                  <div className="font-semibold text-left">Worker Name</div>
-                </th>
-                <th className="p-2 whitespace-nowrap w-[11%]">
-                  <div className="font-semibold text-left">15min Hashrate</div>
-                </th>
-                <th className="p-2 whitespace-nowrap w-[11%]">
-                  <div className="font-semibold text-center">1h Hashrate</div>
-                </th>
-                <th className="p-2 whitespace-nowrap w-[11%]">
-                  <div className="font-semibold text-center">12h Hashrate</div>
-                </th>
-                <th className="p-2 whitespace-nowrap w-[11%]">
-                  <div className="font-semibold text-center">24h Hashrate</div>
-                </th>
-                <th className="p-2 whitespace-nowrap w-[11%]">
-                  <div className="font-semibold text-center">Accepted Shares</div>
-                </th>
-                <th className="p-2 whitespace-nowrap w-[10%]">
-                  <div className="font-semibold text-center">Last Share</div>
-                </th>
-                <th className="p-2 whitespace-nowrap w-[10%]">
-                  <div className="font-semibold text-center">Online For</div>
-                </th>
-              </tr>
-            </thead>
-            {/* Table body */}
-            <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
-              {/* Row */}
-              <tr>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="shrink-0 rounded-full mr-2 sm:mr-3 bg-green-500 w-9 h-9 overflow-hidden">
-                      <Image
-                        src="/images/iceriver.png"
-                        alt="Iceriver"
-                        width={36}
-                        height={36}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="font-medium text-gray-800 dark:text-gray-100">rig01</div>
-                  </div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">2.45 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">2.41 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">2.38 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">2.40 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">1,247</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">2m ago</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">5d 12h</div>
-                </td>
-              </tr>
-              {/* Row */}
-              <tr>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="shrink-0 rounded-full mr-2 sm:mr-3 bg-green-500 w-9 h-9 overflow-hidden">
-                      <Image
-                        src="/images/iceriver.png"
-                        alt="Iceriver"
-                        width={36}
-                        height={36}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="font-medium text-gray-800 dark:text-gray-100">rig02</div>
-                  </div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">1.92 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">1.89 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">1.90 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">1.91 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">982</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">1m ago</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">3d 7h</div>
-                </td>
-              </tr>
-              {/* Row */}
-              <tr>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="shrink-0 rounded-full mr-2 sm:mr-3 bg-red-500 w-9 h-9 overflow-hidden">
-                      <Image
-                        src="/images/iceriver.png"
-                        alt="Iceriver"
-                        width={36}
-                        height={36}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="font-medium text-gray-800 dark:text-gray-100">rig03</div>
-                  </div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">0 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">0.85 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">1.65 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">1.72 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">854</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">45m ago</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">2d 19h</div>
-                </td>
-              </tr>
-              {/* Row */}
-              <tr>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="shrink-0 rounded-full mr-2 sm:mr-3 bg-green-500 w-9 h-9 overflow-hidden">
-                      <Image
-                        src="/images/iceriver.png"
-                        alt="Iceriver"
-                        width={36}
-                        height={36}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="font-medium text-gray-800 dark:text-gray-100">rig04</div>
-                  </div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">3.12 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">3.15 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">3.10 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">3.11 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">1,583</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">30s ago</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">7d 3h</div>
-                </td>
-              </tr>
-              {/* Row */}
-              <tr>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="shrink-0 rounded-full mr-2 sm:mr-3 bg-green-500 w-9 h-9 overflow-hidden">
-                      <Image
-                        src="/images/iceriver.png"
-                        alt="Iceriver"
-                        width={36}
-                        height={36}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="font-medium text-gray-800 dark:text-gray-100">rig05</div>
-                  </div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">2.78 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">2.75 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">2.72 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">2.74 GH/s</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">1,392</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">15s ago</div>
-                </td>
-                <td className="p-2 whitespace-nowrap">
-                  <div className="text-center">4d 21h</div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                  return (
+                    <tr key={worker.metric.miner_id}>
+                      <td className="p-2 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className={`shrink-0 rounded-full mr-2 sm:mr-3 ${isOnline ? 'bg-green-500' : 'bg-red-500'} w-9 h-9 overflow-hidden`}>
+                            <Image
+                              src="/images/iceriver.png"
+                              alt="Iceriver"
+                              width={36}
+                              height={36}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="font-medium text-gray-800 dark:text-gray-100">{worker.metric.miner_id}</div>
+                        </div>
+                      </td>
+                      <td className="p-2 whitespace-nowrap">
+                        <div className="text-center">--</div>
+                      </td>
+                      <td className="p-2 whitespace-nowrap">
+                        <div className="text-center">--</div>
+                      </td>
+                      <td className="p-2 whitespace-nowrap">
+                        <div className="text-center">--</div>
+                      </td>
+                      <td className="p-2 whitespace-nowrap">
+                        <div className="text-center">--</div>
+                      </td>
+                      <td className="p-2 whitespace-nowrap">
+                        <div className="text-center">{lastShareValue}</div>
+                      </td>
+                      <td className="p-2 whitespace-nowrap">
+                        <div className="text-center">{formatTimeAgo(lastShareTimestamp)}</div>
+                      </td>
+                      <td className="p-2 whitespace-nowrap">
+                        <div className="text-center">--</div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   )
