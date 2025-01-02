@@ -96,12 +96,8 @@ export default function BarChart03({
           },
           tooltip: {
             callbacks: {
-              title: (context) => {
-                // Show the date
-                return context[0].label;
-              },
+              title: () => '',
               label: (context) => {
-                // Show miner ID and its share value
                 return `${context.dataset.label}: ${formatThousands(context.parsed.y)}`;
               },
             },

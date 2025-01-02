@@ -83,27 +83,22 @@ export default function BlocksCard() {
                 <tr key={block.blockHeight}>
                   <td className="p-2 whitespace-nowrap">
                     <div className="text-center">
-                      {new Date(block.timestamp).toLocaleDateString()} 
-                      <br />
-                      <span className="text-gray-500 text-xs">
-                        {new Date(block.timestamp).toLocaleTimeString()}
-                      </span>
+                      --
                     </div>
                   </td>
                   <td className="p-2 whitespace-nowrap">
                     <div className="text-center">
                       <Link 
-                        href={`https://explorer.kaspa.org/blocks/${block.blockHeight}`}
-                        target="_blank"
+                        href="#"
                         className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
                       >
-                        {block.blockHeight.toLocaleString()}
+                        --
                       </Link>
                     </div>
                   </td>
                   <td className="p-2 whitespace-nowrap">
                     <div className="text-center font-medium text-green-500">
-                      {block.reward.toFixed(2)} KAS
+                      --
                     </div>
                   </td>
                 </tr>

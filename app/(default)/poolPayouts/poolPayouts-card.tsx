@@ -105,44 +105,39 @@ export default function PoolPayoutsCard() {
                 <tr key={payout.txHash}>
                   <td className="p-2 whitespace-nowrap">
                     <div className="text-center">
-                      {new Date(payout.timestamp).toLocaleDateString()} 
-                      <br />
-                      <span className="text-gray-500 text-xs">
-                        {new Date(payout.timestamp).toLocaleTimeString()}
-                      </span>
+                      --
                     </div>
                   </td>
                   <td className="p-2 whitespace-nowrap">
                     <div className="text-center">
                       <Link 
-                        href={`https://explorer.kaspa.org/txs/${payout.txHash}`}
-                        target="_blank"
+                        href="#"
                         className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
                       >
-                        {payout.txHash}
+                        --
                       </Link>
                     </div>
                   </td>
                   <td className="p-2 whitespace-nowrap">
                     <div className="text-center font-medium">
-                      {payout.kasAmount > 0 ? payout.kasAmount.toFixed(2) : '-'}
+                      --
                     </div>
                   </td>
                   <td className="p-2 whitespace-nowrap">
                     <div className="text-center font-medium">
-                      {payout.krc20Amount > 0 ? payout.krc20Amount.toFixed(2) : '-'}
+                      --
                     </div>
                   </td>
                   <td className="p-2 whitespace-nowrap">
                     <div className="text-center font-medium text-green-500">
-                      {payout.nachoRebate > 0 ? `+${payout.nachoRebate.toFixed(2)}` : '-'}
+                      --
                     </div>
                   </td>
                   <td className="p-2 whitespace-nowrap">
-                    <div className="text-center">${payout.value.toFixed(2)}</div>
+                    <div className="text-center">--</div>
                   </td>
                   <td className="p-2 whitespace-nowrap">
-                    <div className="text-center">{payout.blockHeight.toLocaleString()}</div>
+                    <div className="text-center">--</div>
                   </td>
                 </tr>
               ))}

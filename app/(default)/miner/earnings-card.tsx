@@ -49,13 +49,13 @@ export default function AnalyticsCard04() {
                   <div className="text-gray-800 dark:text-gray-100">Hourly</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center text-green-500">$0.42</div>
+                  <div className="text-center text-green-500">--</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center">125.4</div>
+                  <div className="text-center">--</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center">0.084</div>
+                  <div className="text-center">--</div>
                 </td>
               </tr>
               {/* Daily Row */}
@@ -64,13 +64,13 @@ export default function AnalyticsCard04() {
                   <div className="text-gray-800 dark:text-gray-100">Daily</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center text-green-500">$10.08</div>
+                  <div className="text-center text-green-500">--</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center">3,009.6</div>
+                  <div className="text-center">--</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center">2.016</div>
+                  <div className="text-center">--</div>
                 </td>
               </tr>
               {/* Weekly Row */}
@@ -79,13 +79,13 @@ export default function AnalyticsCard04() {
                   <div className="text-gray-800 dark:text-gray-100">Weekly</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center text-green-500">$70.56</div>
+                  <div className="text-center text-green-500">--</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center">21,067.2</div>
+                  <div className="text-center">--</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center">14.112</div>
+                  <div className="text-center">--</div>
                 </td>
               </tr>
               {/* Monthly Row */}
@@ -94,13 +94,13 @@ export default function AnalyticsCard04() {
                   <div className="text-gray-800 dark:text-gray-100">Monthly</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center text-green-500">$302.40</div>
+                  <div className="text-center text-green-500">--</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center">90,288.0</div>
+                  <div className="text-center">--</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center">60.48</div>
+                  <div className="text-center">--</div>
                 </td>
               </tr>
               {/* Yearly Row */}
@@ -109,13 +109,13 @@ export default function AnalyticsCard04() {
                   <div className="text-gray-800 dark:text-gray-100">Yearly</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center text-green-500">$3,679.20</div>
+                  <div className="text-center text-green-500">--</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center">1,098,240.0</div>
+                  <div className="text-center">--</div>
                 </td>
                 <td className="p-2">
-                  <div className="text-center">735.84</div>
+                  <div className="text-center">--</div>
                 </td>
               </tr>
             </tbody>

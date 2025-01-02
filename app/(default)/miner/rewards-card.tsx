@@ -31,7 +31,7 @@ export default function AnalyticsCard02() {
           </div>            
           {/* Pending balance */}
           <div>
-            <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">347.92 KAS</div>
+            <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">--</div>
             <div className="text-sm text-gray-500 dark:text-gray-400">Pending Balance</div>
           </div>
         </div>
@@ -60,61 +60,61 @@ export default function AnalyticsCard02() {
               {/* Row */}
               <tr>
                 <td className="py-2">
-                  <div className="text-left text-gray-500">0x7d3e...f8a2</div>
+                  <div className="text-left text-gray-500">--</div>
                 </td>
                 <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">2,547.83 KAS</div>
+                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
                 </td>
                 <td className="py-2">
-                  <div className="font-medium text-right text-green-500">$892.74</div>
-                </td>
-              </tr>
-              {/* Row */}
-              <tr>
-                <td className="py-2">
-                  <div className="text-left text-gray-500">0x3a1f...d4e5</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">1,892.45 KAS</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-green-500">$662.36</div>
+                  <div className="font-medium text-right text-green-500">--</div>
                 </td>
               </tr>
               {/* Row */}
               <tr>
                 <td className="py-2">
-                  <div className="text-left text-gray-500">0x9c2d...b1a3</div>
+                  <div className="text-left text-gray-500">--</div>
                 </td>
                 <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">1,256.78 KAS</div>
+                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
                 </td>
                 <td className="py-2">
-                  <div className="font-medium text-right text-green-500">$439.87</div>
-                </td>
-              </tr>
-              {/* Row */}
-              <tr>
-                <td className="py-2">
-                  <div className="text-left text-gray-500">0x5e8b...c7f9</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">984.32 KAS</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-green-500">$344.51</div>
+                  <div className="font-medium text-right text-green-500">--</div>
                 </td>
               </tr>
               {/* Row */}
               <tr>
                 <td className="py-2">
-                  <div className="text-left text-gray-500">0x2b4a...e9c8</div>
+                  <div className="text-left text-gray-500">--</div>
                 </td>
                 <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">756.91 KAS</div>
+                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
                 </td>
                 <td className="py-2">
-                  <div className="font-medium text-right text-green-500">$264.92</div>
+                  <div className="font-medium text-right text-green-500">--</div>
+                </td>
+              </tr>
+              {/* Row */}
+              <tr>
+                <td className="py-2">
+                  <div className="text-left text-gray-500">--</div>
+                </td>
+                <td className="py-2">
+                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
+                </td>
+                <td className="py-2">
+                  <div className="font-medium text-right text-green-500">--</div>
+                </td>
+              </tr>
+              {/* Row */}
+              <tr>
+                <td className="py-2">
+                  <div className="text-left text-gray-500">--</div>
+                </td>
+                <td className="py-2">
+                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
+                </td>
+                <td className="py-2">
+                  <div className="font-medium text-right text-green-500">--</div>
                 </td>
               </tr>
             </tbody>

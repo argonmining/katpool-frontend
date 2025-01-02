@@ -111,13 +111,13 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             }
             break
           case 'poolBlocks':
-            result = '12,345'
+            result = '--'
             break
           case 'poolMiners':
-            result = '123,456'
+            result = '--'
             break
           case 'pool24hBlocks':
-            result = '12,345'
+            result = '--'
             break
           case 'price':
             const priceResponse = await KaspaAPI.network.getPrice(false)
