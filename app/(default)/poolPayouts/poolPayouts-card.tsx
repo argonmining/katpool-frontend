@@ -96,7 +96,7 @@ export default function PoolPayoutsCard() {
                   <SortableHeader label="Value (USD)" sortKey="value" />
                 </th>
                 <th className="p-2 whitespace-nowrap">
-                  <div className="font-semibold text-center">Block Height</div>
+                  <div className="font-semibold text-center">DAA Score</div>
                 </th>
               </tr>
             </thead>

@@ -71,7 +71,7 @@ export default function BlocksCard() {
                   <SortableHeader label="Time" sortKey="timestamp" />
                 </th>
                 <th className="p-2 whitespace-nowrap">
-                  <SortableHeader label="Block Height" sortKey="blockHeight" />
+                  <SortableHeader label="DAA Score" sortKey="blockHeight" />
                 </th>
                 <th className="p-2 whitespace-nowrap">
                   <SortableHeader label="Reward" sortKey="reward" />
