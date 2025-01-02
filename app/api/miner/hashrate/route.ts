@@ -15,17 +15,24 @@ export async function GET(request: Request) {
       );
     }
 
-    const end = Math.floor(Date.now() / 1000);
-    const start = end - (7 * 24 * 60 * 60); // 7 days ago
-    const step = 3600; // 1 hour in seconds
+    // Calculate timestamps that align with the pool's data
+    const currentTime = Math.floor(Date.now() / 1000);
+    const endTime = currentTime - (currentTime % 3600); // Round down to nearest hour
+    const startTime = endTime - (7 * 24 * 60 * 60); // 7 days before end time
+    const stepInterval = 3600; // 1 hour in seconds
 
     const url = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
-    url.searchParams.append('query', `miner_hash_rate_GHps{wallet_address="${encodeURIComponent(wallet)}"}`);
-    url.searchParams.append('start', start.toString());
-    url.searchParams.append('end', end.toString());
-    url.searchParams.append('step', step.toString());
+    
+    // Construct and encode the full query parameter
+    const queryString = `miner_hash_rate_GHps{wallet_address="${wallet}"}`;
+    url.searchParams.append('query', queryString);
+    url.searchParams.append('start', startTime.toString());
+    url.searchParams.append('end', endTime.toString());
+    url.searchParams.append('step', stepInterval.toString());
 
     console.log('Fetching from URL:', url.toString());
+    console.log('Query string before encoding:', queryString);
+    console.log('Full URL after encoding:', url.toString());
 
     const response = await fetch(url, {
       cache: 'no-store'
