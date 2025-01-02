@@ -36,21 +36,26 @@ export default function AnalyticsCard01() {
     
     try {
       setIsLoading(true);
-      const data = await $fetch(`/api/miner/hashrate?wallet=${encodeURIComponent(walletAddress)}`, {
+      const response = await $fetch(`/api/miner/hashrate?wallet=${encodeURIComponent(walletAddress)}`, {
         retry: 1,
         timeout: 10000,
       });
 
-      if (data.status !== 'success' || !data.data?.result?.[0]?.values) {
+      if (!response.status || response.status !== 'success' || !response.data?.result?.[0]?.values) {
+        console.error('Invalid response:', response);
         throw new Error('Invalid response format');
       }
 
-      const values: HashRateData[] = data.data.result[0].values.map(
+      const values: HashRateData[] = response.data.result[0].values.map(
         ([timestamp, value]: [number, string]) => ({
           timestamp,
           value: Number(value)
         })
-      );
+      ).sort((a: HashRateData, b: HashRateData) => a.timestamp - b.timestamp); // Ensure timestamps are in order
+
+      if (values.length === 0) {
+        throw new Error('No data available');
+      }
 
       // Set current hashrate (most recent value)
       const lastValue = values[values.length - 1];
@@ -105,7 +110,18 @@ export default function AnalyticsCard01() {
   };
 
   useEffect(() => {
-    fetchData();
+    let mounted = true;
+
+    const doFetch = async () => {
+      if (!mounted) return;
+      await fetchData();
+    };
+
+    doFetch();
+
+    return () => {
+      mounted = false;
+    };
   }, [walletAddress]);
 
   const chartOptions = {
