@@ -42,16 +42,35 @@ export default function AnalyticsCard01() {
         timeout: 10000,
       });
 
-      console.log('API Response:', response);
+      console.log('API Response:', JSON.stringify(response, null, 2));
 
       if (!response || response.error) {
         console.error('API Error:', response?.error || 'No response');
         throw new Error(response?.error || 'Failed to fetch data');
       }
 
-      if (!response.data?.result?.[0]?.values) {
-        console.error('Invalid response structure:', response);
-        throw new Error('No data available');
+      // Log the exact path we're trying to access
+      console.log('Response status:', response.status);
+      console.log('Response data:', response.data);
+      console.log('Response result:', response.data?.result);
+      console.log('First result item:', response.data?.result?.[0]);
+      console.log('Values array:', response.data?.result?.[0]?.values);
+
+      // Check each level of the response structure
+      if (!response.status || response.status !== 'success') {
+        throw new Error('Invalid response status');
+      }
+
+      if (!response.data?.result) {
+        throw new Error('Missing result data');
+      }
+
+      if (!Array.isArray(response.data.result) || response.data.result.length === 0) {
+        throw new Error('Empty result array');
+      }
+
+      if (!response.data.result[0].values || !Array.isArray(response.data.result[0].values)) {
+        throw new Error('Invalid values array');
       }
 
       // Parse the response data
@@ -62,8 +81,10 @@ export default function AnalyticsCard01() {
         })
       ).sort((a: HashRateData, b: HashRateData) => a.timestamp - b.timestamp);
 
+      console.log('Parsed values:', values);
+
       if (values.length === 0) {
-        throw new Error('No data available');
+        throw new Error('No data points available');
       }
 
       // Set current hashrate (most recent value)
@@ -112,7 +133,7 @@ export default function AnalyticsCard01() {
       setError(null);
     } catch (error) {
       console.error('Error fetching miner hashrate:', error);
-      setError('Failed to load data');
+      setError(error instanceof Error ? error.message : 'Failed to load data');
     } finally {
       setIsLoading(false);
     }
