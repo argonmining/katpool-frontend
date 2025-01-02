@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
+export const revalidate = 10; // Revalidate every 10 seconds
 
 interface TimeRange {
   days: number;
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
     url.searchParams.append('step', step.toString());
 
     const response = await fetch(url, {
-      cache: 'no-store'
+      next: { revalidate: 10 } // Cache for 10 seconds
     });
 
     if (!response.ok) {

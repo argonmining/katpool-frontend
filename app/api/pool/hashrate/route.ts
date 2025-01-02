@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
+export const revalidate = 10;
 
 export async function GET() {
   try {
     const response = await fetch('http://kas.katpool.xyz:8080/api/v1/query?query=pool_hash_rate_GHps', {
-      cache: 'no-store'
+      next: { revalidate: 10 }
     });
 
     if (!response.ok) {

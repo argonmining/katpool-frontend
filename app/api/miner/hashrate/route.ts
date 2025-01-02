@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
-export const revalidate = 0; // Disable caching
+export const revalidate = 10; // Revalidate every 10 seconds
 
 export async function GET(request: Request) {
   try {
@@ -30,12 +30,8 @@ export async function GET(request: Request) {
     url.searchParams.append('end', endTime.toString());
     url.searchParams.append('step', stepInterval.toString());
 
-    console.log('Fetching from URL:', url.toString());
-    console.log('Query string before encoding:', queryString);
-    console.log('Full URL after encoding:', url.toString());
-
     const response = await fetch(url, {
-      cache: 'no-store'
+      next: { revalidate: 10 } // Cache for 10 seconds
     });
 
     if (!response.ok) {
@@ -48,7 +44,6 @@ export async function GET(request: Request) {
     }
 
     const data = await response.json();
-    console.log('Pool API response:', JSON.stringify(data));
 
     // Pass through the raw response
     return NextResponse.json(data);
