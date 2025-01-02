@@ -69,12 +69,6 @@ export default function AnalyticsCard02() {
         <div className="text-sm text-gray-500">Pending Balance</div>
       </div>
       <div className="grow px-5 pt-3 pb-1">
-        <div className="flex items-start">
-          <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">{pendingBalance} KAS</div>
-        </div>
-        <div className="text-sm text-gray-500">Pending Balance</div>
-      </div>
-      <div className="grow px-5 pt-3 pb-1">
         <div className="overflow-x-auto">
           <table className="table-auto w-full dark:text-gray-300">
             {/* Table header */}
