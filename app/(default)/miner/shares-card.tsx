@@ -110,7 +110,7 @@ export default function AnalyticsCard03() {
       )}
 
       <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex items-center">
-        <h2 className="font-semibold text-gray-800 dark:text-gray-100">Shares by Miner</h2>
+        <h2 className="font-semibold text-gray-800 dark:text-gray-100">Shares by Worker</h2>
       </header>
 
       <div className="grow">
