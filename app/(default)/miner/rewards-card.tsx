@@ -60,7 +60,7 @@ export default function AnalyticsCard02() {
       )}
 
       <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-        <h2 className="font-semibold text-gray-800 dark:text-gray-100">Rewards</h2>
+        <h2 className="font-semibold text-gray-800 dark:text-gray-100">Reward Payouts</h2>
       </header>
       <div className="grow px-5 pt-3 pb-1">
         <div className="flex items-start">
