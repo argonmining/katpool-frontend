@@ -63,7 +63,7 @@ export default function AnalyticsCard02() {
         <h2 className="font-semibold text-gray-800 dark:text-gray-100">Reward Payouts</h2>
       </header>
       <div className="grow px-5 py-4">
-        <div className="flex items-end justify-between pr-20">
+        <div className="flex items-end justify-between pr-10">
           <div>
             <div className="text-3xl font-bold text-gray-800 dark:text-gray-100">{pendingBalance} KAS</div>
             <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Pending Balance</div>
