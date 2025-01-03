@@ -128,7 +128,21 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             }
             break
           case 'poolMiners':
-            result = '--'
+            try {
+              const data = await $fetch('/api/pool/miners', {
+                retry: 1,
+                timeout: 5000,
+              });
+              
+              if (data.status !== 'success' || !data.data?.activeMiners) {
+                throw new Error('Invalid response format');
+              }
+              
+              result = data.data.activeMiners.toLocaleString('en-US');
+            } catch (error) {
+              console.error('Error fetching active miners:', error);
+              result = 'Error';
+            }
             break
           case 'pool24hBlocks':
             try {
