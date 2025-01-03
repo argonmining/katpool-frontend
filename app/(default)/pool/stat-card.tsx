@@ -111,7 +111,21 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             }
             break
           case 'poolBlocks':
-            result = '--'
+            try {
+              const data = await $fetch('/api/pool/blocks', {
+                retry: 1,
+                timeout: 5000,
+              });
+              
+              if (data.status !== 'success' || !data.data?.totalBlocks) {
+                throw new Error('Invalid response format');
+              }
+              
+              result = data.data.totalBlocks.toLocaleString('en-US');
+            } catch (error) {
+              console.error('Error fetching pool blocks:', error);
+              result = 'Error';
+            }
             break
           case 'poolMiners':
             result = '--'
