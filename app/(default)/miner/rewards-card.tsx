@@ -99,8 +99,55 @@ export default function AnalyticsCard02() {
                   <div className="font-medium text-right text-green-500">--</div>
                 </td>
               </tr>
+              {/* Row */}
+              <tr>
+                <td className="py-2">
+                  <div className="text-left text-gray-500">--</div>
+                </td>
+                <td className="py-2">
+                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
+                </td>
+                <td className="py-2">
+                  <div className="font-medium text-right text-green-500">--</div>
+                </td>
+              </tr>
+              {/* Row */}
+              <tr>
+                <td className="py-2">
+                  <div className="text-left text-gray-500">--</div>
+                </td>
+                <td className="py-2">
+                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
+                </td>
+                <td className="py-2">
+                  <div className="font-medium text-right text-green-500">--</div>
+                </td>
+              </tr>
+              {/* Row */}
+              <tr>
+                <td className="py-2">
+                  <div className="text-left text-gray-500">--</div>
+                </td>
+                <td className="py-2">
+                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
+                </td>
+                <td className="py-2">
+                  <div className="font-medium text-right text-green-500">--</div>
+                </td>
+              </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+      {/* Card footer */}
+      <div className="px-5 py-4">
+        <div className="flex justify-end">
+          <Link
+            className="text-sm font-medium text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
+            href={`/payouts?wallet=${searchParams.get('wallet') || ''}`}
+          >
+            Full Payout History →
+          </Link>
         </div>
       </div>
     </div>
