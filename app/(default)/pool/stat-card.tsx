@@ -131,7 +131,21 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             result = '--'
             break
           case 'pool24hBlocks':
-            result = '--'
+            try {
+              const data = await $fetch('/api/pool/blocks24h', {
+                retry: 1,
+                timeout: 5000,
+              });
+              
+              if (data.status !== 'success' || !data.data?.totalBlocks24h) {
+                throw new Error('Invalid response format');
+              }
+              
+              result = data.data.totalBlocks24h.toLocaleString('en-US');
+            } catch (error) {
+              console.error('Error fetching 24h blocks:', error);
+              result = 'Error';
+            }
             break
           case 'price':
             const priceResponse = await KaspaAPI.network.getPrice(false)
