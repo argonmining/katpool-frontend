@@ -8,7 +8,7 @@ export default function KatpoolIntro() {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText('stratum+tcp://comingsoon.katpool.xyz')
+      await navigator.clipboard.writeText('stratum+tcp://kas.katpool.xyz:8888')
       setCopySuccess(true)
       setTimeout(() => setCopySuccess(false), 2000)
     } catch (err) {
