@@ -117,12 +117,12 @@ export default function BlocksCard() {
   )
 
   const formatBlockHash = (hash: string) => {
-    return `${hash.slice(0, 3)}...${hash.slice(-3)}`;
+    return hash;
   };
 
   const formatDateTime = (timestamp: string) => {
     const date = new Date(timestamp);
-    return format(date, 'MMM d, yy h:mma zzz');
+    return format(date, 'MMM d, yy h:mma');
   };
 
   if (isLoading) {
