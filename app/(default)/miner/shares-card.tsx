@@ -52,37 +52,36 @@ export default function AnalyticsCard03() {
           throw new Error('No data available');
         }
 
-        // Get all unique timestamps across all miners and sort chronologically
-        const timestamps = Array.from(new Set(
-          results.flatMap(result => result.values.map(([timestamp]) => timestamp))
-        )).sort((a, b) => a - b);  // Ensure chronological order
-
-        // Get the most recent timestamp to use as reference
-        const mostRecent = Math.max(...timestamps);
-        
-        // Format dates for labels
-        const labels = timestamps.map(timestamp => {
-          const date = new Date(timestamp * 1000);
-          const reference = new Date(mostRecent * 1000);
-          
-          // Adjust reference date to start of day
-          reference.setHours(0, 0, 0, 0);
-          date.setHours(0, 0, 0, 0);
-          
-          // Calculate days difference from most recent date
-          const diffTime = date.getTime() - reference.getTime();
-          const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-          
-          return date.toLocaleDateString('en-US', { weekday: 'short' });
+        // Create an array of the last 7 days (including today)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const days = Array.from({length: 7}, (_, i) => {
+          const date = new Date(today);
+          date.setDate(date.getDate() - (6 - i));  // Start 6 days ago
+          return Math.floor(date.getTime() / 1000);
         });
+
+        // Format dates for labels
+        const labels = days.map(timestamp => 
+          new Date(timestamp * 1000).toLocaleDateString('en-US', { 
+            weekday: 'short'
+          })
+        );
 
         // Create datasets for each miner
         const datasets = results.map((result, index) => {
           const colorIndex = index % COLORS.length;
           return {
             label: result.metric.miner_id,
-            data: timestamps.map(timestamp => {
-              const dataPoint = result.values.find(([t]) => t === timestamp);
+            data: days.map(day => {
+              // Find the closest data point within the same day
+              const dataPoint = result.values.find(([t]) => {
+                const dataDate = new Date(t * 1000);
+                const targetDate = new Date(day * 1000);
+                return dataDate.getDate() === targetDate.getDate() &&
+                       dataDate.getMonth() === targetDate.getMonth() &&
+                       dataDate.getFullYear() === targetDate.getFullYear();
+              });
               return dataPoint ? Number(dataPoint[1]) : 0;
             }),
             backgroundColor: COLORS[colorIndex].bg,
