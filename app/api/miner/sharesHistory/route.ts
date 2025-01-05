@@ -15,10 +15,10 @@ export async function GET(request: Request) {
       );
     }
 
-    // Calculate timestamps for 7-day range
+    // Calculate timestamps for 8-day range
     const end = Math.floor(Date.now() / 1000);
-    const start = end - (7 * 24 * 60 * 60); // 7 days ago
-    const step = 86400; // 1 day in seconds
+    const start = end - (8 * 24 * 60 * 60); // 8 days ago
+    const step = '1h'; // Get hourly data points for more accuracy
 
     const url = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
     

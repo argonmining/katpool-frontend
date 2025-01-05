@@ -52,26 +52,54 @@ export default function AnalyticsCard03() {
           throw new Error('No data available');
         }
 
-        // Get all unique timestamps across all miners and sort them chronologically
-        const timestamps = Array.from(new Set(
-          results.flatMap(result => result.values.map(([timestamp]) => timestamp))
-        )).sort((a, b) => a - b);  // Ensure chronological order
+        // Group values by day and get the highest value for each day
+        const dailyGroups = results.reduce((acc, result) => {
+          result.values.forEach(([timestamp, value]) => {
+            const date = new Date(timestamp * 1000);
+            const dayKey = date.toISOString().split('T')[0];
+            const numValue = Number(value);
+            
+            // Keep track of the highest value for each day
+            if (!acc[dayKey] || numValue > acc[dayKey].value) {
+              acc[dayKey] = { 
+                value: numValue,
+                timestamp: timestamp 
+              };
+            }
+          });
+          return acc;
+        }, {} as Record<string, { value: number; timestamp: number }>);
 
-        // Format dates as YYYY-MM-DD for the chart
-        const labels = timestamps.map(timestamp => {
-          const date = new Date(timestamp * 1000);
-          return date.toISOString().split('T')[0];  // Returns YYYY-MM-DD
-        });
+        // Get sorted days and take only the last 7 for display
+        const allSortedDays = Object.keys(dailyGroups).sort();
+        const sortedDays = allSortedDays.slice(-7); // Only show last 7 days
 
-        // Create datasets for each miner
+        console.log('Daily highest values:', dailyGroups);
+
+        // Create datasets with daily differences
         const datasets = results.map((result, index) => {
           const colorIndex = index % COLORS.length;
+          
+          // Calculate daily differences using the 8th day when available
+          const dailyValues = sortedDays.map(day => {
+            const dayIndex = allSortedDays.indexOf(day);
+            const todayValue = dailyGroups[day].value;
+            const previousDay = allSortedDays[dayIndex - 1];
+            
+            // If we have a previous day's data, use it for difference
+            if (previousDay) {
+              const previousValue = dailyGroups[previousDay].value;
+              return todayValue - previousValue;
+            }
+            // If no previous day data, return 0
+            return 0;
+          });
+
+          console.log('Daily differences:', dailyValues);
+
           return {
             label: result.metric.miner_id,
-            data: timestamps.map(timestamp => {
-              const dataPoint = result.values.find(([t]) => t === timestamp);
-              return dataPoint ? Number(dataPoint[1]) : 0;
-            }),
+            data: dailyValues,
             backgroundColor: COLORS[colorIndex].bg,
             hoverBackgroundColor: COLORS[colorIndex].hover,
             barPercentage: 0.7,
@@ -80,11 +108,8 @@ export default function AnalyticsCard03() {
           };
         });
 
-        console.log('Timestamps:', timestamps.map(t => new Date(t * 1000).toISOString()));
-        console.log('Values:', results[0]?.values);
-
         setChartData({
-          labels,
+          labels: sortedDays,
           datasets,
         });
 
