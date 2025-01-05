@@ -3,6 +3,26 @@ import { NextResponse } from 'next/server';
 export const runtime = 'edge';
 export const revalidate = 10;
 
+interface MinerData {
+  metric: {
+    wallet_address: string;
+    miner_id: string;
+    [key: string]: string;
+  };
+  values: [number, string][];
+}
+
+interface ProcessedMiner {
+  wallet: string;
+  hashrate: number;
+  poolShare?: number;
+  rank?: number;
+}
+
+interface HashrateMap {
+  [timestamp: number]: number;
+}
+
 export async function GET() {
   try {
     // Calculate timestamps for 24-hour window
@@ -34,41 +54,62 @@ export async function GET() {
     const data = await response.json();
 
     if (data.status === 'success' && data.data?.result) {
-      // Group hashrates by wallet address
-      const walletHashrates = new Map<string, { hashrate: number; count: number }>();
+      // Create a map of wallet addresses to their hashrate values
+      const walletHashrates: Map<string, HashrateMap> = new Map();
       
-      data.data.result.forEach((result: any) => {
+      // Generate all expected timestamps (48 points)
+      const expectedTimestamps: number[] = [];
+      for (let t = start; t <= end; t += step) {
+        expectedTimestamps.push(t);
+      }
+      
+      // Process each miner's data
+      data.data.result.forEach((result: MinerData) => {
         const wallet = result.metric.wallet_address;
-        const hashrate = Number(result.value[1]); // Get the hashrate value
+        const hashrates: HashrateMap = walletHashrates.get(wallet) || {};
         
-        if (walletHashrates.has(wallet)) {
-          const current = walletHashrates.get(wallet)!;
-          walletHashrates.set(wallet, {
-            hashrate: current.hashrate + hashrate,
-            count: current.count + 1
-          });
-        } else {
-          walletHashrates.set(wallet, { hashrate, count: 1 });
-        }
+        // Add each data point to the hashrate map
+        result.values.forEach(([timestamp, hashrate]) => {
+          const value = Number(hashrate);
+          if (!isNaN(value)) {
+            hashrates[timestamp] = value;
+          }
+        });
+        
+        walletHashrates.set(wallet, hashrates);
       });
 
+      // Calculate averages using all 48 points
+      const miners: ProcessedMiner[] = Array.from(walletHashrates.entries())
+        .map(([wallet, hashrates]) => {
+          let total = 0;
+          
+          // Sum up values for all expected timestamps (using 0 for missing points)
+          expectedTimestamps.forEach(timestamp => {
+            total += hashrates[timestamp] || 0;
+          });
+          
+          return {
+            wallet,
+            hashrate: total / expectedTimestamps.length
+          };
+        })
+        .filter(miner => miner.hashrate > 0); // Filter out completely inactive miners
+
       // Calculate total pool hashrate
-      const totalPoolHashrate = Array.from(walletHashrates.values()).reduce(
-        (sum, { hashrate }) => sum + hashrate,
+      const totalPoolHashrate = miners.reduce(
+        (sum: number, miner: ProcessedMiner) => sum + miner.hashrate,
         0
       );
 
-      // Convert to array and calculate averages and pool share
-      const miners = Array.from(walletHashrates.entries()).map(([wallet, data]) => ({
-        wallet,
-        hashrate: data.hashrate / data.count, // Calculate average hashrate
-        poolShare: ((data.hashrate / data.count) / totalPoolHashrate) * 100
-      }));
-
-      // Sort by hashrate descending and add rank
+      // Add pool share and sort by hashrate
       const rankedMiners = miners
-        .sort((a, b) => b.hashrate - a.hashrate)
-        .map((miner, index) => ({
+        .map((miner: ProcessedMiner) => ({
+          ...miner,
+          poolShare: (miner.hashrate / totalPoolHashrate) * 100
+        }))
+        .sort((a: ProcessedMiner, b: ProcessedMiner) => b.hashrate - a.hashrate)
+        .map((miner: ProcessedMiner, index: number) => ({
           ...miner,
           rank: index + 1
         }));
