@@ -71,8 +71,16 @@ export default function AnalyticsCard03() {
         }, {} as Record<string, { value: number; timestamp: number }>);
 
         // Get sorted days and take only the last 7 for display
-        const allSortedDays = Object.keys(dailyGroups).sort();
-        const sortedDays = allSortedDays.slice(-7); // Only show last 7 days
+        const allSortedDays = Object.keys(dailyGroups)
+          .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+        
+        // Take the last 8 days (7 for display + 1 for calculation)
+        const relevantDays = allSortedDays.slice(-8);
+        const sortedDays = relevantDays.slice(-7); // Only show last 7 days
+
+        console.log('All days:', allSortedDays);
+        console.log('Relevant days:', relevantDays);
+        console.log('Display days:', sortedDays);
 
         // Create one dataset per miner
         const datasets = results.map((result, index) => {
@@ -82,9 +90,9 @@ export default function AnalyticsCard03() {
           // For this miner, calculate their shares for each day
           const data = new Array(sortedDays.length).fill(0);
           sortedDays.forEach((day, i) => {
-            const dayIndex = allSortedDays.indexOf(day);
+            const dayIndex = relevantDays.indexOf(day);
             const todayValue = dailyGroups[day].value;
-            const previousDay = allSortedDays[dayIndex - 1];
+            const previousDay = relevantDays[dayIndex - 1];
             
             if (previousDay) {
               const previousValue = dailyGroups[previousDay].value;
@@ -106,8 +114,14 @@ export default function AnalyticsCard03() {
         // Format dates for display
         const labels = sortedDays.map(day => {
           const date = new Date(day);
-          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          return date.toLocaleDateString('en-US', { 
+            weekday: 'short',
+            day: 'numeric'
+          });
         });
+
+        console.log('Final labels:', labels);
+        console.log('Final datasets:', datasets);
 
         setChartData({
           labels,
