@@ -148,9 +148,12 @@ export default function AnalyticsCard01() {
     };
 
     doFetch();
+    // Refresh every 30 seconds
+    const interval = setInterval(doFetch, 30000);
 
     return () => {
       mounted = false;
+      clearInterval(interval);
     };
   }, [walletAddress]);
 

@@ -28,24 +28,20 @@ export default function AnalyticsCard02() {
           throw new Error(response?.error || 'Failed to fetch data');
         }
 
-        if (response.status !== 'success' || !response.data?.result?.[0]?.value?.[1]) {
-          throw new Error('Invalid response format');
-        }
-
-        const rawBalance = response.data.result[0].value[1];
-        const balance = Number(BigInt(rawBalance)) / (10 ** 8);
-        setPendingBalance(balance.toFixed(2));
+        setPendingBalance(response.data.amount);
         setError(null);
       } catch (error) {
-        console.error('Error fetching balance:', error);
+        console.error('Error fetching pending balance:', error);
         setError(error instanceof Error ? error.message : 'Failed to load data');
-        setPendingBalance('--');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
   }, [walletAddress]);
 
   return (
