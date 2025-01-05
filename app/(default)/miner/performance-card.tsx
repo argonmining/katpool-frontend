@@ -148,8 +148,8 @@ export default function AnalyticsCard01() {
     };
 
     doFetch();
-    // Refresh every 30 seconds
-    const interval = setInterval(doFetch, 30000);
+    // Refresh every minute
+    const interval = setInterval(doFetch, 60000);
 
     return () => {
       mounted = false;

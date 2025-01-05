@@ -177,7 +177,7 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
     }
 
     fetchData()
-    const interval = setInterval(fetchData, 30000);
+    const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
   }, [dataType])
 
