@@ -18,6 +18,7 @@ interface ProcessedStats {
     firstSeen: number;
     activeWorkers: number;
     minerIds: Set<string>;
+    activeMiners: Set<string>;
   };
 }
 
@@ -56,7 +57,8 @@ export async function GET() {
             totalShares: 0,
             firstSeen: Infinity,
             activeWorkers: 0,
-            minerIds: new Set<string>()
+            minerIds: new Set<string>(),
+            activeMiners: new Set<string>()
           };
         }
 
@@ -67,6 +69,15 @@ export async function GET() {
         if (result.values.length > 0) {
           const lastValue = Number(result.values[result.values.length - 1][1]);
           stats[wallet].totalShares += lastValue;
+
+          // Check if this miner is active (has submitted shares recently)
+          // Compare the last two values to see if shares increased
+          if (result.values.length > 1) {
+            const previousValue = Number(result.values[result.values.length - 2][1]);
+            if (lastValue > previousValue) {
+              stats[wallet].activeMiners.add(minerId);
+            }
+          }
         }
 
         // Get the first values entry for first seen (oldest timestamp)
@@ -81,10 +92,10 @@ export async function GET() {
         acc[wallet] = {
           totalShares: stat.totalShares,
           firstSeen: stat.firstSeen,
-          activeWorkers: stat.minerIds.size
+          activeWorkers: stat.activeMiners.size // Use activeMiners count instead of all minerIds
         };
         return acc;
-      }, {} as { [wallet: string]: Omit<ProcessedStats[string], 'minerIds'> });
+      }, {} as { [wallet: string]: Omit<ProcessedStats[string], 'minerIds' | 'activeMiners'> });
 
       return NextResponse.json({
         status: 'success',
