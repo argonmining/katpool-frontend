@@ -122,10 +122,12 @@ export default function AnalyticsCard11() {
               {/* Table body */}
               <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
                 {workers.map((worker) => {
-                  // Get the most recent share timestamp
-                  const lastShareTimestamp = worker.values[worker.values.length - 1][0];
-                  const lastShareValue = worker.values[worker.values.length - 1][1];
-                  const isOnline = Date.now() / 1000 - lastShareTimestamp < 300; // 5 minutes threshold
+                  // Get the most recent non-zero share timestamp
+                  const lastShareTimestamp = worker.values[0][0];
+                  const lastShareValue = worker.values[0][1];
+                  
+                  // Consider a worker online only if they've submitted shares in the last 5 minutes
+                  const isOnline = lastShareValue !== '0' && (Date.now() / 1000 - lastShareTimestamp < 300);
 
                   return (
                     <tr key={worker.metric.miner_id}>
@@ -159,7 +161,9 @@ export default function AnalyticsCard11() {
                         <div className="text-center">{lastShareValue}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center">{formatTimeAgo(lastShareTimestamp)}</div>
+                        <div className="text-center">
+                          {lastShareValue === '0' ? '--' : formatTimeAgo(lastShareTimestamp)}
+                        </div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
                         <div className="text-center">--</div>
