@@ -33,7 +33,9 @@ export default function AnalyticsCard02() {
           return;
         }
 
-        const amount = Number(response.data.result[0].value[1]);
+        // Convert the string amount to BigInt and handle 8 decimal places
+        const rawAmount = BigInt(response.data.result[0].value[1]);
+        const amount = Number(rawAmount) / Math.pow(10, 8);
         if (!Number.isFinite(amount)) {
           throw new Error('Invalid amount received');
         }
