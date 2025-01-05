@@ -12,6 +12,7 @@ interface Block {
   daaScore: string
   timestamp: string
   reward?: string
+  fullReward?: string
 }
 
 export default function BlocksCard() {
@@ -46,13 +47,15 @@ export default function BlocksCard() {
               });
               return {
                 ...block,
-                reward: rewardResponse.data.amount
+                reward: rewardResponse.data.amount,
+                fullReward: rewardResponse.data.fullAmount
               };
             } catch (error) {
               console.error(`Error fetching reward for block ${block.blockHash}:`, error);
               return {
                 ...block,
-                reward: '--'
+                reward: '--',
+                fullReward: '--'
               };
             }
           })
@@ -197,7 +200,9 @@ export default function BlocksCard() {
                   </td>
                   <td className="p-2">
                     <div className="text-right font-medium text-green-500">
-                      {block.reward} KAS
+                      <span title={block.fullReward !== '--' ? `Full amount: ${block.fullReward} KAS` : ''}>
+                        {block.reward} KAS
+                      </span>
                     </div>
                   </td>
                 </tr>

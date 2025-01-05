@@ -48,7 +48,8 @@ export async function GET(request: Request) {
     return NextResponse.json({
       status: 'success',
       data: {
-        amount: amount.toFixed(2)
+        amount: amount.toFixed(2),
+        fullAmount: amount.toString()
       }
     });
 
