@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { $fetch } from 'ofetch'
 import { formatHashrate } from '@/components/utils/utils'
@@ -20,6 +19,12 @@ interface Miner {
   firstSeen: number
 }
 
+interface MinerStats {
+  totalShares: number
+  firstSeen: number
+  activeWorkers: number
+}
+
 export default function TopMinersCard() {
   const [sortKey, setSortKey] = useState<SortKey>('rank')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
@@ -31,27 +36,48 @@ export default function TopMinersCard() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const response = await $fetch('/api/pool/topMiners', {
+        
+        // Fetch hashrates and pool shares
+        const hashrateResponse = await $fetch('/api/pool/topMiners', {
           retry: 3,
           retryDelay: 1000,
           timeout: 10000,
         });
 
-        if (!response || response.error) {
-          throw new Error(response?.error || 'Failed to fetch data');
+        // Fetch additional stats (shares, workers, first seen)
+        const statsResponse = await $fetch('/api/pool/minerStats', {
+          retry: 3,
+          retryDelay: 1000,
+          timeout: 10000,
+        });
+
+        if (!hashrateResponse || hashrateResponse.error) {
+          throw new Error(hashrateResponse?.error || 'Failed to fetch hashrate data');
+        }
+
+        if (!statsResponse || statsResponse.error) {
+          throw new Error(statsResponse?.error || 'Failed to fetch stats data');
         }
 
         // Map API data to our Miner interface
-        const mappedMiners = response.data.map((miner: any) => ({
-          rank: miner.rank,
-          wallet: miner.wallet,
-          hashrate: miner.hashrate,
-          workers: Math.floor(Math.random() * 100 + 1), // Placeholder
-          shares: Math.floor(Math.random() * 1000000 + 10000), // Placeholder
-          rewards: Math.floor(Math.random() * 10000 + 100), // Placeholder
-          poolShare: miner.poolShare,
-          firstSeen: Math.floor(Math.random() * 180 + 1) // Placeholder
-        }));
+        const mappedMiners = hashrateResponse.data.map((miner: any) => {
+          const stats = statsResponse.data[miner.wallet] as MinerStats || {
+            totalShares: 0,
+            firstSeen: 0,
+            activeWorkers: 0
+          };
+
+          return {
+            rank: miner.rank,
+            wallet: miner.wallet,
+            hashrate: miner.hashrate,
+            workers: stats.activeWorkers,
+            shares: stats.totalShares,
+            rewards: 0, // Placeholder for now
+            poolShare: miner.poolShare,
+            firstSeen: stats.firstSeen ? Math.floor((Date.now() / 1000 - stats.firstSeen) / (24 * 60 * 60)) : 0
+          };
+        });
 
         setMiners(mappedMiners);
         setError(null);
@@ -139,7 +165,7 @@ export default function TopMinersCard() {
                   </th>
                   <th className="p-2 whitespace-nowrap">
                     <div className="flex justify-center">
-                      <SortableHeader label="24h Shares" sortKey="shares" />
+                      <SortableHeader label="Total Shares" sortKey="shares" />
                     </div>
                   </th>
                   <th className="p-2 whitespace-nowrap">
@@ -183,7 +209,7 @@ export default function TopMinersCard() {
                       <div className="text-center">{miner.shares.toLocaleString()}</div>
                     </td>
                     <td className="p-2 whitespace-nowrap">
-                      <div className="text-center text-green-500">{miner.rewards.toLocaleString()} KAS</div>
+                      <div className="text-center text-green-500">--</div>
                     </td>
                     <td className="p-2 whitespace-nowrap">
                       <div className="text-center">{miner.poolShare.toFixed(2)}%</div>
