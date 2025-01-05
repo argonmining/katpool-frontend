@@ -188,9 +188,6 @@ export default function AnalyticsCard11() {
                   <th className="p-2 whitespace-nowrap w-[10%]">
                     <div className="font-semibold text-center">Last Share</div>
                   </th>
-                  <th className="p-2 whitespace-nowrap w-[10%]">
-                    <div className="font-semibold text-center">Online For</div>
-                  </th>
                 </tr>
               </thead>
               {/* Table body */}
@@ -232,9 +229,6 @@ export default function AnalyticsCard11() {
                         <div className="text-center">
                           {formatTimeAgo(worker.lastShareTimestamp)}
                         </div>
-                      </td>
-                      <td className="p-2 whitespace-nowrap">
-                        <div className="text-center">--</div>
                       </td>
                     </tr>
                   );

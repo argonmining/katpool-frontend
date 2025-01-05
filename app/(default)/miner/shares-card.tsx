@@ -58,9 +58,14 @@ export default function AnalyticsCard03() {
           if (!acc[minerId]) acc[minerId] = {};
 
           result.values.forEach(([timestamp, value]) => {
+            // Convert timestamp to local date at midnight
             const date = new Date(timestamp * 1000);
+            date.setHours(0, 0, 0, 0);
             const dayKey = date.toISOString().split('T')[0];
             const numValue = Number(value);
+            
+            console.log(`Processing timestamp ${timestamp} (${new Date(timestamp * 1000).toLocaleString()}) for miner ${minerId}`);
+            console.log(`Mapped to day: ${dayKey}`);
             
             // Keep track of the highest value for each day for this miner
             if (!acc[minerId][dayKey] || numValue > acc[minerId][dayKey].value) {
@@ -80,6 +85,16 @@ export default function AnalyticsCard03() {
         });
         const sortedDays = Array.from(allDays).sort();
 
+        // Log the full date range we're working with
+        console.log('Date range analysis:');
+        console.log('First timestamp in data:', new Date(results[0].values[0][0] * 1000).toLocaleString());
+        console.log('Last timestamp in data:', new Date(results[0].values[results[0].values.length - 1][0] * 1000).toLocaleString());
+        console.log('Today is:', new Date().toLocaleString());
+        console.log('Sorted days we have:', sortedDays.map(day => ({
+          day,
+          date: new Date(day).toLocaleString()
+        })));
+
         // Create one dataset per miner
         const datasets = results.map((result, index) => {
           const colorIndex = index % COLORS.length;
@@ -91,7 +106,9 @@ export default function AnalyticsCard03() {
             if (i === 0) return 0;  // First day is baseline
             const todayValue = minerData[day]?.value || 0;
             const previousValue = minerData[sortedDays[i - 1]]?.value || 0;
-            return todayValue - previousValue;
+            const diff = todayValue - previousValue;
+            console.log(`${minerId} difference for ${day}: ${diff} (${todayValue} - ${previousValue})`);
+            return diff;
           });
 
           return {
@@ -108,10 +125,14 @@ export default function AnalyticsCard03() {
         // Format dates for display
         const labels = sortedDays.map(day => {
           const date = new Date(day);
+          const dayOfMonth = date.getDate();
+          const suffix = dayOfMonth === 1 ? 'st' : dayOfMonth === 2 ? 'nd' : dayOfMonth === 3 ? 'rd' : 'th';
+          
           return date.toLocaleDateString('en-US', { 
             weekday: 'short',
+            month: 'short',
             day: 'numeric'
-          });
+          }).replace(',', '') + suffix;
         });
 
         console.log('Miner daily groups:', minerDailyGroups);
