@@ -31,7 +31,6 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             break
           case 'supply':
             const supplyResponse = await KaspaAPI.network.getCirculatingSupply(false)
-            console.log('Supply Response:', supplyResponse)
             try {
               const supplyInBillions = Number(supplyResponse) / 1e9
               result = `${supplyInBillions.toFixed(4)} B`
@@ -75,7 +74,6 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             break
           case 'totalSupply':
             const totalSupplyResponse = await KaspaAPI.network.getTotalSupply()
-            console.log('Total Supply Response:', totalSupplyResponse)
             try {
               const totalInBillions = Number(totalSupplyResponse) / 1e9
               result = `${totalInBillions.toFixed(4)} B`
@@ -96,14 +94,12 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
               }
               
               const rawHashrate = Number(data.data.result[0].value[1]);
-              console.log('Raw hashrate from API:', rawHashrate);
               
               if (!Number.isFinite(rawHashrate)) {
                 throw new Error('Invalid hashrate value received');
               }
               
               const formattedResult = formatHashrate(rawHashrate);
-              console.log('Formatted hashrate:', formattedResult);
               result = formattedResult;
             } catch (error) {
               console.error('Error fetching pool hashrate:', error);

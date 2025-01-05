@@ -70,34 +70,21 @@ export default function AnalyticsCard03() {
           return acc;
         }, {} as Record<string, { value: number; timestamp: number }>);
 
-        // Get sorted days and take only the last 7 for display
-        const allSortedDays = Object.keys(dailyGroups)
-          .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-        
-        // Take the last 8 days (7 for display + 1 for calculation)
-        const relevantDays = allSortedDays.slice(-8);
-        const sortedDays = relevantDays.slice(-7); // Only show last 7 days
-
-        console.log('All days:', allSortedDays);
-        console.log('Relevant days:', relevantDays);
-        console.log('Display days:', sortedDays);
+        // Sort days chronologically
+        const sortedDays = Object.keys(dailyGroups)
+          .sort((a, b) => a.localeCompare(b));
 
         // Create one dataset per miner
         const datasets = results.map((result, index) => {
           const colorIndex = index % COLORS.length;
           const minerId = result.metric.miner_id;
           
-          // For this miner, calculate their shares for each day
-          const data = new Array(sortedDays.length).fill(0);
-          sortedDays.forEach((day, i) => {
-            const dayIndex = relevantDays.indexOf(day);
+          // Calculate daily differences
+          const data = sortedDays.map((day, i) => {
+            if (i === 0) return 0;  // First day is baseline
             const todayValue = dailyGroups[day].value;
-            const previousDay = relevantDays[dayIndex - 1];
-            
-            if (previousDay) {
-              const previousValue = dailyGroups[previousDay].value;
-              data[i] = todayValue - previousValue;
-            }
+            const previousValue = dailyGroups[sortedDays[i - 1]].value;
+            return todayValue - previousValue;
           });
 
           return {
@@ -114,19 +101,17 @@ export default function AnalyticsCard03() {
         // Format dates for display
         const labels = sortedDays.map(day => {
           const date = new Date(day);
-          // Ensure we're in local timezone and format as "Mon 5"
-          return new Date(date.getTime() + date.getTimezoneOffset() * 60000)
-            .toLocaleDateString('en-US', { 
-              weekday: 'short',
-              day: 'numeric',
-            })
-            .replace(',', ''); // Remove comma from date format
+          return date.toLocaleDateString('en-US', { 
+            weekday: 'short',
+            day: 'numeric'
+          });
         });
 
-        console.log('Daily groups:', dailyGroups);
-        console.log('Calculated differences:', datasets.map(ds => ({
+        console.log('Days:', sortedDays);
+        console.log('Daily values:', dailyGroups);
+        console.log('Calculated shares:', datasets.map(ds => ({
           miner: ds.label,
-          values: ds.data
+          shares: ds.data
         })));
 
         setChartData({

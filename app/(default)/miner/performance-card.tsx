@@ -55,8 +55,6 @@ export default function AnalyticsCard01() {
         timeout: 10000,
       });
 
-      console.log('API Response:', JSON.stringify(response, null, 2));
-
       if (!response || response.error) {
         console.error('API Error:', response?.error || 'No response');
         throw new Error(response?.error || 'Failed to fetch data');
@@ -86,8 +84,6 @@ export default function AnalyticsCard01() {
           value: Number(value)
         })
       ).sort((a: HashRateData, b: HashRateData) => a.timestamp - b.timestamp);
-
-      console.log('Parsed values:', values);
 
       if (values.length === 0) {
         throw new Error('No data points available');

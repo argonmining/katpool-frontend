@@ -69,14 +69,7 @@ export default function BarChart03({
           },
           x: {
             stacked: true,
-            type: 'time',
-            time: {
-              parser: 'yyyy-MM-dd',
-              unit: 'day',
-              displayFormats: {
-                day: 'MMM d'
-              },
-            },
+            type: 'category',
             border: {
               display: false,
             },
