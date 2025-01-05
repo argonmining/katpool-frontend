@@ -128,12 +128,14 @@ export default function AnalyticsCard03() {
 
         // Format dates for display
         const labels = sortedDays.map(day => {
+          // Add timezone offset to get correct local date
           const date = new Date(day);
-          const dayOfMonth = date.getDate();
+          const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+          const dayOfMonth = localDate.getDate();
           const suffix = dayOfMonth === 1 ? 'st' : dayOfMonth === 2 ? 'nd' : dayOfMonth === 3 ? 'rd' : 'th';
-          const isToday = new Date(day).toDateString() === new Date().toDateString();
+          const isToday = localDate.toDateString() === new Date().toDateString();
           
-          const formatted = date.toLocaleDateString('en-US', { 
+          const formatted = localDate.toLocaleDateString('en-US', { 
             weekday: 'short',
             month: 'short',
             day: 'numeric'
