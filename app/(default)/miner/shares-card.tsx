@@ -52,12 +52,12 @@ export default function AnalyticsCard03() {
           throw new Error('No data available');
         }
 
-        // Get all unique timestamps across all miners
+        // Get all unique timestamps across all miners and sort chronologically
         const timestamps = Array.from(new Set(
           results.flatMap(result => result.values.map(([timestamp]) => timestamp))
-        )).sort();
+        )).sort((a, b) => a - b);  // Ensure chronological order
 
-        // Format dates for labels
+        // Format dates for labels - only show weekday names
         const labels = timestamps.map(timestamp => 
           new Date(timestamp * 1000).toLocaleDateString('en-US', { 
             weekday: 'short'  // Show as Mon, Tue, etc.
