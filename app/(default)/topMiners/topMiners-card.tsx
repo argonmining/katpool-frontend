@@ -59,6 +59,10 @@ export default function TopMinersCard() {
           throw new Error(statsResponse?.error || 'Failed to fetch stats data');
         }
 
+        // Log debug information
+        console.log('Hashrate API Debug Info:', hashrateResponse.debug);
+        console.log('Stats API Debug Info:', statsResponse.debug);
+
         // Map API data to our Miner interface
         const mappedMiners = hashrateResponse.data.map((miner: any) => {
           const stats = statsResponse.data[miner.wallet] as MinerStats || {

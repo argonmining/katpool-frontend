@@ -45,14 +45,26 @@ export async function GET() {
 
     if (data.status === 'success' && data.data?.result) {
       const stats: ProcessedStats = {};
-
-      console.log('Total results from Prometheus:', data.data.result.length);
+      const debugInfo = {
+        resultCount: data.data.result.length,
+        timeRange: { start, end, step },
+        minerDetails: [] as any[]
+      };
 
       // First pass: Initialize data structures and collect miner IDs
       data.data.result.forEach((result: MinerData) => {
         const wallet = result.metric.wallet_address;
         const minerId = result.metric.miner_id;
         
+        // Collect debug info for this miner
+        debugInfo.minerDetails.push({
+          wallet,
+          minerId,
+          valueCount: result.values.length,
+          firstValue: result.values[0]?.[1],
+          lastValue: result.values[result.values.length - 1]?.[1]
+        });
+
         if (!stats[wallet]) {
           stats[wallet] = {
             totalShares: 0,
@@ -61,13 +73,6 @@ export async function GET() {
             minerIds: new Set<string>()
           };
         }
-
-        // Log the values for this miner
-        console.log(`Processing miner ${wallet} (${minerId}):`, {
-          valueCount: result.values.length,
-          firstValue: result.values[0]?.[1],
-          lastValue: result.values[result.values.length - 1]?.[1]
-        });
 
         // Get the last values entry for total shares (cumulative total)
         if (result.values.length > 0) {
@@ -99,7 +104,8 @@ export async function GET() {
 
       return NextResponse.json({
         status: 'success',
-        data: processedStats
+        data: processedStats,
+        debug: debugInfo
       });
     }
 

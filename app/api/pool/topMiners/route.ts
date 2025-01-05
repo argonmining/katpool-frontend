@@ -54,6 +54,12 @@ export async function GET() {
     const data = await response.json();
 
     if (data.status === 'success' && data.data?.result) {
+      const debugInfo = {
+        resultCount: data.data.result.length,
+        timeRange: { start, end, step },
+        walletAddresses: data.data.result.map((r: MinerData) => r.metric.wallet_address)
+      };
+
       // Create a map of wallet addresses to their hashrate values
       const walletHashrates: Map<string, HashrateMap> = new Map();
       
@@ -117,7 +123,8 @@ export async function GET() {
 
       return NextResponse.json({
         status: 'success',
-        data: rankedMiners
+        data: rankedMiners,
+        debug: debugInfo
       });
     }
 
