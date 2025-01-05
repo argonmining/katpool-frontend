@@ -18,7 +18,6 @@ interface ProcessedStats {
     firstSeen: number;
     activeWorkers: number;
     minerIds: Set<string>;
-    activeMiners: Set<string>;
   };
 }
 
@@ -57,26 +56,18 @@ export async function GET() {
             totalShares: 0,
             firstSeen: Infinity,
             activeWorkers: 0,
-            minerIds: new Set<string>(),
-            activeMiners: new Set<string>()
+            minerIds: new Set<string>()
           };
         }
-
-        // Add miner ID to the set
-        stats[wallet].minerIds.add(minerId);
 
         // Get the last values entry for total shares (cumulative total)
         if (result.values.length > 0) {
           const lastValue = Number(result.values[result.values.length - 1][1]);
           stats[wallet].totalShares += lastValue;
 
-          // Check if this miner is active (has submitted shares recently)
-          // Compare the last two values to see if shares increased
-          if (result.values.length > 1) {
-            const previousValue = Number(result.values[result.values.length - 2][1]);
-            if (lastValue > previousValue) {
-              stats[wallet].activeMiners.add(minerId);
-            }
+          // If the miner has any shares, count them as active
+          if (lastValue > 0) {
+            stats[wallet].minerIds.add(minerId);
           }
         }
 
@@ -92,10 +83,10 @@ export async function GET() {
         acc[wallet] = {
           totalShares: stat.totalShares,
           firstSeen: stat.firstSeen,
-          activeWorkers: stat.activeMiners.size // Use activeMiners count instead of all minerIds
+          activeWorkers: stat.minerIds.size
         };
         return acc;
-      }, {} as { [wallet: string]: Omit<ProcessedStats[string], 'minerIds' | 'activeMiners'> });
+      }, {} as { [wallet: string]: Omit<ProcessedStats[string], 'minerIds'> });
 
       return NextResponse.json({
         status: 'success',
