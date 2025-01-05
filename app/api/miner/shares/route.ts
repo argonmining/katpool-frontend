@@ -15,10 +15,10 @@ export async function GET(request: Request) {
       );
     }
 
-    // Calculate timestamps for last 12 hours with 1-minute precision
+    // Calculate timestamps - we only need the most recent value
     const end = Math.floor(Date.now() / 1000);
-    const start = end - (12 * 60 * 60); // 12 hours ago
-    const step = 60; // 1 minute in seconds
+    const start = end - 300; // Just get last 5 minutes
+    const step = 300; // 5-minute step is sufficient since we only need the last value
 
     const url = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
     

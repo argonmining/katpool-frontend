@@ -15,12 +15,21 @@ interface SharesData {
   values: [number, string][];
 }
 
+interface WorkerData {
+  minerId: string;
+  totalShares: number;
+  invalidShares: number;
+  duplicatedShares: number;
+  jobsNotFound: number;
+  lastShareTimestamp: number;
+}
+
 export default function AnalyticsCard11() {
   const searchParams = useSearchParams()
   const walletAddress = searchParams.get('wallet')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [workers, setWorkers] = useState<SharesData[]>([])
+  const [workers, setWorkers] = useState<WorkerData[]>([])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,22 +37,77 @@ export default function AnalyticsCard11() {
 
       try {
         setIsLoading(true);
-        const response = await $fetch(`/api/miner/shares?wallet=${walletAddress}`, {
-          retry: 3,
-          retryDelay: 1000,
-          timeout: 10000,
-        });
+        
+        // Fetch data from all endpoints
+        const [totalSharesRes, invalidSharesRes, duplicatedSharesRes, jobsNotFoundRes] = await Promise.all([
+          $fetch(`/api/miner/shares?wallet=${walletAddress}`, {
+            retry: 3,
+            retryDelay: 1000,
+            timeout: 10000,
+          }),
+          $fetch(`/api/miner/invalidShares?wallet=${walletAddress}`, {
+            retry: 3,
+            retryDelay: 1000,
+            timeout: 10000,
+          }),
+          $fetch(`/api/miner/duplicatedShares?wallet=${walletAddress}`, {
+            retry: 3,
+            retryDelay: 1000,
+            timeout: 10000,
+          }),
+          $fetch(`/api/miner/jobsNotFound?wallet=${walletAddress}`, {
+            retry: 3,
+            retryDelay: 1000,
+            timeout: 10000,
+          })
+        ]);
 
-        if (!response || response.error) {
-          throw new Error(response?.error || 'Failed to fetch data');
+        // Process total shares data
+        const totalSharesMap = new Map<string, { shares: number; timestamp: number }>();
+        if (totalSharesRes?.data?.result) {
+          totalSharesRes.data.result.forEach((result: SharesData) => {
+            totalSharesMap.set(result.metric.miner_id, {
+              shares: Number(result.values[0][1]),
+              timestamp: result.values[0][0]
+            });
+          });
         }
 
-        const results: SharesData[] = response.data.result;
-        if (!results || results.length === 0) {
-          throw new Error('No data available');
+        // Process invalid shares data
+        const invalidSharesMap = new Map<string, number>();
+        if (invalidSharesRes?.data?.result) {
+          invalidSharesRes.data.result.forEach((result: SharesData) => {
+            invalidSharesMap.set(result.metric.miner_id, Number(result.values[0][1]));
+          });
         }
 
-        setWorkers(results);
+        // Process duplicated shares data
+        const duplicatedSharesMap = new Map<string, number>();
+        if (duplicatedSharesRes?.data?.result) {
+          duplicatedSharesRes.data.result.forEach((result: SharesData) => {
+            duplicatedSharesMap.set(result.metric.miner_id, Number(result.values[0][1]));
+          });
+        }
+
+        // Process jobs not found data
+        const jobsNotFoundMap = new Map<string, number>();
+        if (jobsNotFoundRes?.data?.result) {
+          jobsNotFoundRes.data.result.forEach((result: SharesData) => {
+            jobsNotFoundMap.set(result.metric.miner_id, Number(result.values[0][1]));
+          });
+        }
+
+        // Combine all data
+        const processedWorkers: WorkerData[] = Array.from(totalSharesMap.entries()).map(([minerId, data]) => ({
+          minerId,
+          totalShares: data.shares,
+          invalidShares: invalidSharesMap.get(minerId) || 0,
+          duplicatedShares: duplicatedSharesMap.get(minerId) || 0,
+          jobsNotFound: jobsNotFoundMap.get(minerId) || 0,
+          lastShareTimestamp: data.timestamp
+        }));
+
+        setWorkers(processedWorkers);
         setError(null);
       } catch (error) {
         console.error('Error fetching worker data:', error);
@@ -116,7 +180,10 @@ export default function AnalyticsCard11() {
                     <div className="font-semibold text-center">24h Hashrate</div>
                   </th>
                   <th className="p-2 whitespace-nowrap w-[11%]">
-                    <div className="font-semibold text-center">Accepted Shares</div>
+                    <div className="font-semibold text-center">Accepted</div>
+                  </th>
+                  <th className="p-2 whitespace-nowrap w-[11%]">
+                    <div className="font-semibold text-center">Rejected</div>
                   </th>
                   <th className="p-2 whitespace-nowrap w-[10%]">
                     <div className="font-semibold text-center">Last Share</div>
@@ -129,14 +196,14 @@ export default function AnalyticsCard11() {
               {/* Table body */}
               <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
                 {workers.map((worker) => {
-                  const lastShareTimestamp = worker.values[0][0];
-                  const lastShareValue = worker.values[0][1];
+                  const isOnline = (Date.now() / 1000 - worker.lastShareTimestamp < 300) && 
+                                 (Date.now() / 1000 - worker.lastShareTimestamp < 12 * 60 * 60);
                   
-                  const isOnline = (Date.now() / 1000 - lastShareTimestamp < 300) && 
-                                  (Date.now() / 1000 - lastShareTimestamp < 12 * 60 * 60);
+                  const rejectedShares = worker.invalidShares + worker.duplicatedShares + worker.jobsNotFound;
+                  const acceptedShares = worker.totalShares - rejectedShares;
 
                   return (
-                    <tr key={worker.metric.miner_id}>
+                    <tr key={worker.minerId}>
                       <td className="p-2 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className={`shrink-0 rounded-full mr-2 sm:mr-3 ${isOnline ? 'bg-green-500' : 'bg-red-500'} w-9 h-9 overflow-hidden`}>
@@ -148,7 +215,7 @@ export default function AnalyticsCard11() {
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <div className="font-medium text-gray-800 dark:text-gray-100">{worker.metric.miner_id}</div>
+                          <div className="font-medium text-gray-800 dark:text-gray-100">{worker.minerId}</div>
                         </div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
@@ -164,11 +231,14 @@ export default function AnalyticsCard11() {
                         <div className="text-center">--</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center">{lastShareValue}</div>
+                        <div className="text-center text-green-500">{acceptedShares}</div>
+                      </td>
+                      <td className="p-2 whitespace-nowrap">
+                        <div className="text-center text-red-500">{rejectedShares}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
                         <div className="text-center">
-                          {formatTimeAgo(lastShareTimestamp)}
+                          {formatTimeAgo(worker.lastShareTimestamp)}
                         </div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
