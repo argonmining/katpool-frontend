@@ -72,15 +72,17 @@ export default function AnalyticsCard03() {
           return {
             label: result.metric.miner_id,
             data: days.map(targetTimestamp => {
-              // Only match data points that fall within the same day
+              // Convert target timestamp to date string for comparison
               const targetDate = new Date(targetTimestamp * 1000);
-              const targetDayStart = new Date(targetDate.setHours(0, 0, 0, 0)).getTime() / 1000;
-              const targetDayEnd = new Date(targetDate.setHours(23, 59, 59, 999)).getTime() / 1000;
+              targetDate.setHours(0, 0, 0, 0);
+              const targetDateStr = targetDate.toISOString().split('T')[0];
               
-              // Find data point within this day
-              const dataPoint = result.values.find(([timestamp, _]) => 
-                timestamp >= targetDayStart && timestamp <= targetDayEnd
-              );
+              // Find matching data point
+              const dataPoint = result.values.find(([timestamp, _]) => {
+                const dataDate = new Date(timestamp * 1000);
+                dataDate.setHours(0, 0, 0, 0);
+                return dataDate.toISOString().split('T')[0] === targetDateStr;
+              });
               
               return dataPoint ? Number(dataPoint[1]) : 0;
             }),
