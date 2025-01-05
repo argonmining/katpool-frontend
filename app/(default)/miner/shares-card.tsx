@@ -74,32 +74,27 @@ export default function AnalyticsCard03() {
         const allSortedDays = Object.keys(dailyGroups).sort();
         const sortedDays = allSortedDays.slice(-7); // Only show last 7 days
 
-        console.log('Daily highest values:', dailyGroups);
-
-        // Create datasets with daily differences
+        // Create one dataset per miner
         const datasets = results.map((result, index) => {
           const colorIndex = index % COLORS.length;
+          const minerId = result.metric.miner_id;
           
-          // Calculate daily differences using the 8th day when available
-          const dailyValues = sortedDays.map(day => {
+          // For this miner, calculate their shares for each day
+          const data = new Array(sortedDays.length).fill(0);
+          sortedDays.forEach((day, i) => {
             const dayIndex = allSortedDays.indexOf(day);
             const todayValue = dailyGroups[day].value;
             const previousDay = allSortedDays[dayIndex - 1];
             
-            // If we have a previous day's data, use it for difference
             if (previousDay) {
               const previousValue = dailyGroups[previousDay].value;
-              return todayValue - previousValue;
+              data[i] = todayValue - previousValue;
             }
-            // If no previous day data, return 0
-            return 0;
           });
 
-          console.log('Daily differences:', dailyValues);
-
           return {
-            label: result.metric.miner_id,
-            data: dailyValues,
+            label: minerId,
+            data,
             backgroundColor: COLORS[colorIndex].bg,
             hoverBackgroundColor: COLORS[colorIndex].hover,
             barPercentage: 0.7,
@@ -108,8 +103,14 @@ export default function AnalyticsCard03() {
           };
         });
 
+        // Format dates for display
+        const labels = sortedDays.map(day => {
+          const date = new Date(day);
+          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        });
+
         setChartData({
-          labels: sortedDays,
+          labels,
           datasets,
         });
 
