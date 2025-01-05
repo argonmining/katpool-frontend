@@ -122,7 +122,7 @@ export default function BlocksCard() {
 
   const formatDateTime = (timestamp: string) => {
     const date = new Date(timestamp);
-    return format(date, 'MMM d, yy h:mma');
+    return format(date, "MMM d, yyyy '@' h:mma");
   };
 
   if (isLoading) {
