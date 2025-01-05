@@ -235,7 +235,7 @@ export default function AnalyticsCard01() {
           <div className="flex items-center py-2">
             <div className="mr-5">
               <div className="flex items-center">
-                <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">{currentHashrate}</div>
+                <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mr-2">{currentHashrate}</div>
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Current Hashrate</div>
             </div>
@@ -244,7 +244,7 @@ export default function AnalyticsCard01() {
           <div className="flex items-center py-2">
             <div className="mr-5">
               <div className="flex items-center">
-                <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">{twoHourAvg}</div>
+                <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mr-2">{twoHourAvg}</div>
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Last 2h Avg</div>
             </div>
@@ -253,7 +253,7 @@ export default function AnalyticsCard01() {
           <div className="flex items-center py-2">
             <div className="mr-5">
               <div className="flex items-center">
-                <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">{twelveHourAvg}</div>
+                <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mr-2">{twelveHourAvg}</div>
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Last 12h Avg</div>
             </div>
@@ -262,16 +262,16 @@ export default function AnalyticsCard01() {
           <div className="flex items-center py-2">
             <div className="mr-5">
               <div className="flex items-center">
-                <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">{twentyFourHourAvg}</div>
+                <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mr-2">{twentyFourHourAvg}</div>
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Last 24h Avg</div>
             </div>
             <div className="hidden md:block w-px h-8 bg-gray-200 dark:bg-gray-700 mr-5" aria-hidden="true"></div>
           </div>
-          <div className="flex items-center">
-            <div>
+          <div className="flex items-center py-2">
+            <div className="mr-5">
               <div className="flex items-center">
-                <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">{fortyEightHourAvg}</div>
+                <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mr-2">{fortyEightHourAvg}</div>
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Last 48h Avg</div>
             </div>
