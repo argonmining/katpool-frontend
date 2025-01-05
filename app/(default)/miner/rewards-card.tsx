@@ -28,7 +28,7 @@ export default function AnalyticsCard02() {
           throw new Error(response?.error || 'Failed to fetch data');
         }
 
-        if (response.status !== 'success' || !response.data?.amount) {
+        if (response.status !== 'success' || response.data?.amount === undefined || response.data?.amount === null) {
           setPendingBalance('--');
           return;
         }
