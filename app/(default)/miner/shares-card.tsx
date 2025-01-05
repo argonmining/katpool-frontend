@@ -73,16 +73,20 @@ export default function AnalyticsCard03() {
           const colorIndex = index % COLORS.length;
           return {
             label: result.metric.miner_id,
-            data: days.map(day => {
-              // Find the closest data point within the same day
-              const dataPoint = result.values.find(([t]) => {
-                const dataDate = new Date(t * 1000);
-                const targetDate = new Date(day * 1000);
-                return dataDate.getDate() === targetDate.getDate() &&
-                       dataDate.getMonth() === targetDate.getMonth() &&
-                       dataDate.getFullYear() === targetDate.getFullYear();
-              });
-              return dataPoint ? Number(dataPoint[1]) : 0;
+            data: days.map(targetTimestamp => {
+              // Find the closest data point by comparing timestamps
+              let closestPoint = null;
+              let minTimeDiff = Infinity;
+              
+              for (const [timestamp, value] of result.values) {
+                const timeDiff = Math.abs(timestamp - targetTimestamp);
+                if (timeDiff < minTimeDiff) {
+                  minTimeDiff = timeDiff;
+                  closestPoint = [timestamp, value];
+                }
+              }
+              
+              return closestPoint ? Number(closestPoint[1]) : 0;
             }),
             backgroundColor: COLORS[colorIndex].bg,
             hoverBackgroundColor: COLORS[colorIndex].hover,
