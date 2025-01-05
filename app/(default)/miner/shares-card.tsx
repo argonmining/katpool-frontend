@@ -57,11 +57,12 @@ export default function AnalyticsCard03() {
           results.flatMap(result => result.values.map(([timestamp]) => timestamp))
         )).sort();
 
-        // Format dates as ISO strings for the chart
-        const labels = timestamps.map(timestamp => {
-          const date = new Date(timestamp * 1000);
-          return date.toISOString().split('T')[0];  // YYYY-MM-DD format
-        });
+        // Format dates for labels
+        const labels = timestamps.map(timestamp => 
+          new Date(timestamp * 1000).toLocaleDateString('en-US', { 
+            weekday: 'short'  // Show as Mon, Tue, etc.
+          })
+        );
 
         // Create datasets for each miner
         const datasets = results.map((result, index) => {
