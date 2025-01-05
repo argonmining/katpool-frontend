@@ -52,10 +52,10 @@ export default function AnalyticsCard03() {
           throw new Error('No data available');
         }
 
-        // Get all unique timestamps across all miners
+        // Get all unique timestamps across all miners and sort them chronologically
         const timestamps = Array.from(new Set(
           results.flatMap(result => result.values.map(([timestamp]) => timestamp))
-        )).sort();
+        )).sort((a, b) => a - b);  // Ensure chronological order
 
         // Format dates as YYYY-MM-DD for the chart
         const labels = timestamps.map(timestamp => {
@@ -79,6 +79,9 @@ export default function AnalyticsCard03() {
             borderRadius: 4,
           };
         });
+
+        console.log('Timestamps:', timestamps.map(t => new Date(t * 1000).toISOString()));
+        console.log('Values:', results[0]?.values);
 
         setChartData({
           labels,

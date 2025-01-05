@@ -196,8 +196,8 @@ export default function AnalyticsCard11() {
               {/* Table body */}
               <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
                 {workers.map((worker) => {
-                  const isOnline = (Date.now() / 1000 - worker.lastShareTimestamp < 300) && 
-                                 (Date.now() / 1000 - worker.lastShareTimestamp < 12 * 60 * 60);
+                  const secondsSinceLastShare = Date.now() / 1000 - worker.lastShareTimestamp;
+                  const isOnline = secondsSinceLastShare < 300; // 5 minutes
                   
                   const rejectedShares = worker.invalidShares + worker.duplicatedShares + worker.jobsNotFound;
                   const acceptedShares = worker.totalShares - rejectedShares;
@@ -206,15 +206,7 @@ export default function AnalyticsCard11() {
                     <tr key={worker.minerId}>
                       <td className="p-2 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className={`shrink-0 rounded-full mr-2 sm:mr-3 ${isOnline ? 'bg-green-500' : 'bg-red-500'} w-9 h-9 overflow-hidden`}>
-                            <Image
-                              src="/images/iceriver.png"
-                              alt="Iceriver"
-                              width={36}
-                              height={36}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
+                          <div className={`shrink-0 rounded-full mr-2 sm:mr-3 ${isOnline ? 'bg-green-500' : 'bg-red-500'} w-2 h-2`}></div>
                           <div className="font-medium text-gray-800 dark:text-gray-100">{worker.minerId}</div>
                         </div>
                       </td>
