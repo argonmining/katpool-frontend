@@ -62,13 +62,6 @@ export default function AnalyticsCard01() {
         throw new Error(response?.error || 'Failed to fetch data');
       }
 
-      // Log the exact path we're trying to access
-      console.log('Response status:', response.status);
-      console.log('Response data:', response.data);
-      console.log('Response result:', response.data?.result);
-      console.log('First result item:', response.data?.result?.[0]);
-      console.log('Values array:', response.data?.result?.[0]?.values);
-
       // Check each level of the response structure
       if (!response.status || response.status !== 'success') {
         throw new Error('Invalid response status');

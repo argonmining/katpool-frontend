@@ -114,14 +114,20 @@ export default function AnalyticsCard03() {
         // Format dates for display
         const labels = sortedDays.map(day => {
           const date = new Date(day);
-          return date.toLocaleDateString('en-US', { 
-            weekday: 'short',
-            day: 'numeric'
-          });
+          // Ensure we're in local timezone and format as "Mon 5"
+          return new Date(date.getTime() + date.getTimezoneOffset() * 60000)
+            .toLocaleDateString('en-US', { 
+              weekday: 'short',
+              day: 'numeric',
+            })
+            .replace(',', ''); // Remove comma from date format
         });
 
-        console.log('Final labels:', labels);
-        console.log('Final datasets:', datasets);
+        console.log('Daily groups:', dailyGroups);
+        console.log('Calculated differences:', datasets.map(ds => ({
+          miner: ds.label,
+          values: ds.data
+        })));
 
         setChartData({
           labels,
