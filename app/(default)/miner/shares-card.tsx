@@ -52,38 +52,24 @@ export default function AnalyticsCard03() {
           throw new Error('No data available');
         }
 
-        // Create an array of the last 7 days (including today)
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const days = Array.from({length: 7}, (_, i) => {
-          const date = new Date(today);
-          date.setDate(date.getDate() - (6 - i));  // Start 6 days ago, end with today
-          return Math.floor(date.getTime() / 1000);
-        }).reverse();  // Reverse to get oldest first
+        // Get all unique timestamps across all miners
+        const timestamps = Array.from(new Set(
+          results.flatMap(result => result.values.map(([timestamp]) => timestamp))
+        )).sort();
 
-        // Format dates for labels
-        const labels = days.map(timestamp => 
-          new Date(timestamp * 1000).toISOString().split('T')[0]  // Use ISO date format
-        );
+        // Format dates as ISO strings for the chart
+        const labels = timestamps.map(timestamp => {
+          const date = new Date(timestamp * 1000);
+          return date.toISOString().split('T')[0];  // YYYY-MM-DD format
+        });
 
         // Create datasets for each miner
         const datasets = results.map((result, index) => {
           const colorIndex = index % COLORS.length;
           return {
             label: result.metric.miner_id,
-            data: days.map(targetTimestamp => {
-              // Convert target timestamp to date string for comparison
-              const targetDate = new Date(targetTimestamp * 1000);
-              targetDate.setHours(0, 0, 0, 0);
-              const targetDateStr = targetDate.toISOString().split('T')[0];
-              
-              // Find matching data point
-              const dataPoint = result.values.find(([timestamp, _]) => {
-                const dataDate = new Date(timestamp * 1000);
-                dataDate.setHours(0, 0, 0, 0);
-                return dataDate.toISOString().split('T')[0] === targetDateStr;
-              });
-              
+            data: timestamps.map(timestamp => {
+              const dataPoint = result.values.find(([t]) => t === timestamp);
               return dataPoint ? Number(dataPoint[1]) : 0;
             }),
             backgroundColor: COLORS[colorIndex].bg,
