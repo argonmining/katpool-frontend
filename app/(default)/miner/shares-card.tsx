@@ -52,38 +52,45 @@ export default function AnalyticsCard03() {
           throw new Error('No data available');
         }
 
-        // Group values by day and get the highest value for each day
-        const dailyGroups = results.reduce((acc, result) => {
+        // Group values by day and get the highest value for each day per miner
+        const minerDailyGroups = results.reduce((acc, result) => {
+          const minerId = result.metric.miner_id;
+          if (!acc[minerId]) acc[minerId] = {};
+
           result.values.forEach(([timestamp, value]) => {
             const date = new Date(timestamp * 1000);
             const dayKey = date.toISOString().split('T')[0];
             const numValue = Number(value);
             
-            // Keep track of the highest value for each day
-            if (!acc[dayKey] || numValue > acc[dayKey].value) {
-              acc[dayKey] = { 
+            // Keep track of the highest value for each day for this miner
+            if (!acc[minerId][dayKey] || numValue > acc[minerId][dayKey].value) {
+              acc[minerId][dayKey] = { 
                 value: numValue,
                 timestamp: timestamp 
               };
             }
           });
           return acc;
-        }, {} as Record<string, { value: number; timestamp: number }>);
+        }, {} as Record<string, Record<string, { value: number; timestamp: number }>>);
 
-        // Sort days chronologically
-        const sortedDays = Object.keys(dailyGroups)
-          .sort((a, b) => a.localeCompare(b));
+        // Get all unique days and sort them
+        const allDays = new Set<string>();
+        Object.values(minerDailyGroups).forEach(minerData => {
+          Object.keys(minerData).forEach(day => allDays.add(day));
+        });
+        const sortedDays = Array.from(allDays).sort();
 
         // Create one dataset per miner
         const datasets = results.map((result, index) => {
           const colorIndex = index % COLORS.length;
           const minerId = result.metric.miner_id;
+          const minerData = minerDailyGroups[minerId];
           
-          // Calculate daily differences
+          // Calculate daily differences for this miner
           const data = sortedDays.map((day, i) => {
             if (i === 0) return 0;  // First day is baseline
-            const todayValue = dailyGroups[day].value;
-            const previousValue = dailyGroups[sortedDays[i - 1]].value;
+            const todayValue = minerData[day]?.value || 0;
+            const previousValue = minerData[sortedDays[i - 1]]?.value || 0;
             return todayValue - previousValue;
           });
 
@@ -107,8 +114,8 @@ export default function AnalyticsCard03() {
           });
         });
 
+        console.log('Miner daily groups:', minerDailyGroups);
         console.log('Days:', sortedDays);
-        console.log('Daily values:', dailyGroups);
         console.log('Calculated shares:', datasets.map(ds => ({
           miner: ds.label,
           shares: ds.data
