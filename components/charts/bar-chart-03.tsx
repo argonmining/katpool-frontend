@@ -6,7 +6,7 @@ import { useTheme } from 'next-themes'
 import { chartColors } from '@/components/charts/chartjs-config'
 import '@/components/charts/chartjs-config'
 import {
-  Chart, BarController, BarElement, LinearScale, TimeScale, Tooltip, Legend,
+  Chart, BarController, BarElement, LinearScale, TimeScale, Tooltip, Legend, CategoryScale
 } from 'chart.js'
 import type { ChartData } from 'chart.js'
 import 'chartjs-adapter-moment'
@@ -14,7 +14,7 @@ import 'chartjs-adapter-moment'
 // Import utilities
 import { tailwindConfig, formatThousands } from '@/components/utils/utils'
 
-Chart.register(BarController, BarElement, LinearScale, TimeScale, Tooltip, Legend)
+Chart.register(BarController, BarElement, LinearScale, TimeScale, CategoryScale,Tooltip, Legend)
 
 interface BarChart03Props {
   data: ChartData
