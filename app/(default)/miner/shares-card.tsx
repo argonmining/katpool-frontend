@@ -57,12 +57,24 @@ export default function AnalyticsCard03() {
           results.flatMap(result => result.values.map(([timestamp]) => timestamp))
         )).sort((a, b) => a - b);  // Ensure chronological order
 
-        // Format dates for labels - only show weekday names
-        const labels = timestamps.map(timestamp => 
-          new Date(timestamp * 1000).toLocaleDateString('en-US', { 
-            weekday: 'short'  // Show as Mon, Tue, etc.
-          })
-        );
+        // Get the most recent timestamp to use as reference
+        const mostRecent = Math.max(...timestamps);
+        
+        // Format dates for labels
+        const labels = timestamps.map(timestamp => {
+          const date = new Date(timestamp * 1000);
+          const reference = new Date(mostRecent * 1000);
+          
+          // Adjust reference date to start of day
+          reference.setHours(0, 0, 0, 0);
+          date.setHours(0, 0, 0, 0);
+          
+          // Calculate days difference from most recent date
+          const diffTime = date.getTime() - reference.getTime();
+          const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+          
+          return date.toLocaleDateString('en-US', { weekday: 'short' });
+        });
 
         // Create datasets for each miner
         const datasets = results.map((result, index) => {
