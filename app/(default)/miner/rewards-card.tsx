@@ -28,11 +28,21 @@ export default function AnalyticsCard02() {
           throw new Error(response?.error || 'Failed to fetch data');
         }
 
-        setPendingBalance(response.data.amount);
+        if (response.status !== 'success' || !response.data?.amount) {
+          setPendingBalance('--');
+          return;
+        }
+
+        const amount = Number(response.data.amount);
+        if (!Number.isFinite(amount)) {
+          throw new Error('Invalid amount received');
+        }
+        setPendingBalance(amount.toFixed(2));
         setError(null);
       } catch (error) {
         console.error('Error fetching pending balance:', error);
         setError(error instanceof Error ? error.message : 'Failed to load data');
+        setPendingBalance('ERR');
       } finally {
         setIsLoading(false);
       }
