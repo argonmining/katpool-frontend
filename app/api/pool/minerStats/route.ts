@@ -39,16 +39,20 @@ export async function GET() {
     const walletFilter = missingMiners.map(w => `wallet_address="${w}"`).join('|');
     
     // First query: Get all metrics for missing miners
-    url.searchParams.append('query', `{wallet_address=~"${walletFilter}"}`);
+    const query = `{wallet_address=~"${walletFilter}"}`;
+    url.searchParams.append('query', query);
     url.searchParams.append('start', start.toString());
     url.searchParams.append('end', end.toString());
     url.searchParams.append('step', step.toString());
+
+    console.log('Debug - Query:', query);
 
     const missingMinersResponse = await fetch(url, {
       next: { revalidate: 10 }
     });
 
     if (!missingMinersResponse.ok) {
+      console.error('Missing miners query failed:', await missingMinersResponse.text());
       throw new Error(`HTTP error! status: ${missingMinersResponse.status}`);
     }
 
@@ -61,6 +65,7 @@ export async function GET() {
     });
 
     if (!sharesResponse.ok) {
+      console.error('Shares query failed:', await sharesResponse.text());
       throw new Error(`HTTP error! status: ${sharesResponse.status}`);
     }
 
