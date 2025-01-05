@@ -15,9 +15,9 @@ export async function GET(request: Request) {
       );
     }
 
-    // Calculate timestamps for last hour with 1-minute precision
+    // Calculate timestamps for last 12 hours with 1-minute precision
     const end = Math.floor(Date.now() / 1000);
-    const start = end - (60 * 60); // 1 hour ago
+    const start = end - (12 * 60 * 60); // 12 hours ago
     const step = 60; // 1 minute in seconds
 
     const url = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
@@ -48,13 +48,32 @@ export async function GET(request: Request) {
     if (data.status === 'success' && data.data?.result) {
       const results = data.data.result;
       const processedResults = results.map((result: any) => {
-        // Filter out zero values and get the last non-zero share time
-        const nonZeroValues = result.values.filter(([_, value]: [number, string]) => value !== '0');
-        const lastShareValue = nonZeroValues.length > 0 ? nonZeroValues[nonZeroValues.length - 1] : result.values[result.values.length - 1];
-        
+        const values = result.values;
+        let lastShareTimestamp = null;
+        let lastShareValue = '0';
+
+        // Go through values from newest to oldest
+        for (let i = values.length - 1; i > 0; i--) {
+          const currentValue = Number(values[i][1]);
+          const previousValue = Number(values[i - 1][1]);
+          
+          // If we find a point where the value increased, this is our last share
+          if (currentValue > previousValue) {
+            lastShareTimestamp = values[i][0];
+            lastShareValue = values[i][1];
+            break;
+          }
+        }
+
+        // If we didn't find any increases in the last 12 hours
+        if (lastShareTimestamp === null) {
+          lastShareTimestamp = end - (12 * 60 * 60); // 12 hours ago
+          lastShareValue = values[values.length - 1][1]; // Use the latest value for total shares
+        }
+
         return {
           ...result,
-          values: [lastShareValue] // Only keep the last share value
+          values: [[lastShareTimestamp, lastShareValue]]
         };
       });
 

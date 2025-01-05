@@ -60,6 +60,10 @@ export default function AnalyticsCard11() {
     const now = Math.floor(Date.now() / 1000);
     const diff = now - timestamp;
 
+    if (diff >= 12 * 60 * 60) {
+      return '12+ hours ago';
+    }
+
     if (diff < 60) return `${diff}s ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
@@ -122,12 +126,11 @@ export default function AnalyticsCard11() {
               {/* Table body */}
               <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
                 {workers.map((worker) => {
-                  // Get the most recent non-zero share timestamp
                   const lastShareTimestamp = worker.values[0][0];
                   const lastShareValue = worker.values[0][1];
                   
-                  // Consider a worker online only if they've submitted shares in the last 5 minutes
-                  const isOnline = lastShareValue !== '0' && (Date.now() / 1000 - lastShareTimestamp < 300);
+                  const isOnline = (Date.now() / 1000 - lastShareTimestamp < 300) && 
+                                  (Date.now() / 1000 - lastShareTimestamp < 12 * 60 * 60);
 
                   return (
                     <tr key={worker.metric.miner_id}>
@@ -162,7 +165,7 @@ export default function AnalyticsCard11() {
                       </td>
                       <td className="p-2 whitespace-nowrap">
                         <div className="text-center">
-                          {lastShareValue === '0' ? '--' : formatTimeAgo(lastShareTimestamp)}
+                          {formatTimeAgo(lastShareTimestamp)}
                         </div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
