@@ -36,7 +36,7 @@ export default function AnalyticsCard03() {
 
       try {
         setIsLoading(true);
-        const response = await $fetch(`/api/miner/shares?wallet=${walletAddress}`, {
+        const response = await $fetch(`/api/miner/sharesHistory?wallet=${walletAddress}`, {
           retry: 3,
           retryDelay: 1000,
           timeout: 10000,
