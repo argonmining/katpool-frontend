@@ -103,8 +103,12 @@ export default function AnalyticsCard03() {
           
           // Calculate daily differences for this miner
           const data = sortedDays.map((day, i) => {
-            if (i === 0) return 0;  // First day is baseline
             const todayValue = minerData[day]?.value || 0;
+            if (i === 0) {
+              // For the first day (Jan 3rd), use the actual value since we don't have previous day
+              console.log(`${minerId} value for first day ${day}: ${todayValue}`);
+              return todayValue;
+            }
             const previousValue = minerData[sortedDays[i - 1]]?.value || 0;
             const diff = todayValue - previousValue;
             console.log(`${minerId} difference for ${day}: ${diff} (${todayValue} - ${previousValue})`);
@@ -127,13 +131,18 @@ export default function AnalyticsCard03() {
           const date = new Date(day);
           const dayOfMonth = date.getDate();
           const suffix = dayOfMonth === 1 ? 'st' : dayOfMonth === 2 ? 'nd' : dayOfMonth === 3 ? 'rd' : 'th';
+          const isToday = new Date(day).toDateString() === new Date().toDateString();
           
-          return date.toLocaleDateString('en-US', { 
+          const formatted = date.toLocaleDateString('en-US', { 
             weekday: 'short',
             month: 'short',
             day: 'numeric'
           }).replace(',', '') + suffix;
+
+          return isToday ? `${formatted} (Today)` : formatted;
         });
+
+        console.log('Final formatted labels:', labels);
 
         console.log('Miner daily groups:', minerDailyGroups);
         console.log('Days:', sortedDays);
