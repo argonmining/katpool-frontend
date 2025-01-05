@@ -71,7 +71,7 @@ export default function BarChart03({
             stacked: true,
             type: 'time',
             time: {
-              parser: 'ddd',
+              parser: 'yyyy-MM-dd',
               unit: 'day',
               displayFormats: {
                 day: 'ddd',
@@ -88,6 +88,7 @@ export default function BarChart03({
               maxRotation: 0,
               color: darkMode ? textColor.dark : textColor.light,
             },
+            reverse: false,
           },
         },
         plugins: {

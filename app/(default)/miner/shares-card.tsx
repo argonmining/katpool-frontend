@@ -57,15 +57,13 @@ export default function AnalyticsCard03() {
         today.setHours(0, 0, 0, 0);
         const days = Array.from({length: 7}, (_, i) => {
           const date = new Date(today);
-          date.setDate(date.getDate() - (6 - i));  // Start 6 days ago
+          date.setDate(date.getDate() - (6 - i));  // Start 6 days ago, end with today
           return Math.floor(date.getTime() / 1000);
-        });
+        }).reverse();  // Reverse to get oldest first
 
         // Format dates for labels
         const labels = days.map(timestamp => 
-          new Date(timestamp * 1000).toLocaleDateString('en-US', { 
-            weekday: 'short'
-          })
+          new Date(timestamp * 1000).toISOString().split('T')[0]  // Use ISO date format
         );
 
         // Create datasets for each miner
@@ -74,19 +72,17 @@ export default function AnalyticsCard03() {
           return {
             label: result.metric.miner_id,
             data: days.map(targetTimestamp => {
-              // Find the closest data point by comparing timestamps
-              let closestPoint = null;
-              let minTimeDiff = Infinity;
+              // Only match data points that fall within the same day
+              const targetDate = new Date(targetTimestamp * 1000);
+              const targetDayStart = new Date(targetDate.setHours(0, 0, 0, 0)).getTime() / 1000;
+              const targetDayEnd = new Date(targetDate.setHours(23, 59, 59, 999)).getTime() / 1000;
               
-              for (const [timestamp, value] of result.values) {
-                const timeDiff = Math.abs(timestamp - targetTimestamp);
-                if (timeDiff < minTimeDiff) {
-                  minTimeDiff = timeDiff;
-                  closestPoint = [timestamp, value];
-                }
-              }
+              // Find data point within this day
+              const dataPoint = result.values.find(([timestamp, _]) => 
+                timestamp >= targetDayStart && timestamp <= targetDayEnd
+              );
               
-              return closestPoint ? Number(closestPoint[1]) : 0;
+              return dataPoint ? Number(dataPoint[1]) : 0;
             }),
             backgroundColor: COLORS[colorIndex].bg,
             hoverBackgroundColor: COLORS[colorIndex].hover,
