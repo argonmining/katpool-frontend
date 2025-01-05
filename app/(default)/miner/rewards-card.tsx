@@ -28,12 +28,12 @@ export default function AnalyticsCard02() {
           throw new Error(response?.error || 'Failed to fetch data');
         }
 
-        if (response.status !== 'success' || response.data?.amount === undefined || response.data?.amount === null) {
+        if (response.status !== 'success' || !response.data?.result?.[0]?.value?.[1]) {
           setPendingBalance('--');
           return;
         }
 
-        const amount = Number(response.data.amount);
+        const amount = Number(response.data.result[0].value[1]);
         if (!Number.isFinite(amount)) {
           throw new Error('Invalid amount received');
         }
