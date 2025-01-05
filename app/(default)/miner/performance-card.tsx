@@ -26,9 +26,22 @@ export default function AnalyticsCard01() {
 
   const calculateTimeRangeAverage = (values: HashRateData[], hoursAgo: number): number => {
     const cutoffTime = Date.now() / 1000 - (hoursAgo * 3600);
+    
+    // Get all values within the time range
     const relevantValues = values.filter(v => v.timestamp >= cutoffTime);
     if (relevantValues.length === 0) return 0;
-    return relevantValues.reduce((sum, v) => sum + v.value, 0) / relevantValues.length;
+
+    // Sort values by timestamp
+    relevantValues.sort((a, b) => a.timestamp - b.timestamp);
+    
+    // Calculate the expected number of data points (30-minute intervals)
+    const expectedPoints = hoursAgo * 2; // 2 points per hour for 30-minute intervals
+    
+    // Calculate total hashrate
+    const totalHashrate = relevantValues.reduce((sum, v) => sum + v.value, 0);
+    
+    // Return average based on expected points, not just available points
+    return totalHashrate / expectedPoints;
   };
 
   const fetchData = async () => {
@@ -164,6 +177,7 @@ export default function AnalyticsCard01() {
         time: {
           parser: 'X',
           unit: 'hour',
+          stepSize: 0.5, // 30-minute steps
           displayFormats: {
             hour: 'MMM D, HH:mm'
           }
