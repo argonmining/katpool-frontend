@@ -71,14 +71,19 @@ export default function TopMinersCard() {
             activeWorkers: 0
           };
 
-          // Debug logging
-          console.log(`Processing miner ${miner.wallet}:`, {
-            hasHashrate: !!miner.hashrate,
-            hasStats: !!statsResponse.data[miner.wallet],
-            shares: stats.totalShares,
-            workers: stats.activeWorkers,
-            firstSeen: stats.firstSeen
-          });
+          // Only log miners with missing stats
+          if (!statsResponse.data[miner.wallet]) {
+            console.log(`Missing stats for miner ${miner.wallet}:`, {
+              hasHashrate: true,
+              hashrateValue: miner.hashrate,
+              availableMetrics: statsResponse.debug.missingMinersQuery.data?.result
+                ?.filter((r: any) => r.metric.wallet_address === miner.wallet)
+                ?.map((r: any) => ({
+                  name: r.metric.__name__,
+                  values: r.values
+                })) || []
+            });
+          }
 
           return {
             rank: miner.rank,
