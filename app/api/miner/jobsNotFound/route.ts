@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     const url = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
     
     // Construct and encode the full query parameter
-    const queryString = `jobs_not_found_1min_count{wallet_address="${wallet}"}`;
+    const queryString = `jobs_not_found_1min_count{pool_address="${wallet}"}`;
     url.searchParams.append('query', queryString);
     url.searchParams.append('start', start.toString());
     url.searchParams.append('end', end.toString());
