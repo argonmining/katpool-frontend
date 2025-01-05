@@ -28,57 +28,29 @@ export async function GET() {
     const step = 24 * 60 * 60; // 24 hours in seconds
 
     const url = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
-    
-    // Query for any metrics for our missing miners
-    const missingMiners = [
-      'kaspa:qq2vgv5saazwlh4vvu3uyu63nt5e92n364vy4rkmr9k77cdp60wlugxhuajc4',
-      'kaspa:qypdvs3ra2ck5wlexr7w750g2m4ahm8vkgx7825c52h02qk5ycrweggrjp0qqv6',
-      'kaspa:qzswpkg48s0yuzjwrrf0nlkxad2lyatau0cap0kn27ghde3pjr2cskdhf2032',
-      'kaspa:qyp6zh2psruxn7370ey0r79cjtcsv9dz8ksascze3zp7eeqgr86zcacufm4jp75'
-    ];
-    const walletFilter = missingMiners.map(w => `wallet_address="${w}"`).join('|');
-    
-    // First query: Get all metrics for missing miners
-    const query = `{wallet_address=~"${walletFilter}"}`;
-    url.searchParams.append('query', query);
+    url.searchParams.append('query', 'added_miner_shares_1min_count');
     url.searchParams.append('start', start.toString());
     url.searchParams.append('end', end.toString());
     url.searchParams.append('step', step.toString());
 
-    console.log('Debug - Query:', query);
-
-    const missingMinersResponse = await fetch(url, {
+    const response = await fetch(url, {
       next: { revalidate: 10 }
     });
 
-    if (!missingMinersResponse.ok) {
-      console.error('Missing miners query failed:', await missingMinersResponse.text());
-      throw new Error(`HTTP error! status: ${missingMinersResponse.status}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const missingMinersData = await missingMinersResponse.json();
-
-    // Second query: Get shares data for all miners
-    url.searchParams.set('query', 'added_miner_shares_1min_count');
-    const sharesResponse = await fetch(url, {
-      next: { revalidate: 10 }
-    });
-
-    if (!sharesResponse.ok) {
-      console.error('Shares query failed:', await sharesResponse.text());
-      throw new Error(`HTTP error! status: ${sharesResponse.status}`);
-    }
-
-    const data = await sharesResponse.json();
+    const data = await response.json();
 
     if (data.status === 'success' && data.data?.result) {
       const stats: ProcessedStats = {};
 
-      // Process shares data
+      // First pass: Initialize data structures and collect miner IDs
       data.data.result.forEach((result: MinerData) => {
         const wallet = result.metric.wallet_address;
         const minerId = result.metric.miner_id;
-
+        
         if (!stats[wallet]) {
           stats[wallet] = {
             totalShares: 0,
@@ -88,21 +60,25 @@ export async function GET() {
           };
         }
 
+        // Get the last values entry for total shares (cumulative total)
         if (result.values.length > 0) {
           const lastValue = Number(result.values[result.values.length - 1][1]);
           stats[wallet].totalShares += lastValue;
 
+          // If the miner has any shares, count them as active
           if (lastValue > 0) {
             stats[wallet].minerIds.add(minerId);
           }
         }
 
+        // Get the first values entry for first seen (oldest timestamp)
         if (result.values.length > 0) {
           const firstTimestamp = result.values[0][0];
           stats[wallet].firstSeen = Math.min(stats[wallet].firstSeen, firstTimestamp);
         }
       });
 
+      // Second pass: Calculate active workers and clean up
       const processedStats = Object.entries(stats).reduce((acc, [wallet, stat]) => {
         acc[wallet] = {
           totalShares: stat.totalShares,
@@ -114,10 +90,7 @@ export async function GET() {
 
       return NextResponse.json({
         status: 'success',
-        data: processedStats,
-        debug: {
-          missingMinersQuery: missingMinersData
-        }
+        data: processedStats
       });
     }
 

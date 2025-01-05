@@ -59,10 +59,6 @@ export default function TopMinersCard() {
           throw new Error(statsResponse?.error || 'Failed to fetch stats data');
         }
 
-        // Log debug information
-        console.log('Hashrate API Debug Info:', hashrateResponse.debug);
-        console.log('Stats API Debug Info:', statsResponse.debug);
-
         // Map API data to our Miner interface
         const mappedMiners = hashrateResponse.data.map((miner: any) => {
           const stats = statsResponse.data[miner.wallet] as MinerStats || {
@@ -70,20 +66,6 @@ export default function TopMinersCard() {
             firstSeen: 0,
             activeWorkers: 0
           };
-
-          // Only log miners with missing stats
-          if (!statsResponse.data[miner.wallet]) {
-            console.log(`Missing stats for miner ${miner.wallet}:`, {
-              hasHashrate: true,
-              hashrateValue: miner.hashrate,
-              availableMetrics: statsResponse.debug.missingMinersQuery.data?.result
-                ?.filter((r: any) => r.metric.wallet_address === miner.wallet)
-                ?.map((r: any) => ({
-                  name: r.metric.__name__,
-                  values: r.values
-                })) || []
-            });
-          }
 
           return {
             rank: miner.rank,

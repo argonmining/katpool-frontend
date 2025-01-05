@@ -54,16 +54,10 @@ export async function GET() {
     const data = await response.json();
 
     if (data.status === 'success' && data.data?.result) {
-      const debugInfo = {
-        resultCount: data.data.result.length,
-        timeRange: { start, end, step },
-        walletAddresses: data.data.result.map((r: MinerData) => r.metric.wallet_address)
-      };
-
       // Create a map of wallet addresses to their hashrate values
       const walletHashrates: Map<string, HashrateMap> = new Map();
       
-      // Generate all expected timestamps (48 points for 24 hours)
+      // Generate all expected timestamps (48 points)
       const expectedTimestamps: number[] = [];
       for (let t = start; t <= end; t += step) {
         expectedTimestamps.push(t);
@@ -85,11 +79,10 @@ export async function GET() {
         walletHashrates.set(wallet, hashrates);
       });
 
-      // Calculate averages using all 48 points (24 hours with 30-minute intervals)
+      // Calculate averages using all 48 points
       const miners: ProcessedMiner[] = Array.from(walletHashrates.entries())
         .map(([wallet, hashrates]) => {
           let total = 0;
-          let expectedPoints = expectedTimestamps.length; // Should be 48 points
           
           // Sum up values for all expected timestamps (using 0 for missing points)
           expectedTimestamps.forEach(timestamp => {
@@ -98,7 +91,7 @@ export async function GET() {
           
           return {
             wallet,
-            hashrate: total / expectedPoints // Always divide by expected points (48)
+            hashrate: total / expectedTimestamps.length
           };
         })
         .filter(miner => miner.hashrate > 0); // Filter out completely inactive miners
@@ -123,8 +116,7 @@ export async function GET() {
 
       return NextResponse.json({
         status: 'success',
-        data: rankedMiners,
-        debug: debugInfo
+        data: rankedMiners
       });
     }
 
