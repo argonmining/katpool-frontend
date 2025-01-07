@@ -139,7 +139,7 @@ export default function PoolPayouts() {
         <div className="px-5 py-4">
           <div className="flex justify-end">
             <Link 
-              href="/payouts"
+              href="/poolPayouts"
               className="text-sm font-medium text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
             >
               Pool Payout History →
