@@ -149,10 +149,10 @@ export default function AnalyticsCard02() {
                   <div className="font-semibold text-left">Recent Payouts</div>
                 </th>
                 <th className="py-2">
-                  <div className="font-semibold text-right">Amount</div>
+                  <div className="font-semibold text-right">Reward</div>
                 </th>
                 <th className="py-2">
-                  <div className="font-semibold text-right">NACHO</div>
+                  <div className="font-semibold text-right">Rebate</div>
                 </th>
               </tr>
             </thead>
