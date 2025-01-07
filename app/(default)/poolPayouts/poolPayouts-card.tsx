@@ -13,9 +13,15 @@ interface Payout {
   transactionHash: string
 }
 
+interface AggregatedPayout {
+  amount: number
+  timestamp: number
+  transactionHash: string
+}
+
 export default function PoolPayoutsCard() {
   const [isLoading, setIsLoading] = useState(true)
-  const [payouts, setPayouts] = useState<Payout[]>([])
+  const [payouts, setPayouts] = useState<AggregatedPayout[]>([])
   const [sortKey, setSortKey] = useState<SortKey>('timestamp')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
@@ -25,7 +31,21 @@ export default function PoolPayoutsCard() {
         setIsLoading(true)
         const response = await $fetch('/api/pool/payouts')
         if (response.status === 'success') {
-          setPayouts(response.data)
+          // Aggregate payouts by transaction hash
+          const aggregated = Object.values(
+            response.data.reduce((acc: Record<string, AggregatedPayout>, payout: Payout) => {
+              if (!acc[payout.transactionHash]) {
+                acc[payout.transactionHash] = {
+                  amount: 0,
+                  timestamp: payout.timestamp,
+                  transactionHash: payout.transactionHash
+                }
+              }
+              acc[payout.transactionHash].amount += payout.amount
+              return acc
+            }, {})
+          ) as AggregatedPayout[]
+          setPayouts(aggregated)
         }
       } catch (error) {
         console.error('Error fetching payouts:', error)
@@ -35,9 +55,6 @@ export default function PoolPayoutsCard() {
     }
 
     fetchPayouts()
-    // Refresh every minute
-    const interval = setInterval(fetchPayouts, 60000)
-    return () => clearInterval(interval)
   }, [])
 
   const handleSort = (key: SortKey) => {

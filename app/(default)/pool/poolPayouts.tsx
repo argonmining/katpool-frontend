@@ -12,8 +12,14 @@ interface Payout {
   transactionHash: string
 }
 
+interface AggregatedPayout {
+  amount: number
+  timestamp: number
+  transactionHash: string
+}
+
 export default function PoolPayouts() {
-  const [payouts, setPayouts] = useState<Payout[]>([])
+  const [payouts, setPayouts] = useState<AggregatedPayout[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -21,7 +27,21 @@ export default function PoolPayouts() {
       try {
         const response = await $fetch('/api/pool/payouts')
         if (response.status === 'success') {
-          setPayouts(response.data)
+          // Aggregate payouts by transaction hash
+          const aggregated = Object.values(
+            response.data.reduce((acc: Record<string, AggregatedPayout>, payout: Payout) => {
+              if (!acc[payout.transactionHash]) {
+                acc[payout.transactionHash] = {
+                  amount: 0,
+                  timestamp: payout.timestamp,
+                  transactionHash: payout.transactionHash
+                }
+              }
+              acc[payout.transactionHash].amount += payout.amount
+              return acc
+            }, {})
+          ) as AggregatedPayout[]
+          setPayouts(aggregated)
         }
       } catch (error) {
         console.error('Error fetching pool payouts:', error)
@@ -31,9 +51,6 @@ export default function PoolPayouts() {
     }
 
     fetchPayouts()
-    // Refresh every minute
-    const interval = setInterval(fetchPayouts, 60000)
-    return () => clearInterval(interval)
   }, [])
 
   const formatAmount = (amount: number) => {
@@ -60,7 +77,7 @@ export default function PoolPayouts() {
   }
 
   // Group payouts by day
-  const groupedPayouts = payouts.reduce((groups: Record<string, Payout[]>, payout) => {
+  const groupedPayouts = payouts.reduce((groups: Record<string, AggregatedPayout[]>, payout) => {
     const date = new Date(payout.timestamp)
     const day = date.toLocaleDateString('en-US', { weekday: 'long' })
     if (!groups[day]) {
