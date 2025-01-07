@@ -48,7 +48,7 @@ export default function DropdownAnnouncements({ align }: {
                       🎉 <span className="font-medium text-gray-800 dark:text-gray-100">Kat Pool Open Beta is Live!</span> We're excited to announce 
                       that Kat Pool is now in Open Beta. During this testing phase, all pool fees are set to zero. Thank you for helping us test and improve our platform.
                     </span>
-                    <span className="block text-xs font-medium text-gray-400 dark:text-gray-500">Jan 6, 2025</span>
+                    <span className="block text-xs font-medium text-gray-400 dark:text-gray-500">Jan 13, 2025</span>
                   </div>
                 )}
               </MenuItem>
