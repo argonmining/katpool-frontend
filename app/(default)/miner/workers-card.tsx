@@ -15,6 +15,16 @@ interface SharesData {
   values: [number, string][];
 }
 
+interface WorkerHashrateData {
+  metric: {
+    __name__: string;
+    wallet_address: string;
+    wokername: string;
+    [key: string]: string;
+  };
+  values: [number, string][];
+}
+
 interface WorkerData {
   minerId: string;
   totalShares: number;
@@ -22,6 +32,12 @@ interface WorkerData {
   duplicatedShares: number;
   jobsNotFound: number;
   lastShareTimestamp: number;
+  hashrates: {
+    fifteenMin: number;
+    oneHour: number;
+    twelveHour: number;
+    twentyFourHour: number;
+  };
 }
 
 export default function AnalyticsCard11() {
@@ -39,7 +55,7 @@ export default function AnalyticsCard11() {
         setIsLoading(true);
         
         // Fetch data from all endpoints
-        const [totalSharesRes, invalidSharesRes, duplicatedSharesRes, jobsNotFoundRes] = await Promise.all([
+        const [totalSharesRes, invalidSharesRes, duplicatedSharesRes, jobsNotFoundRes, hashrateRes] = await Promise.all([
           $fetch(`/api/miner/shares?wallet=${walletAddress}`, {
             retry: 3,
             retryDelay: 1000,
@@ -59,8 +75,63 @@ export default function AnalyticsCard11() {
             retry: 3,
             retryDelay: 1000,
             timeout: 10000,
+          }),
+          $fetch(`/api/miner/workerHashrate?wallet=${walletAddress}`, {
+            retry: 3,
+            retryDelay: 1000,
+            timeout: 10000,
           })
         ]);
+
+        // Process hashrate data
+        const hashrateMap = new Map<string, { 
+          fifteenMin: number;
+          oneHour: number;
+          twelveHour: number;
+          twentyFourHour: number;
+        }>();
+
+        if (hashrateRes?.status === 'success' && hashrateRes.data?.result) {
+          const now = Math.floor(Date.now() / 1000);
+          
+          hashrateRes.data.result.forEach((result: WorkerHashrateData) => {
+            const minerId = result.metric.wokername;
+            const values = result.values;
+            
+            // Calculate time windows
+            const fifteenMinAgo = now - (15 * 60);
+            const oneHourAgo = now - (60 * 60);
+            const twelveHourAgo = now - (12 * 60 * 60);
+            const twentyFourHourAgo = now - (24 * 60 * 60);
+
+            // Filter values for each time window
+            const fifteenMinValues = values.filter(([timestamp]) => timestamp >= fifteenMinAgo);
+            const oneHourValues = values.filter(([timestamp]) => timestamp >= oneHourAgo);
+            const twelveHourValues = values.filter(([timestamp]) => timestamp >= twelveHourAgo);
+            const twentyFourHourValues = values;
+
+            const average = (vals: [number, string][], requiredPoints: number) => {
+              if (vals.length === 0) return null; // No data at all
+              
+              // If we have some data but not enough points, pad with zeros
+              const paddedVals = [...vals];
+              while (paddedVals.length < requiredPoints) {
+                paddedVals.push([0, "0"]);
+              }
+              
+              const sum = paddedVals.reduce((acc, [_, val]) => acc + Number(val), 0);
+              const avg = sum / requiredPoints;
+              return avg === 0 ? 0 : avg; // Return 0 if actual zero, not null
+            };
+
+            hashrateMap.set(minerId, {
+              fifteenMin: average(fifteenMinValues, 3) ?? 0, // 15 min should have 3 points (5 min intervals)
+              oneHour: average(oneHourValues, 12) ?? 0, // 1 hour should have 12 points
+              twelveHour: average(twelveHourValues, 144) ?? 0, // 12 hours should have 144 points
+              twentyFourHour: average(twentyFourHourValues, 288) ?? 0 // 24 hours should have 288 points
+            });
+          });
+        }
 
         // Process total shares data
         const totalSharesMap = new Map<string, { shares: number; timestamp: number }>();
@@ -104,7 +175,13 @@ export default function AnalyticsCard11() {
           invalidShares: invalidSharesMap.get(minerId) || 0,
           duplicatedShares: duplicatedSharesMap.get(minerId) || 0,
           jobsNotFound: jobsNotFoundMap.get(minerId) || 0,
-          lastShareTimestamp: data.timestamp
+          lastShareTimestamp: data.timestamp,
+          hashrates: hashrateMap.get(minerId) || {
+            fifteenMin: 0,
+            oneHour: 0,
+            twelveHour: 0,
+            twentyFourHour: 0
+          }
         }));
 
         setWorkers(processedWorkers);
@@ -135,6 +212,20 @@ export default function AnalyticsCard11() {
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     return `${Math.floor(diff / 86400)}d ago`;
+  };
+
+  const formatHashrate = (hashrate: number | null) => {
+    if (hashrate === null) return '--';
+    
+    const units = ['H/s', 'KH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s'];
+    let unitIndex = 0;
+    
+    while (hashrate >= 1000 && unitIndex < units.length - 1) {
+      hashrate /= 1000;
+      unitIndex++;
+    }
+    
+    return `${hashrate.toFixed(2)} ${units[unitIndex]}`;
   };
 
   return (
@@ -168,7 +259,7 @@ export default function AnalyticsCard11() {
                     <div className="font-semibold text-left">Worker Name</div>
                   </th>
                   <th className="p-2 whitespace-nowrap w-[11%]">
-                    <div className="font-semibold text-left">15min Hashrate</div>
+                    <div className="font-semibold text-center">15min Hashrate</div>
                   </th>
                   <th className="p-2 whitespace-nowrap w-[11%]">
                     <div className="font-semibold text-center">1h Hashrate</div>
@@ -208,16 +299,16 @@ export default function AnalyticsCard11() {
                         </div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center">--</div>
+                        <div className="text-center">{formatHashrate(worker.hashrates.fifteenMin)}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center">--</div>
+                        <div className="text-center">{formatHashrate(worker.hashrates.oneHour)}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center">--</div>
+                        <div className="text-center">{formatHashrate(worker.hashrates.twelveHour)}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center">--</div>
+                        <div className="text-center">{formatHashrate(worker.hashrates.twentyFourHour)}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
                         <div className="text-center text-green-500">{acceptedShares}</div>
