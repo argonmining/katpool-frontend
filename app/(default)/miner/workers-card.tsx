@@ -217,15 +217,24 @@ export default function AnalyticsCard11() {
   const formatHashrate = (hashrate: number | null) => {
     if (hashrate === null) return '--';
     
-    const units = ['H/s', 'KH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s'];
-    let unitIndex = 0;
+    // Input is in GH/s, we can scale both up and down
+    const units = ['MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s'];
+    let unitIndex = 1; // Start at GH/s (index 1)
+    let value = hashrate;
+
+    // Scale down if less than 1 GH/s
+    if (value < 1) {
+      value *= 1000; // Convert to MH/s
+      unitIndex = 0;
+    }
     
-    while (hashrate >= 1000 && unitIndex < units.length - 1) {
-      hashrate /= 1000;
+    // Scale up if needed
+    while (value >= 1000 && unitIndex < units.length - 1) {
+      value /= 1000;
       unitIndex++;
     }
     
-    return `${hashrate.toFixed(2)} ${units[unitIndex]}`;
+    return `${value.toFixed(2)} ${units[unitIndex]}`;
   };
 
   return (
