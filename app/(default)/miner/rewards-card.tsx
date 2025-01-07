@@ -5,15 +5,24 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { $fetch } from 'ofetch'
 
+interface Payout {
+  walletAddress: string
+  amount: number
+  timestamp: number
+  transactionHash: string
+}
+
 export default function AnalyticsCard02() {
   const searchParams = useSearchParams()
   const walletAddress = searchParams.get('wallet')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pendingBalance, setPendingBalance] = useState<string>('--')
+  const [recentPayouts, setRecentPayouts] = useState<Payout[]>([])
 
+  // Fetch pending balance
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchBalance = async () => {
       if (!walletAddress) return;
 
       try {
@@ -50,11 +59,59 @@ export default function AnalyticsCard02() {
       }
     };
 
-    fetchData();
+    fetchBalance();
     // Refresh every minute
-    const interval = setInterval(fetchData, 60000);
+    const interval = setInterval(fetchBalance, 60000);
     return () => clearInterval(interval);
   }, [walletAddress]);
+
+  // Fetch recent payouts
+  useEffect(() => {
+    const fetchPayouts = async () => {
+      if (!walletAddress) return;
+
+      try {
+        const response = await $fetch('/api/pool/payouts')
+        if (response.status === 'success') {
+          // Filter payouts for this wallet and take the 4 most recent
+          const walletPayouts = response.data
+            .filter((payout: Payout) => payout.walletAddress === walletAddress)
+            .sort((a: Payout, b: Payout) => b.timestamp - a.timestamp)
+            .slice(0, 4);
+          setRecentPayouts(walletPayouts);
+        }
+      } catch (error) {
+        console.error('Error fetching payouts:', error)
+      }
+    };
+
+    fetchPayouts();
+    // Refresh every minute
+    const interval = setInterval(fetchPayouts, 60000);
+    return () => clearInterval(interval);
+  }, [walletAddress]);
+
+  const formatAmount = (amount: number) => {
+    return amount.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
+  }
+
+  const formatTxHash = (hash: string) => {
+    return `${hash.slice(0, 3)}...${hash.slice(-3)}`
+  }
+
+  const formatTimestamp = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffHours < 24) {
+      return `${diffHours}h ago`;
+    }
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
 
   return (
     <div className="relative flex flex-col col-span-full sm:col-span-6 xl:col-span-4 bg-white dark:bg-gray-800 shadow-sm rounded-xl">
@@ -92,63 +149,55 @@ export default function AnalyticsCard02() {
                   <div className="font-semibold text-left">Recent Payouts</div>
                 </th>
                 <th className="py-2">
-                  <div className="font-semibold text-right"></div>
+                  <div className="font-semibold text-right">Amount</div>
                 </th>
                 <th className="py-2">
-                  <div className="font-semibold text-right"></div>
+                  <div className="font-semibold text-right">NACHO</div>
                 </th>
               </tr>
             </thead>
             {/* Table body */}
             <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
-              {/* Row */}
-              <tr>
-                <td className="py-2">
-                  <div className="text-left text-gray-500">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-green-500">--</div>
-                </td>
-              </tr>
-              {/* Row */}
-              <tr>
-                <td className="py-2">
-                  <div className="text-left text-gray-500">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-green-500">--</div>
-                </td>
-              </tr>
-              {/* Row */}
-              <tr>
-                <td className="py-2">
-                  <div className="text-left text-gray-500">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-green-500">--</div>
-                </td>
-              </tr>
-              {/* Row */}
-              <tr>
-                <td className="py-2">
-                  <div className="text-left text-gray-500">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
-                </td>
-                <td className="py-2">
-                  <div className="font-medium text-right text-green-500">--</div>
-                </td>
-              </tr>
+              {recentPayouts.map((payout) => (
+                <tr key={payout.transactionHash}>
+                  <td className="py-2">
+                    <div className="text-left text-gray-500">
+                      {formatTimestamp(payout.timestamp)}
+                      <span className="mx-2">•</span>
+                      <a
+                        href={`https://explorer.kaspa.org/txs/${payout.transactionHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-primary-500 dark:hover:text-primary-400"
+                      >
+                        {formatTxHash(payout.transactionHash)}
+                      </a>
+                    </div>
+                  </td>
+                  <td className="py-2">
+                    <div className="font-medium text-right text-gray-800 dark:text-gray-100">
+                      {formatAmount(payout.amount)} KAS
+                    </div>
+                  </td>
+                  <td className="py-2">
+                    <div className="font-medium text-right text-green-500">--</div>
+                  </td>
+                </tr>
+              ))}
+              {/* Fill remaining rows with placeholders if less than 4 payouts */}
+              {Array.from({ length: Math.max(0, 4 - recentPayouts.length) }).map((_, index) => (
+                <tr key={`placeholder-${index}`}>
+                  <td className="py-2">
+                    <div className="text-left text-gray-500">--</div>
+                  </td>
+                  <td className="py-2">
+                    <div className="font-medium text-right text-gray-800 dark:text-gray-100">--</div>
+                  </td>
+                  <td className="py-2">
+                    <div className="font-medium text-right text-green-500">--</div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
