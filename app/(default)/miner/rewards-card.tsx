@@ -135,12 +135,12 @@ export default function AnalyticsCard02() {
                   <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 12c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V4h2v5z" />
                 </svg>
               </button>
-              <div className="absolute bottom-full right-0 mb-2 w-72 bg-gray-800 text-xs text-white p-3 rounded-lg shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="absolute top-full right-0 mt-2 w-72 bg-gray-800 text-xs text-white p-3 rounded-lg shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <div className="relative">
+                  <div className="absolute w-3 h-3 bg-gray-800 transform rotate-45 right-4 -top-[6px]"></div>
                   <div className="font-medium mb-1">About NACHO Rebates:</div>
                   <p className="mb-2">A refund of 0.25% Pool Fee charged to you in $NACHO tokens. Each payout period the pool automatically swaps one third of the pool fees earned in that payment period and distributes them proportionally back to Kat Pool Miners.</p>
                   <p className="text-gray-400">It's our way of saying thank you for helping secure the Kaspa network. Meow</p>
-                  <div className="absolute w-3 h-3 bg-gray-800 transform rotate-45 right-4 -bottom-[6px]"></div>
                 </div>
               </div>
             </div>
