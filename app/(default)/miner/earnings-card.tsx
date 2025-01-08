@@ -33,7 +33,7 @@ export default function AnalyticsCard04() {
           $fetch('/api/pool/price'),
           $fetch('/api/pool/nachoPrice')
         ]);
-        
+
         if (paymentsRes.status === 'success') {
           setHasPayments(paymentsRes.data.length > 0);
           if (paymentsRes.data.length > 0) {
@@ -92,34 +92,34 @@ export default function AnalyticsCard04() {
 
   const calculateNachoRebate = (kasAmount: bigint | null) => {
     if (kasAmount === null || kasPrice === null || nachoPrice === null) return null;
-    
+
     // First convert the sompi amount to KAS
     const kasValue = Number(kasAmount) / 100000000;
-    
+
     // Calculate USD value of the KAS
     const kasUSDValue = kasValue * kasPrice;
-    
+
     // Calculate the total fee amount in USD
     const feeAmount = kasUSDValue / 0.9925;
-    
+
     // Calculate NACHO rebate (1/3 of fee amount)
     const nachoRebate = (feeAmount / 3) / nachoPrice;
-    
+
     return nachoRebate;
   };
 
   const calculateUSDValue = (kasAmount: bigint | null, nachoRebate: number | null) => {
     if (kasAmount === null || kasPrice === null || nachoRebate === null || nachoPrice === null) return null;
-    
+
     // First convert the sompi amount to KAS
     const kasValue = Number(kasAmount) / 100000000;
-    
+
     // Calculate USD value of the KAS
     const kasUSDValue = kasValue * kasPrice;
-    
+
     // Calculate USD value of the NACHO rebate
     const nachoUSDValue = nachoRebate * nachoPrice;
-    
+
     // Return total USD value
     return kasUSDValue + nachoUSDValue;
   };
@@ -199,8 +199,11 @@ export default function AnalyticsCard04() {
                 <div className="relative">
                   <div className="absolute w-3 h-3 bg-gray-800 transform rotate-45 right-4 -top-[6px]"></div>
                   <div className="font-medium mb-1">How we calculate estimates:</div>
-                  <p className="mb-2">Based on your most recent payout amount multiplied by 2 (12-hour intervals). Daily earnings are used to calculate other time periods.</p>
-                  <p className="text-gray-400">Note: These are estimates only and not guaranteed. Actual earnings may vary based on network conditions, hashrate, and other factors.</p>
+                  <p className="mb-2">Earnings estimates are based on your most recent payout amount, doubled to reflect two 12-hour intervals. Daily earnings estimates are then extrapolated to calculate weekly, monthly, and yearly figures.</p>
+                  <p className="mb-2">The <strong>USD value</strong> is calculated using the latest Kaspa price from the Kaspa Price API and CoinGecko.</p>
+                  <p className="mb-2">The <strong>Nacho rebate</strong> is a 0.25% pool fee refund paid in $NACHO tokens, distributed proportionally to miners after each payout period.</p>
+                  <p className="text-gray-400">Note: These estimates are provided as a reference and are not guaranteed. Actual earnings may fluctuate due to network conditions, hashrate changes, and other factors.</p>
+
                 </div>
               </div>
             </div>
@@ -230,7 +233,7 @@ export default function AnalyticsCard04() {
             </thead>
             {/* Table body */}
             <tbody className="text-sm font-medium divide-y divide-gray-100 dark:divide-gray-700/60">
-              {renderRow('Hourly', calculateAmount(dailyKas, 1/24))}
+              {renderRow('Hourly', calculateAmount(dailyKas, 1 / 24))}
               {renderRow('Daily', dailyKas)}
               {renderRow('Weekly', calculateAmount(dailyKas, 7))}
               {renderRow('Monthly', calculateAmount(dailyKas, 30))}

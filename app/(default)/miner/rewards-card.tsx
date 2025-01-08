@@ -106,7 +106,7 @@ export default function AnalyticsCard02() {
     const date = new Date(timestamp);
     const now = new Date();
     const diffHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffHours < 24) {
       return `${diffHours}h ago`;
     }
@@ -139,8 +139,9 @@ export default function AnalyticsCard02() {
                 <div className="relative">
                   <div className="absolute w-3 h-3 bg-gray-800 transform rotate-45 right-4 -top-[6px]"></div>
                   <div className="font-medium mb-1">About NACHO Rebates:</div>
-                  <p className="mb-2">A refund of 0.25% Pool Fee charged to you in $NACHO tokens. Each payout period the pool automatically swaps one third of the pool fees earned in that payment period and distributes them proportionally back to Kat Pool Miners.</p>
-                  <p className="text-gray-400">It's our way of saying thank you for helping secure the Kaspa network. Meow</p>
+                  <p className="mb-2">The Nacho rebate is a 0.25% refund of the pool fees charged, paid to you in $NACHO tokens. After each payout period, the pool automatically swaps one-third of the fees earned from KAS to $NACHO and distributes them proportionally to Kat Pool miners. Rebates are paid separately within an hour of every rewards payout.</p>
+                  <p className="mb-2">Below, you can see your recent earnings and rebate payments. Use the "Full Payout History" button at the bottom to view the complete history of payouts for this wallet address.</p>
+                  <p className="text-gray-400">This is our way of saying thank you for helping secure the Kaspa network. Meow 🐈‍⬛</p>
                 </div>
               </div>
             </div>
