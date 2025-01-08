@@ -18,7 +18,7 @@ export default function PoolDashboard() {
       {/* Dashboard actions */}
       <div className="sm:flex sm:justify-between sm:items-center mb-8">
         <div className="mb-4 sm:mb-0">
-          <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Pool & Network Statistics</h1>
+          <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Statistics</h1>
         </div>
       </div>
 

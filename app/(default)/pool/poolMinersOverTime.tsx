@@ -45,7 +45,11 @@ export default function poolMinersOverTime() {
   }
 
   return(
-    <div className="flex flex-col col-span-full sm:col-span-6 xl:col-span-4 bg-white dark:bg-gray-800 shadow-sm rounded-xl">
+    <div className="flex flex-col col-span-full sm:col-span-6 xl:col-span-4 bg-white dark:bg-gray-800 shadow-sm rounded-xl relative">
+      {/* Blur overlay */}
+      <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+        <div className="text-lg font-semibold text-gray-500 dark:text-gray-400">Under Development</div>
+      </div>
       <div className="px-5 pt-5">
         <header className="flex justify-between items-start mb-2">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Pool Miners over Time</h2>
