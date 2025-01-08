@@ -99,7 +99,7 @@ export default function AnalyticsCard02() {
   }
 
   const formatTxHash = (hash: string) => {
-    return `${hash.slice(0, 3)}...${hash.slice(-3)}`
+    return `${hash.slice(0, 6)}...${hash.slice(-6)}`
   }
 
   const formatTimestamp = (timestamp: number) => {
