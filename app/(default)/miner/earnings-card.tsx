@@ -200,7 +200,7 @@ export default function AnalyticsCard04() {
                   <div className="absolute w-3 h-3 bg-gray-800 transform rotate-45 right-4 -top-[6px]"></div>
                   <div className="font-medium mb-1"><strong>How we calculate estimates:</strong></div>
                   <p className="mb-2">Daily estimates are based on your most recent payout amount, doubled to account for two 12-hour intervals. Daily estimates are then extrapolated to calculate remaining periods.</p>
-                  <p className="mb-2">The <strong>NACHO rebate</strong> is a 0.25% pool fee refund paid in $NACHO tokens, distributed proportionally to miners after each payout period.</p>
+                  <p className="mb-2">The <strong>NACHO rebate</strong> is a 0.25% pool fee refund paid in $NACHO tokens, distributed proportionally to miners after each payout.</p>
                   <p className="mb-2">The <strong>USD value</strong> is calculated using the latest Kaspa price from the Kaspa Price and CoinGecko APIs.</p>
                   <p className="text-gray-400">Note: These estimates are provided as a reference and are not guaranteed. Actual earnings will vary.</p>
 
