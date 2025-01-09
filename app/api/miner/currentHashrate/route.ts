@@ -15,9 +15,9 @@ export async function GET(request: Request) {
       );
     }
 
-    // Use instant query with max_over_time to get the most recent non-zero value
+    // Simple instant query to get current hashrate sum
     const url = new URL('http://kas.katpool.xyz:8080/api/v1/query');
-    url.searchParams.append('query', `sum(miner_hash_rate_GHps{wallet_address="${wallet}"} > 0)`);
+    url.searchParams.append('query', `sum(miner_hash_rate_GHps{wallet_address="${wallet}"})`);
 
     const response = await fetch(url);
 
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     }
 
     console.log('Current hashrate response:', {
-      query: `sum(miner_hash_rate_GHps{wallet_address="${wallet}"} > 0)`,
+      query: `sum(miner_hash_rate_GHps{wallet_address="${wallet}"})`,
       result: data.data.result
     });
 
