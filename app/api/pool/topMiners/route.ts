@@ -71,13 +71,33 @@ export async function GET() {
     const sharesMap = new Map<string, number>();
     sharesData.data.result.forEach((miner: any) => {
       const values = miner.values;
-      if (!values || values.length < 2) return;
+      if (!values || values.length < 2) {
+        console.log(`Skipping miner ${miner.metric.wallet_address} - insufficient data points:`, values?.length || 0);
+        return;
+      }
 
-      // Calculate shares in last 24h by taking the difference between last and first value
-      const lastValue = Number(values[values.length - 1][1]);
-      const firstValue = Number(values[0][1]);
-      const shares24h = Math.max(0, lastValue - firstValue); // Ensure non-negative
-      sharesMap.set(miner.metric.wallet_address, shares24h);
+      let totalShares = 0;
+      // Calculate differences between consecutive points to handle counter resets
+      for (let i = 1; i < values.length; i++) {
+        const currentValue = Number(values[i][1]);
+        const previousValue = Number(values[i - 1][1]);
+        
+        // If current value is less than previous, assume counter reset
+        // In this case, just add the current value as those are new shares
+        if (currentValue < previousValue) {
+          console.log(`Counter reset detected for ${miner.metric.wallet_address}: ${previousValue} -> ${currentValue}`);
+          totalShares += currentValue;
+        } else {
+          // Otherwise, add the difference
+          const diff = Math.max(0, currentValue - previousValue);
+          if (diff > 0) {
+            totalShares += diff;
+          }
+        }
+      }
+
+      console.log(`24h shares for ${miner.metric.wallet_address}: ${totalShares} (from ${values.length} data points)`);
+      sharesMap.set(miner.metric.wallet_address, totalShares);
     });
 
     // Process payouts to get 24h rewards per wallet
