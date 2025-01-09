@@ -34,14 +34,30 @@ export default function AnalyticsCard01() {
     // Sort values by timestamp
     relevantValues.sort((a, b) => a.timestamp - b.timestamp);
     
-    // Calculate the expected number of data points (30-minute intervals)
-    const expectedPoints = hoursAgo * 2; // 2 points per hour for 30-minute intervals
+    // Calculate weighted average based on time intervals
+    let totalWeight = 0;
+    let weightedSum = 0;
     
-    // Calculate total hashrate
-    const totalHashrate = relevantValues.reduce((sum, v) => sum + v.value, 0);
+    for (let i = 0; i < relevantValues.length; i++) {
+      const current = relevantValues[i];
+      const next = relevantValues[i + 1];
+      
+      // For the last point, use the time until now
+      const timeWeight = next 
+        ? next.timestamp - current.timestamp 
+        : (Date.now() / 1000) - current.timestamp;
+      
+      // Skip if we have an unusually large gap (> 1 hour)
+      if (timeWeight > 3600) continue;
+      
+      weightedSum += current.value * timeWeight;
+      totalWeight += timeWeight;
+    }
     
-    // Return average based on expected points, not just available points
-    return totalHashrate / expectedPoints;
+    // Return 0 if we have no valid intervals
+    if (totalWeight === 0) return 0;
+    
+    return weightedSum / totalWeight;
   };
 
   const fetchData = async () => {
