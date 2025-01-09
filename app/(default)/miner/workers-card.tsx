@@ -33,7 +33,21 @@ interface WorkerData {
   jobsNotFound: number;
   lastShareTimestamp: number;
   hashrates: {
-    fifteenMin: number;
+    currentHashrate: number;
+    oneHour: number;
+    twelveHour: number;
+    twentyFourHour: number;
+  };
+}
+
+interface Worker {
+  metric: {
+    __name__: string;
+    wallet_address: string;
+    wokername: string;
+  };
+  currentHashrate: number;
+  averages: {
     oneHour: number;
     twelveHour: number;
     twentyFourHour: number;
@@ -84,8 +98,8 @@ export default function AnalyticsCard11() {
         ]);
 
         // Process hashrate data
-        const hashrateMap = new Map<string, { 
-          fifteenMin: number;
+        const hashrateMap = new Map<string, {
+          currentHashrate: number;
           oneHour: number;
           twelveHour: number;
           twentyFourHour: number;
@@ -125,7 +139,7 @@ export default function AnalyticsCard11() {
             };
 
             hashrateMap.set(minerId, {
-              fifteenMin: average(fifteenMinValues, 3) ?? 0, // 15 min should have 3 points (5 min intervals)
+              currentHashrate: average(fifteenMinValues, 3) ?? 0, // 15 min should have 3 points (5 min intervals)
               oneHour: average(oneHourValues, 12) ?? 0, // 1 hour should have 12 points
               twelveHour: average(twelveHourValues, 144) ?? 0, // 12 hours should have 144 points
               twentyFourHour: average(twentyFourHourValues, 288) ?? 0 // 24 hours should have 288 points
@@ -177,11 +191,11 @@ export default function AnalyticsCard11() {
           jobsNotFound: jobsNotFoundMap.get(minerId) || 0,
           lastShareTimestamp: data.timestamp,
           hashrates: hashrateMap.get(minerId) || {
-            fifteenMin: 0,
+            currentHashrate: 0,
             oneHour: 0,
             twelveHour: 0,
-            twentyFourHour: 0
-          }
+            twentyFourHour: 0,
+          },
         }));
 
         setWorkers(processedWorkers);
@@ -237,6 +251,12 @@ export default function AnalyticsCard11() {
     return `${value.toFixed(2)} ${units[unitIndex]}`;
   };
 
+  const getWorkerStatus = (worker: WorkerData) => {
+    const secondsSinceLastShare = Date.now() / 1000 - worker.lastShareTimestamp;
+    const isOnline = secondsSinceLastShare < 300; // 5 minutes
+    return isOnline ? 'online' : 'offline';
+  };
+
   return (
     <div className="relative col-span-full bg-white dark:bg-gray-800 shadow-sm rounded-xl">
       {/* Blur overlay */}
@@ -262,52 +282,46 @@ export default function AnalyticsCard11() {
           <div className="overflow-x-auto">
             <table className="table-auto w-full dark:text-gray-300">
               {/* Table header */}
-              <thead className="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700 dark:bg-opacity-50 rounded-sm">
+              <thead className="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/20 border-t border-gray-100 dark:border-gray-700">
                 <tr>
-                  <th className="p-2 whitespace-nowrap w-1/4">
-                    <div className="font-semibold text-left">Worker Name</div>
+                  <th className="p-2">
+                    <div className="font-semibold text-left">Worker ID</div>
                   </th>
-                  <th className="p-2 whitespace-nowrap w-[11%]">
-                    <div className="font-semibold text-center">15min Hashrate</div>
+                  <th className="p-2">
+                    <div className="font-semibold text-center">Live Hashrate</div>
                   </th>
-                  <th className="p-2 whitespace-nowrap w-[11%]">
-                    <div className="font-semibold text-center">1h Hashrate</div>
+                  <th className="p-2">
+                    <div className="font-semibold text-center">1H Hashrate</div>
                   </th>
-                  <th className="p-2 whitespace-nowrap w-[11%]">
-                    <div className="font-semibold text-center">12h Hashrate</div>
+                  <th className="p-2">
+                    <div className="font-semibold text-center">12H Hashrate</div>
                   </th>
-                  <th className="p-2 whitespace-nowrap w-[11%]">
-                    <div className="font-semibold text-center">24h Hashrate</div>
+                  <th className="p-2">
+                    <div className="font-semibold text-center">24H Hashrate</div>
                   </th>
-                  <th className="p-2 whitespace-nowrap w-[11%]">
-                    <div className="font-semibold text-center">Accepted</div>
+                  <th className="p-2">
+                    <div className="font-semibold text-center">Total Shares</div>
                   </th>
-                  <th className="p-2 whitespace-nowrap w-[11%]">
-                    <div className="font-semibold text-center">Rejected</div>
-                  </th>
-                  <th className="p-2 whitespace-nowrap w-[10%]">
-                    <div className="font-semibold text-center">Last Share</div>
+                  <th className="p-2">
+                    <div className="font-semibold text-center">Rejected Shares</div>
                   </th>
                 </tr>
               </thead>
               {/* Table body */}
               <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
                 {workers.map((worker) => {
-                  const secondsSinceLastShare = Date.now() / 1000 - worker.lastShareTimestamp;
-                  const isOnline = secondsSinceLastShare < 300; // 5 minutes
-                  
                   const rejectedShares = worker.invalidShares + worker.duplicatedShares + worker.jobsNotFound;
 
                   return (
                     <tr key={worker.minerId}>
                       <td className="p-2 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className={`shrink-0 rounded-full mr-2 sm:mr-3 ${isOnline ? 'bg-green-500' : 'bg-red-500'} w-2 h-2`}></div>
+                          <div className={`shrink-0 rounded-full mr-2 sm:mr-3 ${getWorkerStatus(worker) === 'online' ? 'bg-green-500' : 'bg-red-500'} w-2 h-2`}></div>
                           <div className="font-medium text-gray-800 dark:text-gray-100">{worker.minerId}</div>
                         </div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center">{formatHashrate(worker.hashrates.fifteenMin)}</div>
+                        <div className="text-center">{formatHashrate(worker.hashrates.currentHashrate)}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
                         <div className="text-center">{formatHashrate(worker.hashrates.oneHour)}</div>
@@ -319,15 +333,10 @@ export default function AnalyticsCard11() {
                         <div className="text-center">{formatHashrate(worker.hashrates.twentyFourHour)}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center text-green-500">{worker.totalShares}</div>
+                        <div className="text-center">{worker.totalShares}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center text-red-500">{rejectedShares}</div>
-                      </td>
-                      <td className="p-2 whitespace-nowrap">
-                        <div className="text-center">
-                          {formatTimeAgo(worker.lastShareTimestamp)}
-                        </div>
+                        <div className="text-center">{rejectedShares}</div>
                       </td>
                     </tr>
                   );
