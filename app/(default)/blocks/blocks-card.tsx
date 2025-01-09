@@ -1,30 +1,81 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { $fetch } from 'ofetch'
+import { format } from 'date-fns'
 
 type SortDirection = 'asc' | 'desc'
-type SortKey = 'timestamp' | 'blockHeight' | 'reward'
+type SortKey = 'timestamp' | 'daaScore' | 'reward' | 'blockHash'
 
 interface Block {
-  timestamp: number
-  blockHeight: number
-  reward: number
+  blockHash: string
+  daaScore: string
+  timestamp: string
+  reward?: string
+  fullReward?: string
 }
 
 export default function BlocksCard() {
+  const [blocks, setBlocks] = useState<Block[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [sortKey, setSortKey] = useState<SortKey>('timestamp')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
-  // Generate placeholder data
-  const placeholderData: Block[] = Array.from({ length: 50 }, (_, i): Block => {
-    const timestamp = Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000) // Last 30 days
-    return {
-      timestamp,
-      blockHeight: 1500000 - Math.floor(Math.random() * 10000),
-      reward: 89.32 // Fixed reward for now
-    }
-  })
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await $fetch('/api/pool/recentBlocks', {
+          retry: 3,
+          retryDelay: 1000,
+          timeout: 10000,
+        });
+
+        if (!response || response.error) {
+          throw new Error(response?.error || 'Failed to fetch data');
+        }
+
+        // Fetch reward amounts for each block
+        const blocksWithRewards = await Promise.all(
+          response.data.blocks.map(async (block: Block) => {
+            try {
+              const rewardResponse = await $fetch(`/api/pool/blockReward?blockHash=${block.blockHash}`, {
+                retry: 3,
+                retryDelay: 1000,
+                timeout: 10000,
+              });
+              return {
+                ...block,
+                reward: rewardResponse.data.amount,
+                fullReward: rewardResponse.data.fullAmount
+              };
+            } catch (error) {
+              console.error(`Error fetching reward for block ${block.blockHash}:`, error);
+              return {
+                ...block,
+                reward: '--',
+                fullReward: '--'
+              };
+            }
+          })
+        );
+
+        setBlocks(blocksWithRewards);
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching blocks:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -35,9 +86,21 @@ export default function BlocksCard() {
     }
   }
 
-  const sortedData = [...placeholderData].sort((a, b) => {
+  const sortedData = [...blocks].sort((a, b) => {
     const modifier = sortDirection === 'asc' ? 1 : -1
-    return (a[sortKey] > b[sortKey] ? 1 : -1) * modifier
+    
+    switch (sortKey) {
+      case 'timestamp':
+        return (new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()) * modifier
+      case 'daaScore':
+        return (Number(a.daaScore) - Number(b.daaScore)) * modifier
+      case 'reward':
+        return ((a.reward === '--' ? 0 : Number(a.reward)) - (b.reward === '--' ? 0 : Number(b.reward))) * modifier
+      case 'blockHash':
+        return a.blockHash.localeCompare(b.blockHash) * modifier
+      default:
+        return 0
+    }
   })
 
   const SortIcon = ({ active, direction }: { active: boolean; direction: SortDirection }) => (
@@ -46,15 +109,44 @@ export default function BlocksCard() {
     </span>
   )
 
-  const SortableHeader = ({ label, sortKey: key }: { label: string; sortKey: SortKey }) => (
+  const SortableHeader = ({ label, sortKey: key, className = '' }: { label: string; sortKey: SortKey; className?: string }) => (
     <div 
-      className="font-semibold cursor-pointer hover:text-primary-500 flex items-center justify-center"
+      className={`font-semibold cursor-pointer hover:text-primary-500 flex items-center ${className}`}
       onClick={() => handleSort(key)}
     >
       {label}
       <SortIcon active={sortKey === key} direction={sortDirection} />
     </div>
   )
+
+  const formatBlockHash = (hash: string) => {
+    return hash;
+  };
+
+  const formatDateTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return format(date, "MMM d, yyyy '@' h:mma");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="col-span-full bg-white dark:bg-gray-800 shadow-sm rounded-xl p-8">
+        <div className="flex items-center justify-center">
+          <div className="animate-pulse text-gray-400 dark:text-gray-500">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="col-span-full bg-white dark:bg-gray-800 shadow-sm rounded-xl p-8">
+        <div className="flex items-center justify-center text-red-500">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="col-span-full bg-white dark:bg-gray-800 shadow-sm rounded-xl">
@@ -67,43 +159,50 @@ export default function BlocksCard() {
           <table className="table-auto w-full dark:text-gray-300">
             <thead className="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700 dark:bg-opacity-50 rounded-sm">
               <tr>
-                <th className="p-2 whitespace-nowrap">
-                  <SortableHeader label="Time" sortKey="timestamp" />
+                <th className="p-2">
+                  <SortableHeader label="Time" sortKey="timestamp" className="justify-start" />
                 </th>
-                <th className="p-2 whitespace-nowrap">
-                  <SortableHeader label="Block Height" sortKey="blockHeight" />
+                <th className="p-2">
+                  <SortableHeader label="Block Hash" sortKey="blockHash" className="justify-start" />
                 </th>
-                <th className="p-2 whitespace-nowrap">
-                  <SortableHeader label="Reward" sortKey="reward" />
+                <th className="p-2">
+                  <SortableHeader label="DAA Score" sortKey="daaScore" className="justify-end" />
+                </th>
+                <th className="p-2">
+                  <SortableHeader label="Reward" sortKey="reward" className="justify-end" />
                 </th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
               {sortedData.map((block) => (
-                <tr key={block.blockHeight}>
-                  <td className="p-2 whitespace-nowrap">
-                    <div className="text-center">
-                      {new Date(block.timestamp).toLocaleDateString()} 
-                      <br />
-                      <span className="text-gray-500 text-xs">
-                        {new Date(block.timestamp).toLocaleTimeString()}
-                      </span>
+                <tr key={block.blockHash}>
+                  <td className="p-2">
+                    <div className="text-left">
+                      {formatDateTime(block.timestamp)}
                     </div>
                   </td>
-                  <td className="p-2 whitespace-nowrap">
-                    <div className="text-center">
-                      <Link 
-                        href={`https://explorer.kaspa.org/blocks/${block.blockHeight}`}
+                  <td className="p-2">
+                    <div className="text-left">
+                      <a 
+                        href={`https://explorer.kaspa.org/blocks/${block.blockHash}`}
                         target="_blank"
+                        rel="noopener noreferrer"
                         className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
                       >
-                        {block.blockHeight.toLocaleString()}
-                      </Link>
+                        {formatBlockHash(block.blockHash)}
+                      </a>
                     </div>
                   </td>
-                  <td className="p-2 whitespace-nowrap">
-                    <div className="text-center font-medium text-green-500">
-                      {block.reward.toFixed(2)} KAS
+                  <td className="p-2">
+                    <div className="text-right">
+                      {block.daaScore}
+                    </div>
+                  </td>
+                  <td className="p-2">
+                    <div className="text-right font-medium text-green-500">
+                      <span title={block.fullReward !== '--' ? `Full amount: ${block.fullReward} KAS` : ''}>
+                        {block.reward} KAS
+                      </span>
                     </div>
                   </td>
                 </tr>

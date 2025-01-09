@@ -6,7 +6,7 @@ import { useTheme } from 'next-themes'
 import { chartColors } from '@/components/charts/chartjs-config'
 import '@/components/charts/chartjs-config'
 import {
-  Chart, BarController, BarElement, LinearScale, TimeScale, Tooltip, Legend,
+  Chart, BarController, BarElement, LinearScale, TimeScale, Tooltip, Legend, CategoryScale
 } from 'chart.js'
 import type { ChartData } from 'chart.js'
 import 'chartjs-adapter-moment'
@@ -14,7 +14,7 @@ import 'chartjs-adapter-moment'
 // Import utilities
 import { tailwindConfig, formatThousands } from '@/components/utils/utils'
 
-Chart.register(BarController, BarElement, LinearScale, TimeScale, Tooltip, Legend)
+Chart.register(BarController, BarElement, LinearScale, TimeScale, CategoryScale,Tooltip, Legend)
 
 interface BarChart03Props {
   data: ChartData
@@ -69,14 +69,7 @@ export default function BarChart03({
           },
           x: {
             stacked: true,
-            type: 'time',
-            time: {
-              parser: 'MM-DD-YYYY',
-              unit: 'month',
-              displayFormats: {
-                month: 'MMM',
-              },
-            },
+            type: 'category',
             border: {
               display: false,
             },
@@ -96,8 +89,10 @@ export default function BarChart03({
           },
           tooltip: {
             callbacks: {
-              title: () => '', // Disable tooltip title
-              label: (context) => formatThousands(context.parsed.y),
+              title: () => '',
+              label: (context) => {
+                return `${context.dataset.label}: ${formatThousands(context.parsed.y)}`;
+              },
             },
             bodyColor: darkMode ? tooltipBodyColor.dark : tooltipBodyColor.light,
             backgroundColor: darkMode ? tooltipBgColor.dark : tooltipBgColor.light,

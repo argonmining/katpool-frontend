@@ -3,6 +3,8 @@
 import { ReactNode, useEffect, useState } from 'react'
 import { KaspaAPI } from '@/lib/kaspa/api'
 import Image from 'next/image'
+import { $fetch } from 'ofetch'
+import { formatHashrate } from '@/components/utils/utils'
 
 interface StatCardProps {
   dataType: 'daaScore' | 'supply' | 'difficulty' | 'blockCount' | 'hashrate' | 
@@ -29,7 +31,6 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             break
           case 'supply':
             const supplyResponse = await KaspaAPI.network.getCirculatingSupply(false)
-            console.log('Supply Response:', supplyResponse)
             try {
               const supplyInBillions = Number(supplyResponse) / 1e9
               result = `${supplyInBillions.toFixed(4)} B`
@@ -73,7 +74,6 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             break
           case 'totalSupply':
             const totalSupplyResponse = await KaspaAPI.network.getTotalSupply()
-            console.log('Total Supply Response:', totalSupplyResponse)
             try {
               const totalInBillions = Number(totalSupplyResponse) / 1e9
               result = `${totalInBillions.toFixed(4)} B`
@@ -83,16 +83,79 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             }
             break
           case 'poolHashrate':
-            result = '123.45 TH/s'
+            try {
+              const data = await $fetch('/api/pool/hashrate', {
+                retry: 1,
+                timeout: 5000,
+              });
+              
+              if (data.status !== 'success' || !data.data?.result?.[0]?.value?.[1]) {
+                throw new Error('Invalid response format');
+              }
+              
+              const rawHashrate = Number(data.data.result[0].value[1]);
+              
+              if (!Number.isFinite(rawHashrate)) {
+                throw new Error('Invalid hashrate value received');
+              }
+              
+              const formattedResult = formatHashrate(rawHashrate);
+              result = formattedResult;
+            } catch (error) {
+              console.error('Error fetching pool hashrate:', error);
+              result = 'Error';
+            }
             break
           case 'poolBlocks':
-            result = '12,345'
+            try {
+              const data = await $fetch('/api/pool/blocks', {
+                retry: 1,
+                timeout: 5000,
+              });
+              
+              if (data.status !== 'success' || !data.data?.totalBlocks) {
+                throw new Error('Invalid response format');
+              }
+              
+              result = data.data.totalBlocks.toLocaleString('en-US');
+            } catch (error) {
+              console.error('Error fetching pool blocks:', error);
+              result = 'Error';
+            }
             break
           case 'poolMiners':
-            result = '123,456'
+            try {
+              const data = await $fetch('/api/pool/miners', {
+                retry: 1,
+                timeout: 5000,
+              });
+              
+              if (data.status !== 'success' || !data.data?.activeMiners) {
+                throw new Error('Invalid response format');
+              }
+              
+              result = data.data.activeMiners.toLocaleString('en-US');
+            } catch (error) {
+              console.error('Error fetching active miners:', error);
+              result = 'Error';
+            }
             break
           case 'pool24hBlocks':
-            result = '12,345'
+            try {
+              const data = await $fetch('/api/pool/blocks24h', {
+                retry: 1,
+                timeout: 5000,
+              });
+              
+              if (data.status !== 'success' || !data.data?.totalBlocks24h) {
+                throw new Error('Invalid response format');
+              }
+              
+              result = data.data.totalBlocks24h.toLocaleString('en-US');
+            } catch (error) {
+              console.error('Error fetching 24h blocks:', error);
+              result = 'Error';
+            }
             break
           case 'price':
             const priceResponse = await KaspaAPI.network.getPrice(false)
@@ -110,6 +173,8 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
     }
 
     fetchData()
+    const interval = setInterval(fetchData, 60000);
+    return () => clearInterval(interval);
   }, [dataType])
 
   return (
@@ -121,8 +186,8 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
               <Image
                 src="/images/kaspa-dark.svg"
                 alt="Kaspa Logo"
-                width={28}
-                height={28}
+                width={32}
+                height={32}
                 className="w-7 h-7"
               />
             ) : (

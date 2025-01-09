@@ -43,12 +43,12 @@ export default function DropdownHelp({ align }: {
             <MenuItems as="ul" className="focus:outline-none">
               <MenuItem as="li">
                 {({ active }) => (
-                  <Link className={`font-medium text-sm flex items-center py-1 px-3 ${active ? 'text-primary-600 dark:text-primary-400' : 'text-primary-500'}`} href="https://docs.katpool.xyz">
+                  <Link className={`font-medium text-sm flex items-center py-1 px-3 ${active ? 'text-primary-600 dark:text-primary-400' : 'text-primary-500'}`} href="https://explorer.kaspa.org/addresses/kaspa:qz4j8mu269z8llgcczmfukm9fan2fq822kzxu4cfukd5fqrhxpsv2zhs9jxnp?page=1">
                     <svg className="w-3 h-3 fill-current text-primary-500 shrink-0 mr-2" viewBox="0 0 12 12">
                       <rect y="3" width="12" height="9" rx="1" />
                       <path d="M2 0h8v2H2z" />
                     </svg>
-                    <span>Documentation</span>
+                    <span>Pool Treasury</span>
                   </Link>
                 )}
               </MenuItem>
@@ -66,7 +66,7 @@ export default function DropdownHelp({ align }: {
                   </Link>
                 )}
               </MenuItem>
-              <MenuItem as="li">
+              {/*<MenuItem as="li">
                 {({ active }) => (
                   <Link className={`font-medium text-sm flex items-center py-1 px-3 ${active ? 'text-primary-600 dark:text-primary-400' : 'text-primary-500'}`} href="https://ticket.katpool.xyz">
                     <svg className="w-3 h-3 fill-current text-primary-500 shrink-0 mr-2" viewBox="0 0 16 16">
@@ -75,7 +75,7 @@ export default function DropdownHelp({ align }: {
                     <span>Submit Ticket</span>
                   </Link>
                 )}
-              </MenuItem>
+              </MenuItem>*/}
               <MenuItem as="li">
                 {({ active }) => (
                   <Link className={`font-medium text-sm flex items-center py-1 px-3 ${active ? 'text-primary-600 dark:text-primary-400' : 'text-primary-500'}`} href="https://discord.gg/nachothekat">

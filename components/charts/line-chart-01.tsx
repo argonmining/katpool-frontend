@@ -20,12 +20,16 @@ interface LineChart01Props {
   data: ChartData
   width: number
   height: number
+  tooltipFormatter?: (value: number) => string
+  tooltipTitleFormatter?: (title: string) => string
 }
 
 export default function LineChart01({
   data,
   width,
-  height
+  height,
+  tooltipFormatter,
+  tooltipTitleFormatter
 }: LineChart01Props) {
 
   const [chart, setChart] = useState<Chart | null>(null)
@@ -53,17 +57,36 @@ export default function LineChart01({
           x: {
             type: 'time',
             time: {
-              parser: 'MM-DD-YYYY',
-              unit: 'month',
+              parser: 'X',
+              unit: 'hour',
+              displayFormats: {
+                hour: 'MMM D, HH:mm'
+              }
             },
             display: false,
+            ticks: {
+              source: 'data'
+            }
           },
         },
         plugins: {
           tooltip: {
             callbacks: {
-              title: () => '', // Disable tooltip title
-              label: (context) => formatValue(context.parsed.y),
+              title: (context) => tooltipTitleFormatter ? 
+                tooltipTitleFormatter(context[0].label) : 
+                context[0].label,
+              label: (context) => {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (tooltipFormatter) {
+                  label += tooltipFormatter(context.parsed.y);
+                } else {
+                  label += formatValue(context.parsed.y);
+                }
+                return label;
+              },
             },
             bodyColor: darkMode ? tooltipBodyColor.dark : tooltipBodyColor.light,
             backgroundColor: darkMode ? tooltipBgColor.dark : tooltipBgColor.light,
