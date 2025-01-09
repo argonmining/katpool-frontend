@@ -1,128 +1,152 @@
 import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
-export const revalidate = 10;
+export const revalidate = 300; // 5 minutes
 
 interface MinerData {
-  metric: {
-    wallet_address: string;
-    miner_id: string;
-    [key: string]: string;
-  };
-  values: [number, string][];
-}
-
-interface ProcessedMiner {
   wallet: string;
   hashrate: number;
-  poolShare?: number;
-  rank?: number;
+  poolShare: number;
+  rank: number;
+  rewards24h: number;
+  shares24h: number;
 }
 
-interface HashrateMap {
-  [timestamp: number]: number;
+interface Payout {
+  wallet_address: string[];
+  amount: string;
+  timestamp: string;
+  transaction_hash: string;
 }
 
 export async function GET() {
   try {
-    // Calculate timestamps for 24-hour window
+    // Calculate time range for the last 24 hours
     const end = Math.floor(Date.now() / 1000);
     const start = end - (24 * 60 * 60); // 24 hours ago
-    const step = 1800; // 30 minutes in seconds
+    const step = 300; // 5-minute intervals
 
-    const url = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
-    
-    // Construct and encode the full query parameter
-    url.searchParams.append('query', 'miner_hash_rate_GHps');
-    url.searchParams.append('start', start.toString());
-    url.searchParams.append('end', end.toString());
-    url.searchParams.append('step', step.toString());
+    // Fetch hashrate data for all miners
+    const hashrateUrl = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
+    hashrateUrl.searchParams.append('query', 'sum(miner_hash_rate_GHps) by (wallet_address)');
+    hashrateUrl.searchParams.append('start', start.toString());
+    hashrateUrl.searchParams.append('end', end.toString());
+    hashrateUrl.searchParams.append('step', step.toString());
 
-    const response = await fetch(url, {
-      next: { revalidate: 10 } // Cache for 10 seconds
+    // Fetch shares data for all miners
+    const sharesUrl = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
+    sharesUrl.searchParams.append('query', 'sum(added_miner_shares_1min_count) by (wallet_address)');
+    sharesUrl.searchParams.append('start', start.toString());
+    sharesUrl.searchParams.append('end', end.toString());
+    sharesUrl.searchParams.append('step', step.toString());
+
+    // Fetch payout data
+    const payoutsUrl = 'http://kas.katpool.xyz:8080/api/pool/payouts';
+
+    const [hashrateResponse, sharesResponse, payoutsResponse] = await Promise.all([
+      fetch(hashrateUrl),
+      fetch(sharesUrl),
+      fetch(payoutsUrl)
+    ]);
+
+    if (!hashrateResponse.ok || !sharesResponse.ok || !payoutsResponse.ok) {
+      throw new Error(`HTTP error! status: ${hashrateResponse.status}/${sharesResponse.status}/${payoutsResponse.status}`);
+    }
+
+    const [hashrateData, sharesData, payoutsData] = await Promise.all([
+      hashrateResponse.json(),
+      sharesResponse.json(),
+      payoutsResponse.json()
+    ]);
+
+    if (hashrateData.status !== 'success' || !hashrateData.data?.result) {
+      throw new Error('Invalid hashrate response format');
+    }
+
+    if (sharesData.status !== 'success' || !sharesData.data?.result) {
+      throw new Error('Invalid shares response format');
+    }
+
+    // Process shares data to get 24h shares per wallet
+    const sharesMap = new Map<string, number>();
+    sharesData.data.result.forEach((miner: any) => {
+      const values = miner.values;
+      if (!values || values.length < 2) return;
+
+      // Calculate shares in last 24h by taking the difference between last and first value
+      const lastValue = Number(values[values.length - 1][1]);
+      const firstValue = Number(values[0][1]);
+      const shares24h = Math.max(0, lastValue - firstValue); // Ensure non-negative
+      sharesMap.set(miner.metric.wallet_address, shares24h);
     });
 
-    if (!response.ok) {
-      console.error('Pool API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        url: url.toString()
-      });
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    // Process payouts to get 24h rewards per wallet
+    const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+    const rewardsMap = new Map<string, number>();
 
-    const data = await response.json();
-
-    if (data.status === 'success' && data.data?.result) {
-      // Create a map of wallet addresses to their hashrate values
-      const walletHashrates: Map<string, HashrateMap> = new Map();
-      
-      // Generate all expected timestamps (48 points)
-      const expectedTimestamps: number[] = [];
-      for (let t = start; t <= end; t += step) {
-        expectedTimestamps.push(t);
+    payoutsData.forEach((payout: Payout) => {
+      const timestamp = new Date(payout.timestamp).getTime();
+      if (timestamp >= twentyFourHoursAgo) {
+        const wallet = payout.wallet_address[0];
+        const amount = Number(payout.amount) / 1e8; // Convert from satoshis to KAS
+        rewardsMap.set(wallet, (rewardsMap.get(wallet) || 0) + amount);
       }
-      
-      // Process each miner's data
-      data.data.result.forEach((result: MinerData) => {
-        const wallet = result.metric.wallet_address;
-        const hashrates: HashrateMap = walletHashrates.get(wallet) || {};
-        
-        // Add each data point to the hashrate map
-        result.values.forEach(([timestamp, hashrate]) => {
-          const value = Number(hashrate);
-          if (!isNaN(value)) {
-            hashrates[timestamp] = value;
-          }
+    });
+
+    // Calculate pool total hashrate and process miner data
+    let poolTotalHashrate = 0;
+    const minerData: MinerData[] = [];
+
+    // Process each miner's data
+    hashrateData.data.result.forEach((miner: any) => {
+      const values = miner.values;
+      if (!values || values.length === 0) return;
+
+      // Calculate 24h average hashrate using the sophisticated averaging method
+      const validValues = values
+        .map(([timestamp, value]: [number, string]) => Number(value))
+        .filter((value: number) => !isNaN(value) && value > 0);
+
+      if (validValues.length === 0) return;
+
+      // Sort values and remove outliers (top and bottom 10%)
+      const sortedValues = [...validValues].sort((a, b) => a - b);
+      const trimAmount = Math.floor(sortedValues.length * 0.1);
+      const trimmedValues = sortedValues.slice(trimAmount, -trimAmount);
+
+      // Calculate average of remaining values
+      const averageHashrate = trimmedValues.reduce((sum, value) => sum + value, 0) / trimmedValues.length;
+
+      if (averageHashrate > 0) {
+        minerData.push({
+          wallet: miner.metric.wallet_address,
+          hashrate: averageHashrate,
+          poolShare: 0, // Will be calculated after total is known
+          rank: 0, // Will be assigned after sorting
+          rewards24h: rewardsMap.get(miner.metric.wallet_address) || 0,
+          shares24h: sharesMap.get(miner.metric.wallet_address) || 0
         });
-        
-        walletHashrates.set(wallet, hashrates);
-      });
+        poolTotalHashrate += averageHashrate;
+      }
+    });
 
-      // Calculate averages using all 48 points
-      const miners: ProcessedMiner[] = Array.from(walletHashrates.entries())
-        .map(([wallet, hashrates]) => {
-          let total = 0;
-          
-          // Sum up values for all expected timestamps (using 0 for missing points)
-          expectedTimestamps.forEach(timestamp => {
-            total += hashrates[timestamp] || 0;
-          });
-          
-          return {
-            wallet,
-            hashrate: total / expectedTimestamps.length
-          };
-        })
-        .filter(miner => miner.hashrate > 0); // Filter out completely inactive miners
+    // Calculate pool shares and sort by hashrate
+    minerData.forEach(miner => {
+      miner.poolShare = (miner.hashrate / poolTotalHashrate) * 100;
+    });
 
-      // Calculate total pool hashrate
-      const totalPoolHashrate = miners.reduce(
-        (sum: number, miner: ProcessedMiner) => sum + miner.hashrate,
-        0
-      );
+    // Sort by hashrate descending and assign ranks
+    minerData.sort((a, b) => b.hashrate - a.hashrate);
+    minerData.forEach((miner, index) => {
+      miner.rank = index + 1;
+    });
 
-      // Add pool share and sort by hashrate
-      const rankedMiners = miners
-        .map((miner: ProcessedMiner) => ({
-          ...miner,
-          poolShare: (miner.hashrate / totalPoolHashrate) * 100
-        }))
-        .sort((a: ProcessedMiner, b: ProcessedMiner) => b.hashrate - a.hashrate)
-        .map((miner: ProcessedMiner, index: number) => ({
-          ...miner,
-          rank: index + 1
-        }));
-
-      return NextResponse.json({
-        status: 'success',
-        data: rankedMiners
-      });
-    }
-
-    return NextResponse.json(data);
-  } catch (error: unknown) {
-    console.error('Error in top miners API:', error);
+    return NextResponse.json({
+      status: 'success',
+      data: minerData
+    });
+  } catch (error) {
+    console.error('Error fetching top miners:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to fetch top miners' },
       { status: 500 }

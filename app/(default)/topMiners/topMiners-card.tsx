@@ -6,15 +6,15 @@ import { $fetch } from 'ofetch'
 import { formatHashrate } from '@/components/utils/utils'
 
 type SortDirection = 'asc' | 'desc'
-type SortKey = 'rank' | 'wallet' | 'hashrate' | 'workers' | 'shares' | 'rewards' | 'poolShare' | 'firstSeen'
+type SortKey = 'rank' | 'wallet' | 'hashrate' | 'workers' | 'shares24h' | 'rewards24h' | 'poolShare' | 'firstSeen'
 
 interface Miner {
   rank: number
   wallet: string
   hashrate: number
   workers: number
-  shares: number
-  rewards: number
+  shares24h: number
+  rewards24h: number
   poolShare: number
   firstSeen: number
 }
@@ -37,7 +37,7 @@ export default function TopMinersCard() {
       try {
         setIsLoading(true);
         
-        // Fetch hashrates and pool shares
+        // Fetch hashrates and pool shares using the new endpoint with improved averaging
         const hashrateResponse = await $fetch('/api/pool/topMiners', {
           retry: 3,
           retryDelay: 1000,
@@ -72,8 +72,8 @@ export default function TopMinersCard() {
             wallet: miner.wallet,
             hashrate: miner.hashrate,
             workers: stats.activeWorkers,
-            shares: stats.totalShares,
-            rewards: 0, // Placeholder for now
+            shares24h: miner.shares24h,
+            rewards24h: miner.rewards24h,
             poolShare: miner.poolShare,
             firstSeen: stats.firstSeen ? Math.floor((Date.now() / 1000 - stats.firstSeen) / (24 * 60 * 60)) : 0
           };
@@ -130,6 +130,13 @@ export default function TopMinersCard() {
     </div>
   )
 
+  const formatRewards = (amount: number) => {
+    return amount.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
   return (
     <div className="relative col-span-full bg-white dark:bg-gray-800 shadow-sm rounded-xl">
       <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
@@ -165,12 +172,12 @@ export default function TopMinersCard() {
                   </th>
                   <th className="p-2 whitespace-nowrap">
                     <div className="flex justify-center">
-                      <SortableHeader label="Total Shares" sortKey="shares" />
+                      <SortableHeader label="24h Shares" sortKey="shares24h" />
                     </div>
                   </th>
                   <th className="p-2 whitespace-nowrap">
                     <div className="flex justify-center">
-                      <SortableHeader label="24h Rewards" sortKey="rewards" />
+                      <SortableHeader label="24h Rewards" sortKey="rewards24h" />
                     </div>
                   </th>
                   <th className="p-2 whitespace-nowrap">
@@ -206,10 +213,12 @@ export default function TopMinersCard() {
                       <div className="text-center">{miner.workers}</div>
                     </td>
                     <td className="p-2 whitespace-nowrap">
-                      <div className="text-center">{miner.shares.toLocaleString()}</div>
+                      <div className="text-center">{miner.shares24h.toLocaleString()}</div>
                     </td>
                     <td className="p-2 whitespace-nowrap">
-                      <div className="text-center text-green-500">--</div>
+                      <div className="text-center text-green-500">
+                        {miner.rewards24h > 0 ? `${formatRewards(miner.rewards24h)} KAS` : '--'}
+                      </div>
                     </td>
                     <td className="p-2 whitespace-nowrap">
                       <div className="text-center">{miner.poolShare.toFixed(2)}%</div>
