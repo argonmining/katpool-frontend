@@ -6,7 +6,7 @@ interface WorkerHashrate {
   metric: {
     __name__: string;
     wallet_address: string;
-    wokername: string;
+    worker_name: string;
     [key: string]: string;
   };
   values: [number, string][];
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
     // Create a map of current hashrates
     const currentHashrates = new Map(
       currentData.data.result.map((item: any) => [
-        item.metric.wokername,
+        item.metric.worker_name,
         Number(item.value[1])
       ])
     );
@@ -99,7 +99,7 @@ export async function GET(request: Request) {
       };
 
       // Get current hashrate for this worker
-      const currentHashrate = currentHashrates.get(worker.metric.wokername) || 0;
+      const currentHashrate = currentHashrates.get(worker.metric.worker_name) || 0;
 
       // Calculate averages for each time window
       const averages = {

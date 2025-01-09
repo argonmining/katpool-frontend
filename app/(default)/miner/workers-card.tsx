@@ -19,7 +19,7 @@ interface WorkerHashrateData {
   metric: {
     __name__: string;
     wallet_address: string;
-    wokername: string;
+    worker_name: string;
     [key: string]: string;
   };
   values: [number, string][];
@@ -44,7 +44,7 @@ interface Worker {
   metric: {
     __name__: string;
     wallet_address: string;
-    wokername: string;
+    worker_name: string;
   };
   currentHashrate: number;
   averages: {
@@ -111,17 +111,17 @@ export default function AnalyticsCard11() {
           console.log('Raw hashrate response:', hashrateRes.data.result);
           
           hashrateRes.data.result.forEach((result: WorkerHashrateData) => {
-            if (!result.metric?.wokername) {
+            if (!result.metric?.worker_name) {
               console.warn('Missing worker name in metric:', result.metric);
               return;
             }
 
             if (!result.values || !Array.isArray(result.values)) {
-              console.warn(`No valid values array for worker ${result.metric.wokername}`);
+              console.warn(`No valid values array for worker ${result.metric.worker_name}`);
               return;
             }
 
-            const minerId = result.metric.wokername;
+            const minerId = result.metric.worker_name;
             const values = result.values;
             
             // Debug logging
