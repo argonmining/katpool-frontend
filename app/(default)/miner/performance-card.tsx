@@ -31,33 +31,9 @@ export default function AnalyticsCard01() {
     const relevantValues = values.filter(v => v.timestamp >= cutoffTime);
     if (relevantValues.length === 0) return 0;
 
-    // Sort values by timestamp
-    relevantValues.sort((a, b) => a.timestamp - b.timestamp);
-    
-    // Calculate weighted average based on time intervals
-    let totalWeight = 0;
-    let weightedSum = 0;
-    
-    for (let i = 0; i < relevantValues.length; i++) {
-      const current = relevantValues[i];
-      const next = relevantValues[i + 1];
-      
-      // For the last point, use the time until now
-      const timeWeight = next 
-        ? next.timestamp - current.timestamp 
-        : (Date.now() / 1000) - current.timestamp;
-      
-      // Skip if we have an unusually large gap (> 1 hour)
-      if (timeWeight > 3600) continue;
-      
-      weightedSum += current.value * timeWeight;
-      totalWeight += timeWeight;
-    }
-    
-    // Return 0 if we have no valid intervals
-    if (totalWeight === 0) return 0;
-    
-    return weightedSum / totalWeight;
+    // Calculate simple average of all values in the time range
+    const sum = relevantValues.reduce((acc, val) => acc + val.value, 0);
+    return sum / relevantValues.length;
   };
 
   const fetchData = async () => {
