@@ -19,7 +19,7 @@ interface WorkerHashrateData {
   metric: {
     __name__: string;
     wallet_address: string;
-    worker_name: string;
+    miner_id: string;
     [key: string]: string;
   };
   values: [number, string][];
@@ -33,7 +33,7 @@ interface WorkerData {
   jobsNotFound: number;
   lastShareTimestamp: number;
   hashrates: {
-    currentHashrate: number;
+    fifteenMin: number;
     oneHour: number;
     twelveHour: number;
     twentyFourHour: number;
@@ -98,8 +98,8 @@ export default function AnalyticsCard11() {
         ]);
 
         // Process hashrate data
-        const hashrateMap = new Map<string, {
-          currentHashrate: number;
+        const hashrateMap = new Map<string, { 
+          fifteenMin: number;
           oneHour: number;
           twelveHour: number;
           twentyFourHour: number;
@@ -108,26 +108,10 @@ export default function AnalyticsCard11() {
         if (hashrateRes?.status === 'success' && hashrateRes.data?.result) {
           const now = Math.floor(Date.now() / 1000);
           
-          console.log('Raw hashrate response:', hashrateRes.data.result);
-          
           hashrateRes.data.result.forEach((result: WorkerHashrateData) => {
-            if (!result.metric?.worker_name) {
-              console.warn('Missing worker name in metric:', result.metric);
-              return;
-            }
-
-            if (!result.values || !Array.isArray(result.values)) {
-              console.warn(`No valid values array for worker ${result.metric.worker_name}`);
-              return;
-            }
-
-            const minerId = result.metric.worker_name;
+            const minerId = result.metric.miner_id;
             const values = result.values;
             
-            // Debug logging
-            console.log(`Processing hashrate data for worker ${minerId}`);
-            console.log(`Raw values:`, values);
-
             // Calculate time windows
             const fifteenMinAgo = now - (15 * 60);
             const oneHourAgo = now - (60 * 60);
@@ -140,60 +124,26 @@ export default function AnalyticsCard11() {
             const twelveHourValues = values.filter(([timestamp]) => timestamp >= twelveHourAgo);
             const twentyFourHourValues = values;
 
-            // Debug logging for filtered values
-            console.log(`Filtered values for ${minerId}:
-              15min: ${fifteenMinValues.length} values
-              1h: ${oneHourValues.length} values
-              12h: ${twelveHourValues.length} values
-              24h: ${twentyFourHourValues.length} values
-            `);
-
             const average = (vals: [number, string][], requiredPoints: number) => {
-              if (!vals || vals.length === 0) {
-                console.log(`No values to average for ${minerId}`);
-                return 0;
+              if (vals.length === 0) return null; // No data at all
+              
+              // If we have some data but not enough points, pad with zeros
+              const paddedVals = [...vals];
+              while (paddedVals.length < requiredPoints) {
+                paddedVals.push([0, "0"]);
               }
               
-              // Convert all values to numbers and filter out invalid ones
-              const validVals = vals
-                .map(([_, val]) => Number(val))
-                .filter(val => !isNaN(val) && val >= 0);
-
-              if (validVals.length === 0) {
-                console.log(`No valid values after filtering for ${minerId}`);
-                return 0;
-              }
-
-              // Calculate mean and standard deviation
-              const mean = validVals.reduce((sum, val) => sum + val, 0) / validVals.length;
-              const stdDev = Math.sqrt(
-                validVals.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / validVals.length
-              );
-
-              // Filter out outliers (values more than 3 standard deviations from mean)
-              const filteredVals = validVals.filter(val => 
-                Math.abs(val - mean) <= 3 * stdDev
-              );
-
-              if (filteredVals.length === 0) {
-                console.log(`No values left after outlier removal for ${minerId}`);
-                return 0;
-              }
-
-              const finalAvg = filteredVals.reduce((sum, val) => sum + val, 0) / filteredVals.length;
-              console.log(`Calculated average for ${minerId}: ${finalAvg} from ${filteredVals.length} values`);
-              return finalAvg;
+              const sum = paddedVals.reduce((acc, [_, val]) => acc + Number(val), 0);
+              const avg = sum / requiredPoints;
+              return avg === 0 ? 0 : avg; // Return 0 if actual zero, not null
             };
 
-            const hashrates = {
-              currentHashrate: average(fifteenMinValues, 3),
-              oneHour: average(oneHourValues, 12),
-              twelveHour: average(twelveHourValues, 144),
-              twentyFourHour: average(twentyFourHourValues, 288)
-            };
-
-            console.log(`Final hashrates for ${minerId}:`, hashrates);
-            hashrateMap.set(minerId, hashrates);
+            hashrateMap.set(minerId, {
+              fifteenMin: average(fifteenMinValues, 3) ?? 0, // 15 min should have 3 points (5 min intervals)
+              oneHour: average(oneHourValues, 12) ?? 0, // 1 hour should have 12 points
+              twelveHour: average(twelveHourValues, 144) ?? 0, // 12 hours should have 144 points
+              twentyFourHour: average(twentyFourHourValues, 288) ?? 0 // 24 hours should have 288 points
+            });
           });
         }
 
@@ -242,7 +192,7 @@ export default function AnalyticsCard11() {
             jobsNotFound: jobsNotFoundMap.get(minerId) || 0,
             lastShareTimestamp: data.timestamp,
             hashrates: hashrateMap.get(minerId) || {
-              currentHashrate: 0,
+              fifteenMin: 0,
               oneHour: 0,
               twelveHour: 0,
               twentyFourHour: 0,
@@ -339,44 +289,50 @@ export default function AnalyticsCard11() {
               {/* Table header */}
               <thead className="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/20 border-t border-gray-100 dark:border-gray-700">
                 <tr>
-                  <th className="p-2">
-                    <div className="font-semibold text-left">Worker ID</div>
+                  <th className="p-2 whitespace-nowrap w-1/4">
+                    <div className="font-semibold text-left">Worker Name</div>
                   </th>
-                  <th className="p-2">
-                    <div className="font-semibold text-center">Live Hashrate</div>
+                  <th className="p-2 whitespace-nowrap w-[11%]">
+                    <div className="font-semibold text-center">15min Hashrate</div>
                   </th>
-                  <th className="p-2">
-                    <div className="font-semibold text-center">1H Hashrate</div>
+                  <th className="p-2 whitespace-nowrap w-[11%]">
+                    <div className="font-semibold text-center">1h Hashrate</div>
                   </th>
-                  <th className="p-2">
-                    <div className="font-semibold text-center">12H Hashrate</div>
+                  <th className="p-2 whitespace-nowrap w-[11%]">
+                    <div className="font-semibold text-center">12h Hashrate</div>
                   </th>
-                  <th className="p-2">
-                    <div className="font-semibold text-center">24H Hashrate</div>
+                  <th className="p-2 whitespace-nowrap w-[11%]">
+                    <div className="font-semibold text-center">24h Hashrate</div>
                   </th>
-                  <th className="p-2">
-                    <div className="font-semibold text-center">Total Shares</div>
+                  <th className="p-2 whitespace-nowrap w-[11%]">
+                    <div className="font-semibold text-center">Accepted</div>
                   </th>
-                  <th className="p-2">
-                    <div className="font-semibold text-center">Rejected Shares</div>
+                  <th className="p-2 whitespace-nowrap w-[11%]">
+                    <div className="font-semibold text-center">Rejected</div>
+                  </th>
+                  <th className="p-2 whitespace-nowrap w-[10%]">
+                    <div className="font-semibold text-center">Last Share</div>
                   </th>
                 </tr>
               </thead>
               {/* Table body */}
               <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
                 {workers.map((worker) => {
+                  const secondsSinceLastShare = Date.now() / 1000 - worker.lastShareTimestamp;
+                  const isOnline = secondsSinceLastShare < 300; // 5 minutes
+                  
                   const rejectedShares = worker.invalidShares + worker.duplicatedShares + worker.jobsNotFound;
 
                   return (
                     <tr key={worker.minerId}>
                       <td className="p-2 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className={`shrink-0 rounded-full mr-2 sm:mr-3 ${getWorkerStatus(worker) === 'online' ? 'bg-green-500' : 'bg-red-500'} w-2 h-2`}></div>
+                          <div className={`shrink-0 rounded-full mr-2 sm:mr-3 ${isOnline ? 'bg-green-500' : 'bg-red-500'} w-2 h-2`}></div>
                           <div className="font-medium text-gray-800 dark:text-gray-100">{worker.minerId}</div>
                         </div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center">{formatHashrate(worker.hashrates.currentHashrate)}</div>
+                        <div className="text-center">{formatHashrate(worker.hashrates.fifteenMin)}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
                         <div className="text-center">{formatHashrate(worker.hashrates.oneHour)}</div>
@@ -388,10 +344,15 @@ export default function AnalyticsCard11() {
                         <div className="text-center">{formatHashrate(worker.hashrates.twentyFourHour)}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center">{worker.totalShares}</div>
+                        <div className="text-center text-green-500">{worker.totalShares}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center">{rejectedShares}</div>
+                        <div className="text-center text-red-500">{rejectedShares}</div>
+                      </td>
+                      <td className="p-2 whitespace-nowrap">
+                        <div className="text-center">
+                          {formatTimeAgo(worker.lastShareTimestamp)}
+                        </div>
                       </td>
                     </tr>
                   );
