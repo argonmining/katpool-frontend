@@ -28,25 +28,10 @@ export default function PoolMinersOverTime() {
   const fetchData = async (range: string) => {
     try {
       setIsLoading(true);
-      const end = Math.floor(Date.now() / 1000);
-      const start = end - (parseInt(range) * 24 * 60 * 60);
-      const step = 300; // 5-minute intervals
-
-      const url = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
-      url.searchParams.append('query', 'miner_hash_rate_GHps');
-      url.searchParams.append('start', start.toString());
-      url.searchParams.append('end', end.toString());
-      url.searchParams.append('step', step.toString());
-
-      const response = await fetch(url.toString(), {
-        next: { revalidate: 10 }
+      const data = await $fetch(`/api/pool/miners/history?range=${range}`, {
+        retry: 1,
+        timeout: 10000,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch data');
-      }
-
-      const data = await response.json();
 
       if (data.status !== 'success' || !data.data?.result) {
         throw new Error('Invalid response format');
