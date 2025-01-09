@@ -15,7 +15,7 @@ interface MinersData {
 export default function PoolMinersOverTime() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '180d'>('30d');
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '180d' | '365d'>('7d');
   const [currentMiners, setCurrentMiners] = useState<string>('');
   const [chartData, setChartData] = useState<any>(null);
 
@@ -114,7 +114,7 @@ export default function PoolMinersOverTime() {
     fetchData(timeRange);
   }, [timeRange]);
 
-  const handleRangeChange = (range: '7d' | '30d' | '90d' | '180d') => {
+  const handleRangeChange = (range: '7d' | '30d' | '90d' | '180d' | '365d') => {
     setTimeRange(range);
   };
 
@@ -131,7 +131,7 @@ export default function PoolMinersOverTime() {
       <div className="px-5 pt-5">
         <header className="flex justify-between items-start mb-2">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Pool Miners over Time</h2>
-          <TimeRangeMenu align="right" onRangeChange={handleRangeChange} />
+          <TimeRangeMenu align="right" currentRange={timeRange} onRangeChange={handleRangeChange} />
         </header>
         <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Current Active Miners</div>
         <div className="flex items-start">

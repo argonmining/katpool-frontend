@@ -5,12 +5,22 @@ import { Menu, MenuButton, MenuItems, MenuItem, Transition } from '@headlessui/r
 interface TimeRangeMenuProps {
   align?: 'left' | 'right'
   className?: string
-  onRangeChange: (range: '7d' | '30d' | '90d' | '180d') => void
+  currentRange: '7d' | '30d' | '90d' | '180d' | '365d'
+  onRangeChange: (range: '7d' | '30d' | '90d' | '180d' | '365d') => void
 }
+
+const TIME_RANGE_LABELS: Record<string, string> = {
+  '7d': 'Last 7 Days',
+  '30d': 'Last 30 Days',
+  '90d': 'Last 3 Months',
+  '180d': 'Last 6 Months',
+  '365d': 'Last Year'
+};
 
 export default function TimeRangeMenu({
   align = 'right',
   className = '',
+  currentRange,
   onRangeChange
 }: TimeRangeMenuProps) {
   return (
@@ -18,13 +28,15 @@ export default function TimeRangeMenu({
       {({ open }) => (
         <>
           <MenuButton
-            className={`rounded-full ${open ? 'bg-gray-100 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400' : 'text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400'}`}
+            className={`flex items-center rounded-lg px-3 py-1.5 ${
+              open 
+                ? 'bg-gray-100 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400' 
+                : 'text-gray-600 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
           >
-            <span className="sr-only">Time Range Menu</span>
-            <svg className="w-8 h-8 fill-current" viewBox="0 0 32 32">
-              <circle cx="16" cy="16" r="2" />
-              <circle cx="10" cy="16" r="2" />
-              <circle cx="22" cy="16" r="2" />
+            <span className="text-sm font-medium">{TIME_RANGE_LABELS[currentRange]}</span>
+            <svg className="w-4 h-4 ml-2 fill-current" viewBox="0 0 16 16">
+              <path d="M8 11.4l-4.7-4.7 1.4-1.4 3.3 3.3 3.3-3.3 1.4 1.4z" />
             </svg>
           </MenuButton>
           <Transition
@@ -38,36 +50,24 @@ export default function TimeRangeMenu({
             leaveTo="opacity-0"
           >
             <MenuItems as="ul" className="focus:outline-none">
-              <MenuItem as="li">
-                {({ active }) => (
-                  <button
-                    onClick={() => onRangeChange('30d')}
-                    className={`font-medium text-sm w-full text-left py-1 px-3 ${active ? 'text-gray-800 dark:text-gray-200' : 'text-gray-600 dark:text-gray-300'}`}
-                  >
-                    Last 30 Days
-                  </button>
-                )}
-              </MenuItem>
-              <MenuItem as="li">
-                {({ active }) => (
-                  <button
-                    onClick={() => onRangeChange('90d')}
-                    className={`font-medium text-sm w-full text-left py-1 px-3 ${active ? 'text-gray-800 dark:text-gray-200' : 'text-gray-600 dark:text-gray-300'}`}
-                  >
-                    Last 3 Months
-                  </button>
-                )}
-              </MenuItem>
-              <MenuItem as="li">
-                {({ active }) => (
-                  <button
-                    onClick={() => onRangeChange('180d')}
-                    className={`font-medium text-sm w-full text-left py-1 px-3 ${active ? 'text-gray-800 dark:text-gray-200' : 'text-gray-600 dark:text-gray-300'}`}
-                  >
-                    Last 6 Months
-                  </button>
-                )}
-              </MenuItem>
+              {Object.entries(TIME_RANGE_LABELS).map(([range, label]) => (
+                <MenuItem key={range} as="li">
+                  {({ active }) => (
+                    <button
+                      onClick={() => onRangeChange(range as '7d' | '30d' | '90d' | '180d' | '365d')}
+                      className={`font-medium text-sm w-full text-left py-1 px-3 ${
+                        range === currentRange
+                          ? 'text-primary-500 dark:text-primary-400'
+                          : active
+                          ? 'text-gray-800 dark:text-gray-200'
+                          : 'text-gray-600 dark:text-gray-300'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  )}
+                </MenuItem>
+              ))}
             </MenuItems>
           </Transition>
         </>

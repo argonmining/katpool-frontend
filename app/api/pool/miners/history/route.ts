@@ -13,7 +13,8 @@ const TIME_RANGES: Record<string, TimeRange> = {
   '7d': { days: 7, recentStepMinutes: 5, historicalStepHours: 1 },
   '30d': { days: 30, recentStepMinutes: 5, historicalStepHours: 2 },
   '90d': { days: 90, recentStepMinutes: 5, historicalStepHours: 6 },
-  '180d': { days: 180, recentStepMinutes: 5, historicalStepHours: 12 }
+  '180d': { days: 180, recentStepMinutes: 5, historicalStepHours: 12 },
+  '365d': { days: 365, recentStepMinutes: 5, historicalStepHours: 24 }
 };
 
 export async function GET(request: Request) {

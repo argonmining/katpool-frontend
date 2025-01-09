@@ -16,7 +16,7 @@ interface HashRateData {
 export default function PoolHashrateOverTime() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '180d'>('7d');
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '180d' | '365d'>('7d');
   const [currentHashrate, setCurrentHashrate] = useState<string>('');
   const [chartData, setChartData] = useState<ChartData<'line'> | null>(null);
 
@@ -94,7 +94,7 @@ export default function PoolHashrateOverTime() {
     fetchData(timeRange);
   }, [timeRange]);
 
-  const handleRangeChange = (range: '7d' | '30d' | '90d' | '180d') => {
+  const handleRangeChange = (range: '7d' | '30d' | '90d' | '180d' | '365d') => {
     setTimeRange(range);
   };
 
@@ -111,7 +111,7 @@ export default function PoolHashrateOverTime() {
       <div className="px-5 pt-5">
         <header className="flex justify-between items-start mb-2">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Pool Hashrate over Time</h2>
-          <TimeRangeMenu align="right" onRangeChange={handleRangeChange} />
+          <TimeRangeMenu align="right" currentRange={timeRange} onRangeChange={handleRangeChange} />
         </header>
         <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Last 7 Days Average</div>
         <div className="flex items-start">

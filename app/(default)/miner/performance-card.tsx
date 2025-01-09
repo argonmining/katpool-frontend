@@ -18,7 +18,7 @@ export default function AnalyticsCard01() {
   const walletAddress = searchParams.get('wallet')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '180d'>('7d')
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '180d' | '365d'>('7d')
   const [currentHashrate, setCurrentHashrate] = useState<string>('')
   const [twoHourAvg, setTwoHourAvg] = useState<string>('')
   const [twelveHourAvg, setTwelveHourAvg] = useState<string>('')
@@ -32,7 +32,7 @@ export default function AnalyticsCard01() {
     { label: 'Last 6 Months', value: '180d' },
   ];
 
-  const handleRangeChange = (range: '7d' | '30d' | '90d' | '180d') => {
+  const handleRangeChange = (range: '7d' | '30d' | '90d' | '180d' | '365d') => {
     setTimeRange(range);
   };
 
@@ -248,7 +248,7 @@ export default function AnalyticsCard01() {
 
       <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex items-center justify-between">
         <h2 className="font-semibold text-gray-800 dark:text-gray-100">Miner Performance</h2>
-        <TimeRangeMenu align="right" onRangeChange={handleRangeChange} />
+        <TimeRangeMenu align="right" currentRange={timeRange} onRangeChange={handleRangeChange} />
       </header>
       <div className="px-5 py-1">
         <div className="flex flex-wrap max-sm:*:w-1/2">
