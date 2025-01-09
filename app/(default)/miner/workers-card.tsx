@@ -117,40 +117,79 @@ export default function AnalyticsCard11() {
             const minerId = result.metric.wokername;
             const values = result.values;
             
+            // Debug logging
+            console.log(`Processing hashrate data for worker ${minerId}`);
+            console.log(`Number of data points: ${values.length}`);
+            if (values.length > 0) {
+              console.log(`Sample data point: [${values[0][0]}, ${values[0][1]}]`);
+            }
+
             // Calculate time windows
             const fifteenMinAgo = now - (15 * 60);
             const oneHourAgo = now - (60 * 60);
             const twelveHourAgo = now - (12 * 60 * 60);
             const twentyFourHourAgo = now - (24 * 60 * 60);
 
-            // Filter values for each time window, with null checks
+            // Filter values for each time window
             const fifteenMinValues = values.filter(([timestamp]) => timestamp >= fifteenMinAgo);
             const oneHourValues = values.filter(([timestamp]) => timestamp >= oneHourAgo);
             const twelveHourValues = values.filter(([timestamp]) => timestamp >= twelveHourAgo);
             const twentyFourHourValues = values;
 
+            // Debug logging for filtered values
+            console.log(`Filtered values counts:
+              15min: ${fifteenMinValues.length}
+              1h: ${oneHourValues.length}
+              12h: ${twelveHourValues.length}
+              24h: ${twentyFourHourValues.length}
+            `);
+
             const average = (vals: [number, string][], requiredPoints: number) => {
-              if (!vals || vals.length === 0) return 0; // Return 0 for no data
-              
-              // Filter out any invalid values
-              const validVals = vals.filter(val => Array.isArray(val) && val.length === 2 && !isNaN(Number(val[1])));
-              
-              // If we have some data but not enough points, pad with zeros
-              const paddedVals = [...validVals];
-              while (paddedVals.length < requiredPoints) {
-                paddedVals.push([0, "0"]);
+              if (!vals || vals.length === 0) {
+                console.log('No values to average');
+                return 0;
               }
               
-              const sum = paddedVals.reduce((acc, [_, val]) => acc + Number(val), 0);
-              return sum / requiredPoints;
+              // Convert all values to numbers and filter out invalid ones
+              const validVals = vals
+                .map(([timestamp, val]) => Number(val))
+                .filter(val => !isNaN(val) && val >= 0);
+
+              if (validVals.length === 0) {
+                console.log('No valid values after filtering');
+                return 0;
+              }
+
+              // Calculate mean and standard deviation
+              const mean = validVals.reduce((sum, val) => sum + val, 0) / validVals.length;
+              const stdDev = Math.sqrt(
+                validVals.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / validVals.length
+              );
+
+              // Filter out outliers (values more than 3 standard deviations from mean)
+              const filteredVals = validVals.filter(val => 
+                Math.abs(val - mean) <= 3 * stdDev
+              );
+
+              if (filteredVals.length === 0) {
+                console.log('No values left after outlier removal');
+                return 0;
+              }
+
+              const finalAvg = filteredVals.reduce((sum, val) => sum + val, 0) / filteredVals.length;
+              console.log(`Calculated average: ${finalAvg} from ${filteredVals.length} values`);
+              return finalAvg;
             };
 
-            hashrateMap.set(minerId, {
-              currentHashrate: average(fifteenMinValues, 3), // 15 min should have 3 points (5 min intervals)
-              oneHour: average(oneHourValues, 12), // 1 hour should have 12 points
-              twelveHour: average(twelveHourValues, 144), // 12 hours should have 144 points
-              twentyFourHour: average(twentyFourHourValues, 288) // 24 hours should have 288 points
-            });
+            const hashrates = {
+              currentHashrate: average(fifteenMinValues, 3),
+              oneHour: average(oneHourValues, 12),
+              twelveHour: average(twelveHourValues, 144),
+              twentyFourHour: average(twentyFourHourValues, 288)
+            };
+
+            console.log(`Final hashrates for ${minerId}:`, hashrates);
+            hashrateMap.set(minerId, hashrates);
           });
         }
 
