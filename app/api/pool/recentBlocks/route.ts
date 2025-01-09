@@ -20,7 +20,13 @@ interface Block {
 
 export async function GET() {
   try {
-    const response = await fetch('http://kas.katpool.xyz:8080/api/v1/query?query=miner_rewards');
+    // Calculate timestamps
+    const end = Math.floor(Date.now() / 1000);
+    const start = end - 24 * 60 * 60; // Get last 24 hours of blocks to ensure we have enough recent ones
+
+    const response = await fetch(
+      `http://kas.katpool.xyz:8080/api/v1/query_range?query=miner_rewards&start=${start}&end=${end}&step=10000`
+    );
 
     if (!response.ok) {
       throw new Error('Failed to fetch data');

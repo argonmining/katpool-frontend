@@ -4,6 +4,9 @@ export const runtime = 'edge';
 export const revalidate = 10;
 
 interface MetricResult {
+  metric: {
+    block_hash: string;
+  };
   values: [number, string][];
 }
 
@@ -14,7 +17,7 @@ export async function GET() {
     const start = end - 24 * 60 * 60; // 24 hours ago
 
     const response = await fetch(
-      `http://kas.katpool.xyz:8080/api/v1/query_range?query=paid_blocks_1min_count&start=${start}&end=${end}&step=86400`
+      `http://kas.katpool.xyz:8080/api/v1/query_range?query=miner_rewards&start=${start}&end=${end}&step=10000`
     );
 
     if (!response.ok) {
@@ -27,16 +30,18 @@ export async function GET() {
       throw new Error('Invalid response format');
     }
 
-    // Count total blocks in last 24h by summing the values from each miner
-    const totalBlocks24h = data.data.result.reduce((total: number, item: MetricResult) => {
-      const blockCount = parseInt(item.values?.[0]?.[1] || '0');
-      return total + blockCount;
-    }, 0);
+    // Create a Set to store unique block hashes
+    const uniqueBlockHashes = new Set<string>();
+
+    // Process each result and store unique block hashes
+    data.data.result.forEach((item: MetricResult) => {
+      uniqueBlockHashes.add(item.metric.block_hash);
+    });
 
     return NextResponse.json({
       status: 'success',
       data: {
-        totalBlocks24h
+        totalBlocks24h: uniqueBlockHashes.size
       }
     });
 
