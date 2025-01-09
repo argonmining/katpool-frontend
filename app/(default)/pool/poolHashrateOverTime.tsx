@@ -113,7 +113,7 @@ export default function PoolHashrateOverTime() {
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Pool Hashrate over Time</h2>
           <TimeRangeMenu align="right" currentRange={timeRange} onRangeChange={handleRangeChange} />
         </header>
-        <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Last 7 Days Average</div>
+        <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Average Hashrate</div>
         <div className="flex items-start">
           {isLoading ? (
             <div className="h-8 w-28 bg-gray-100 dark:bg-gray-700/50 animate-pulse rounded"></div>

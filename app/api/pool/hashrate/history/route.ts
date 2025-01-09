@@ -13,7 +13,8 @@ const TIME_RANGES: Record<string, TimeRange> = {
   '7d': { days: 7, recentStepMinutes: 5, historicalStepHours: 1 },
   '30d': { days: 30, recentStepMinutes: 5, historicalStepHours: 2 },
   '90d': { days: 90, recentStepMinutes: 5, historicalStepHours: 6 },
-  '180d': { days: 180, recentStepMinutes: 5, historicalStepHours: 12 }
+  '180d': { days: 180, recentStepMinutes: 5, historicalStepHours: 12 },
+  '365d': { days: 365, recentStepMinutes: 5, historicalStepHours: 24 }
 };
 
 export async function GET(request: Request) {
@@ -50,6 +51,12 @@ export async function GET(request: Request) {
     ]);
 
     if (!recentResponse.ok || !historicalResponse.ok) {
+      console.error('Pool API error:', {
+        recentStatus: recentResponse.status,
+        historicalStatus: historicalResponse.status,
+        recentUrl: recentUrl.toString(),
+        historicalUrl: historicalUrl.toString()
+      });
       throw new Error(`HTTP error! status: ${recentResponse.status} / ${historicalResponse.status}`);
     }
 
@@ -81,7 +88,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error proxying pool hashrate history:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch pool hashrate history' },
+      { error: error instanceof Error ? error.message : 'Failed to fetch pool hashrate history' },
       { status: 500 }
     );
   }
