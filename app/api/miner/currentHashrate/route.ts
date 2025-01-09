@@ -15,18 +15,17 @@ export async function GET(request: Request) {
       );
     }
 
-    // Use a 5-minute average for current value instead of instant query
-    const end = Math.floor(Date.now() / 1000);
-    const start = end - 300; // Last 5 minutes
-    const url = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
-    url.searchParams.append('query', `avg_over_time(sum(miner_hash_rate_GHps{wallet_address="${wallet}"})[5m:15s])`);
-    url.searchParams.append('start', start.toString());
-    url.searchParams.append('end', end.toString());
-    url.searchParams.append('step', '15');  // 15-second steps
+    // Use instant query with max_over_time to get the most recent non-zero value
+    const url = new URL('http://kas.katpool.xyz:8080/api/v1/query');
+    url.searchParams.append('query', `sum(miner_hash_rate_GHps{wallet_address="${wallet}"} > 0)`);
 
     const response = await fetch(url);
 
     if (!response.ok) {
+      console.error('Pool API error:', {
+        status: response.status,
+        url: url.toString()
+      });
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
@@ -37,7 +36,7 @@ export async function GET(request: Request) {
     }
 
     console.log('Current hashrate response:', {
-      query: `avg_over_time(sum(miner_hash_rate_GHps{wallet_address="${wallet}"})[5m:15s])`,
+      query: `sum(miner_hash_rate_GHps{wallet_address="${wallet}"} > 0)`,
       result: data.data.result
     });
 
