@@ -133,25 +133,45 @@ export default function AnalyticsCard01() {
         throw new Error('Invalid response status');
       }
 
-      if (!chartResponse.data?.result) {
-        throw new Error('Missing result data');
+      // Generate default data points for the selected time range
+      const now = Math.floor(Date.now() / 1000);
+      let duration: number;
+      switch (timeRange) {
+        case '7d': duration = 7 * 24 * 60 * 60; break;
+        case '30d': duration = 30 * 24 * 60 * 60; break;
+        case '90d': duration = 90 * 24 * 60 * 60; break;
+        case '180d': duration = 180 * 24 * 60 * 60; break;
+        case '365d': duration = 365 * 24 * 60 * 60; break;
+        default: duration = 7 * 24 * 60 * 60;
+      }
+      const start = now - duration;
+      const step = Math.max(Math.floor(duration / 100), 300); // At least 5 minutes between points, max 100 points
+
+      // Create array of timestamps
+      const defaultTimestamps = [];
+      for (let t = start; t <= now; t += step) {
+        defaultTimestamps.push(t);
       }
 
-      if (!Array.isArray(chartResponse.data.result) || chartResponse.data.result.length === 0) {
-        throw new Error('Empty result array');
+      // Parse the chart data, or use zeros if no data
+      let chartValues: HashRateData[] = [];
+      
+      if (chartResponse.data?.result?.[0]?.values && Array.isArray(chartResponse.data.result[0].values)) {
+        chartValues = chartResponse.data.result[0].values
+          .map(([timestamp, value]: [number, string]) => ({
+            timestamp,
+            value: Number(value)
+          }))
+          .sort((a: HashRateData, b: HashRateData) => a.timestamp - b.timestamp);
       }
 
-      if (!chartResponse.data.result[0].values || !Array.isArray(chartResponse.data.result[0].values)) {
-        throw new Error('Invalid values array');
-      }
-
-      // Parse the chart data
-      const chartValues: HashRateData[] = chartResponse.data.result[0].values.map(
-        ([timestamp, value]: [number, string]) => ({
+      // If no data, use default timestamps with zero values
+      if (chartValues.length === 0) {
+        chartValues = defaultTimestamps.map(timestamp => ({
           timestamp,
-          value: Number(value)
-        })
-      ).sort((a: HashRateData, b: HashRateData) => a.timestamp - b.timestamp);
+          value: 0
+        }));
+      }
 
       // Update chart data
       setChartData({
