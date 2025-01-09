@@ -17,6 +17,25 @@ interface TimeWindow {
   step: number;
 }
 
+const timeWindows: Record<string, TimeWindow> = {
+  '15min': {
+    duration: 15 * 60,
+    step: 60    // 1-minute intervals for 15 min (15 points)
+  },
+  '1h': {
+    duration: 60 * 60,
+    step: 300   // 5-minute intervals for 1 hour (12 points)
+  },
+  '12h': {
+    duration: 12 * 60 * 60,
+    step: 900   // 15-minute intervals for 12 hours (48 points)
+  },
+  '24h': {
+    duration: 24 * 60 * 60,
+    step: 1800  // 30-minute intervals for 24 hours (48 points)
+  }
+};
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -30,26 +49,6 @@ export async function GET(request: Request) {
     }
 
     const now = Math.floor(Date.now() / 1000);
-
-    // Define time windows with appropriate step sizes
-    const timeWindows: Record<string, TimeWindow> = {
-      fifteenMin: {
-        duration: 15 * 60,
-        step: 60    // 1-minute intervals for 15 min (15 points)
-      },
-      oneHour: {
-        duration: 60 * 60,
-        step: 300   // 5-minute intervals for 1 hour (12 points)
-      },
-      twelveHour: {
-        duration: 12 * 60 * 60,
-        step: 900   // 15-minute intervals for 12 hours (48 points)
-      },
-      twentyFourHour: {
-        duration: 24 * 60 * 60,
-        step: 1800  // 30-minute intervals for 24 hours (48 points)
-      }
-    };
 
     // Create API calls for each time window
     const fetchPromises = Object.entries(timeWindows).map(([key, window]) => {
@@ -73,7 +72,12 @@ export async function GET(request: Request) {
         if (!workerData.has(minerId)) {
           workerData.set(minerId, {
             metric: worker.metric,
-            averages: {}
+            averages: {
+              fifteenMin: 0,
+              oneHour: 0,
+              twelveHour: 0,
+              twentyFourHour: 0
+            }
           });
         }
 
@@ -84,20 +88,17 @@ export async function GET(request: Request) {
         const sum = values.reduce((acc, [_, val]) => acc + Number(val), 0);
         const avg = sum / values.length;
 
-        workerData.get(minerId).averages[key] = avg;
+        // Map the key to the correct average field
+        const averageField = key === '15min' ? 'fifteenMin' :
+                           key === '1h' ? 'oneHour' :
+                           key === '12h' ? 'twelveHour' : 'twentyFourHour';
+
+        workerData.get(minerId).averages[averageField] = avg;
       });
     });
 
     // Convert Map to array for response
-    const processedResult = Array.from(workerData.values()).map(worker => ({
-      metric: worker.metric,
-      averages: {
-        fifteenMin: worker.averages.fifteenMin ?? 0,
-        oneHour: worker.averages.oneHour ?? 0,
-        twelveHour: worker.averages.twelveHour ?? 0,
-        twentyFourHour: worker.averages.twentyFourHour ?? 0
-      }
-    }));
+    const processedResult = Array.from(workerData.values());
 
     return NextResponse.json({
       status: 'success',

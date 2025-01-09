@@ -22,7 +22,12 @@ interface WorkerHashrateData {
     miner_id: string;
     [key: string]: string;
   };
-  values: [number, string][];
+  averages: {
+    fifteenMin: number;
+    oneHour: number;
+    twelveHour: number;
+    twentyFourHour: number;
+  };
 }
 
 interface WorkerData {
@@ -106,44 +111,9 @@ export default function AnalyticsCard11() {
         }>();
 
         if (hashrateRes?.status === 'success' && hashrateRes.data?.result) {
-          const now = Math.floor(Date.now() / 1000);
-          
-          hashrateRes.data.result.forEach((result: WorkerHashrateData) => {
+          hashrateRes.data.result.forEach((result: any) => {
             const minerId = result.metric.miner_id;
-            const values = result.values;
-            
-            // Calculate time windows
-            const fifteenMinAgo = now - (15 * 60);
-            const oneHourAgo = now - (60 * 60);
-            const twelveHourAgo = now - (12 * 60 * 60);
-            const twentyFourHourAgo = now - (24 * 60 * 60);
-
-            // Filter values for each time window
-            const fifteenMinValues = values.filter(([timestamp]) => timestamp >= fifteenMinAgo);
-            const oneHourValues = values.filter(([timestamp]) => timestamp >= oneHourAgo);
-            const twelveHourValues = values.filter(([timestamp]) => timestamp >= twelveHourAgo);
-            const twentyFourHourValues = values;
-
-            const average = (vals: [number, string][], requiredPoints: number) => {
-              if (vals.length === 0) return null; // No data at all
-              
-              // If we have some data but not enough points, pad with zeros
-              const paddedVals = [...vals];
-              while (paddedVals.length < requiredPoints) {
-                paddedVals.push([0, "0"]);
-              }
-              
-              const sum = paddedVals.reduce((acc, [_, val]) => acc + Number(val), 0);
-              const avg = sum / requiredPoints;
-              return avg === 0 ? 0 : avg; // Return 0 if actual zero, not null
-            };
-
-            hashrateMap.set(minerId, {
-              fifteenMin: average(fifteenMinValues, 3) ?? 0, // 15 min should have 3 points (5 min intervals)
-              oneHour: average(oneHourValues, 12) ?? 0, // 1 hour should have 12 points
-              twelveHour: average(twelveHourValues, 144) ?? 0, // 12 hours should have 144 points
-              twentyFourHour: average(twentyFourHourValues, 288) ?? 0 // 24 hours should have 288 points
-            });
+            hashrateMap.set(minerId, result.averages);
           });
         }
 
