@@ -5,7 +5,20 @@ export const revalidate = 10;
 
 export async function GET() {
   try {
-    const response = await fetch('http://kas.katpool.xyz:8080/api/v1/query?query=sum(miner_wallet_association)');
+    // Get data for the last hour to determine truly active miners
+    const end = Math.floor(Date.now() / 1000);
+    const start = end - (60 * 60); // Last hour
+    const step = 300; // 5-minute intervals
+
+    const url = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
+    url.searchParams.append('query', 'miner_hash_rate_GHps');
+    url.searchParams.append('start', start.toString());
+    url.searchParams.append('end', end.toString());
+    url.searchParams.append('step', step.toString());
+
+    const response = await fetch(url, {
+      next: { revalidate: 10 }
+    });
 
     if (!response.ok) {
       throw new Error('Failed to fetch data');
@@ -13,12 +26,19 @@ export async function GET() {
 
     const data = await response.json();
 
-    if (data.status !== 'success' || !data.data?.result?.[0]?.value?.[1]) {
+    if (data.status !== 'success' || !data.data?.result) {
       throw new Error('Invalid response format');
     }
 
-    // Extract the second value from the value array which represents the active miners count
-    const activeMiners = parseInt(data.data.result[0].value[1]);
+    // Count unique miners that have had any hashrate in the last hour
+    const activeMiners = new Set(
+      data.data.result
+        .filter((miner: any) => {
+          // Check if miner had any non-zero hashrate in the period
+          return miner.values.some(([_, value]: [number, string]) => Number(value) > 0);
+        })
+        .map((miner: any) => miner.metric.wallet_address)
+    ).size;
 
     return NextResponse.json({
       status: 'success',
