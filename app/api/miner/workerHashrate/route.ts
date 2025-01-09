@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
-export const revalidate = 300; // 5 minutes since that's our step size
 
 interface WorkerHashrate {
   metric: {
@@ -25,39 +24,48 @@ export async function GET(request: Request) {
       );
     }
 
-    // Calculate time range
+    // Calculate time range for historical data
     const end = Math.floor(Date.now() / 1000);
     const start = end - (24 * 60 * 60); // 24 hours ago
     const step = 300; // 5 minutes in seconds
 
-    // Construct the URL with encoded wallet address
-    const url = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
-    url.searchParams.append('query', `worker_hash_rate_GHps{wallet_address="${wallet}"}`);
-    url.searchParams.append('start', start.toString());
-    url.searchParams.append('end', end.toString());
-    url.searchParams.append('step', step.toString());
+    // Make both API calls in parallel
+    const [currentResponse, historicalResponse] = await Promise.all([
+      // Fetch current hashrate
+      fetch(new URL(`http://kas.katpool.xyz:8080/api/v1/query?query=worker_hash_rate_GHps{wallet_address="${wallet}"}`)),
+      // Fetch historical data
+      fetch(new URL(`http://kas.katpool.xyz:8080/api/v1/query_range?query=worker_hash_rate_GHps{wallet_address="${wallet}"}&start=${start}&end=${end}&step=${step}`))
+    ]);
 
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (!currentResponse.ok || !historicalResponse.ok) {
+      throw new Error('Failed to fetch data');
     }
 
-    const data = await response.json();
+    const [currentData, historicalData] = await Promise.all([
+      currentResponse.json(),
+      historicalResponse.json()
+    ]);
 
-    if (data.status !== 'success' || !data.data?.result) {
+    if (currentData.status !== 'success' || historicalData.status !== 'success') {
       throw new Error('Invalid response format');
     }
 
-    // Process the data to calculate better averages
-    const processedResult = data.data.result.map((worker: WorkerHashrate) => {
+    // Create a map of current hashrates
+    const currentHashrates = new Map(
+      currentData.data.result.map((item: any) => [
+        item.metric.wokername,
+        Number(item.value[1])
+      ])
+    );
+
+    // Process historical data and combine with current hashrates
+    const processedResult = historicalData.data.result.map((worker: WorkerHashrate) => {
       const values = worker.values;
       if (!values || values.length === 0) return worker;
 
       // Calculate averages for different time windows
       const now = Math.floor(Date.now() / 1000);
       const timeWindows = {
-        fiveMin: now - (5 * 60),
         oneHour: now - (60 * 60),
         twelveHour: now - (12 * 60 * 60),
         twentyFourHour: now - (24 * 60 * 60)
@@ -90,17 +98,19 @@ export async function GET(request: Request) {
           : 0;
       };
 
+      // Get current hashrate for this worker
+      const currentHashrate = currentHashrates.get(worker.metric.wokername) || 0;
+
       // Calculate averages for each time window
       const averages = {
-        fiveMin: calculateWindowAverage(timeWindows.fiveMin),
         oneHour: calculateWindowAverage(timeWindows.oneHour),
         twelveHour: calculateWindowAverage(timeWindows.twelveHour),
         twentyFourHour: calculateWindowAverage(timeWindows.twentyFourHour)
       };
 
-      // Add the averages to the response
       return {
-        ...worker,
+        metric: worker.metric,
+        currentHashrate,
         averages
       };
     });
@@ -108,7 +118,6 @@ export async function GET(request: Request) {
     return NextResponse.json({
       status: 'success',
       data: {
-        ...data.data,
         result: processedResult
       }
     });
