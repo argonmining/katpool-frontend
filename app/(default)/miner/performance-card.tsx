@@ -40,12 +40,21 @@ export default function AnalyticsCard01() {
     const cutoffTime = Date.now() / 1000 - (hoursAgo * 3600);
     
     // Get all values within the time range
-    const relevantValues = values.filter(v => v.timestamp >= cutoffTime);
+    const relevantValues = values.filter(v => v.timestamp >= cutoffTime && v.value >= 0);
     if (relevantValues.length === 0) return 0;
 
-    // Calculate simple average of all values in the time range
-    const sum = relevantValues.reduce((acc, val) => acc + val.value, 0);
-    return sum / relevantValues.length;
+    // Calculate average, ignoring any extreme outliers (values more than 3 standard deviations from mean)
+    const mean = relevantValues.reduce((acc, val) => acc + val.value, 0) / relevantValues.length;
+    const stdDev = Math.sqrt(
+      relevantValues.reduce((acc, val) => acc + Math.pow(val.value - mean, 2), 0) / relevantValues.length
+    );
+    const validValues = relevantValues.filter(v => 
+      Math.abs(v.value - mean) <= 3 * stdDev && v.value > 0
+    );
+
+    return validValues.length > 0
+      ? validValues.reduce((acc, val) => acc + val.value, 0) / validValues.length
+      : 0;
   };
 
   const fetchData = async () => {
@@ -53,8 +62,14 @@ export default function AnalyticsCard01() {
     
     try {
       setIsLoading(true);
-      const [currentResponse, historyResponse] = await Promise.all([
+
+      const [currentResponse, averagesResponse, chartResponse] = await Promise.all([
         $fetch(`/api/miner/currentHashrate?wallet=${walletAddress}`, {
+          retry: 3,
+          retryDelay: 1000,
+          timeout: 10000,
+        }),
+        $fetch(`/api/miner/averages?wallet=${walletAddress}`, {
           retry: 3,
           retryDelay: 1000,
           timeout: 10000,
@@ -79,53 +94,70 @@ export default function AnalyticsCard01() {
         setCurrentHashrate('0 H/s');
       }
 
-      // Handle historical data
-      if (!historyResponse || historyResponse.error) {
-        console.error('API Error:', historyResponse?.error || 'No response');
-        throw new Error(historyResponse?.error || 'Failed to fetch data');
+      // Handle averages data
+      if (!averagesResponse || averagesResponse.error) {
+        console.error('API Error:', averagesResponse?.error || 'No response');
+        throw new Error(averagesResponse?.error || 'Failed to fetch data');
       }
 
-      // Check each level of the response structure
-      if (!historyResponse.status || historyResponse.status !== 'success') {
+      if (!averagesResponse.status || averagesResponse.status !== 'success') {
         throw new Error('Invalid response status');
       }
 
-      if (!historyResponse.data?.result) {
-        throw new Error('Missing result data');
+      if (!averagesResponse.data?.result?.[0]?.values) {
+        throw new Error('Missing values data');
       }
 
-      if (!Array.isArray(historyResponse.data.result) || historyResponse.data.result.length === 0) {
-        throw new Error('Empty result array');
-      }
-
-      if (!historyResponse.data.result[0].values || !Array.isArray(historyResponse.data.result[0].values)) {
-        throw new Error('Invalid values array');
-      }
-
-      // Parse the response data
-      const values: HashRateData[] = historyResponse.data.result[0].values.map(
+      // Parse the averages data
+      const averagesValues: HashRateData[] = averagesResponse.data.result[0].values.map(
         ([timestamp, value]: [number, string]) => ({
           timestamp,
           value: Number(value)
         })
       ).sort((a: HashRateData, b: HashRateData) => a.timestamp - b.timestamp);
 
-      if (values.length === 0) {
-        throw new Error('No data points available');
+      // Calculate averages for different time periods
+      setTwoHourAvg(formatHashrateCompact(calculateTimeRangeAverage(averagesValues, 2)));
+      setTwelveHourAvg(formatHashrateCompact(calculateTimeRangeAverage(averagesValues, 12)));
+      setTwentyFourHourAvg(formatHashrateCompact(calculateTimeRangeAverage(averagesValues, 24)));
+      setFortyEightHourAvg(formatHashrateCompact(calculateTimeRangeAverage(averagesValues, 48)));
+
+      // Handle chart data
+      if (!chartResponse || chartResponse.error) {
+        console.error('API Error:', chartResponse?.error || 'No response');
+        throw new Error(chartResponse?.error || 'Failed to fetch data');
       }
 
-      // Calculate averages for different time periods
-      setTwoHourAvg(formatHashrateCompact(calculateTimeRangeAverage(values, 2)));
-      setTwelveHourAvg(formatHashrateCompact(calculateTimeRangeAverage(values, 12)));
-      setTwentyFourHourAvg(formatHashrateCompact(calculateTimeRangeAverage(values, 24)));
-      setFortyEightHourAvg(formatHashrateCompact(calculateTimeRangeAverage(values, 48)));
+      if (!chartResponse.status || chartResponse.status !== 'success') {
+        throw new Error('Invalid response status');
+      }
+
+      if (!chartResponse.data?.result) {
+        throw new Error('Missing result data');
+      }
+
+      if (!Array.isArray(chartResponse.data.result) || chartResponse.data.result.length === 0) {
+        throw new Error('Empty result array');
+      }
+
+      if (!chartResponse.data.result[0].values || !Array.isArray(chartResponse.data.result[0].values)) {
+        throw new Error('Invalid values array');
+      }
+
+      // Parse the chart data
+      const chartValues: HashRateData[] = chartResponse.data.result[0].values.map(
+        ([timestamp, value]: [number, string]) => ({
+          timestamp,
+          value: Number(value)
+        })
+      ).sort((a: HashRateData, b: HashRateData) => a.timestamp - b.timestamp);
 
       // Update chart data
       setChartData({
-        labels: values.map(d => d.timestamp * 1000),
+        labels: chartValues.map(d => d.timestamp * 1000),
         datasets: [
           {
-            data: values.map(d => ({
+            data: chartValues.map(d => ({
               x: d.timestamp * 1000,
               y: d.value
             })),
