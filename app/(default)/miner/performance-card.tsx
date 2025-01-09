@@ -87,8 +87,9 @@ export default function AnalyticsCard01() {
         throw new Error(currentResponse?.error || 'Failed to fetch current hashrate');
       }
 
-      if (currentResponse.status === 'success' && currentResponse.data?.result?.[0]?.value?.[1]) {
-        const currentValue = Number(currentResponse.data.result[0].value[1]);
+      if (currentResponse.status === 'success' && currentResponse.data?.result?.[0]?.value) {
+        const [timestamp, value] = currentResponse.data.result[0].value;
+        const currentValue = Number(value);
         setCurrentHashrate(formatHashrateCompact(currentValue));
       } else {
         setCurrentHashrate('0 H/s');
