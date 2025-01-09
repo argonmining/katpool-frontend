@@ -290,7 +290,7 @@ export default function AnalyticsCard01() {
               <div className="flex items-center">
                 <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mr-2">{currentHashrate}</div>
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">5min Hashrate</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Last 5min Avg</div>
             </div>
             <div className="hidden md:block w-px h-8 bg-gray-200 dark:bg-gray-700 mr-5" aria-hidden="true"></div>
           </div>
