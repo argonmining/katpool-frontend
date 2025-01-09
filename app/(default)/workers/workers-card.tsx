@@ -12,7 +12,7 @@ interface Worker {
   };
   values: [number, string][];
   averages: {
-    fifteenMin: number;
+    fiveMin: number;
     oneHour: number;
     twelveHour: number;
     twentyFourHour: number;
@@ -61,8 +61,8 @@ const WorkersCard: React.FC<WorkersCardProps> = ({ wallet }) => {
   };
 
   const getWorkerStatus = (worker: Worker) => {
-    const fifteenMinHashrate = worker.averages.fifteenMin;
-    if (fifteenMinHashrate === 0) return 'offline';
+    const fiveMinHashrate = worker.averages.fiveMin;
+    if (fiveMinHashrate === 0) return 'offline';
     return 'online';
   };
 
@@ -89,7 +89,7 @@ const WorkersCard: React.FC<WorkersCardProps> = ({ wallet }) => {
                   <div className="font-semibold text-center">Status</div>
                 </th>
                 <th className="p-2">
-                  <div className="font-semibold text-center">15m Hashrate</div>
+                  <div className="font-semibold text-center">5m Hashrate</div>
                 </th>
                 <th className="p-2">
                   <div className="font-semibold text-center">1h Hashrate</div>
@@ -149,7 +149,7 @@ const WorkersCard: React.FC<WorkersCardProps> = ({ wallet }) => {
                       </td>
                       <td className="p-2">
                         <div className="text-center text-emerald-500">
-                          {formatHashrate(worker.averages.fifteenMin)}
+                          {formatHashrate(worker.averages.fiveMin)}
                         </div>
                       </td>
                       <td className="p-2">

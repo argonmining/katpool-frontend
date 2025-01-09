@@ -57,7 +57,7 @@ export async function GET(request: Request) {
       // Calculate averages for different time windows
       const now = Math.floor(Date.now() / 1000);
       const timeWindows = {
-        fifteenMin: now - (15 * 60),
+        fiveMin: now - (5 * 60),
         oneHour: now - (60 * 60),
         twelveHour: now - (12 * 60 * 60),
         twentyFourHour: now - (24 * 60 * 60)
@@ -65,27 +65,34 @@ export async function GET(request: Request) {
 
       // Function to calculate sophisticated average for a time window
       const calculateWindowAverage = (startTime: number) => {
+        // Get all values within the time range and convert to numbers
         const windowValues = values
           .filter(([timestamp]) => timestamp >= startTime)
           .map(([_, value]) => Number(value))
-          .filter(value => !isNaN(value) && value > 0);
+          .filter(value => !isNaN(value) && value >= 0); // Filter out NaN and negative values
 
         if (windowValues.length === 0) return 0;
 
-        // Sort values and remove outliers (top and bottom 10%)
-        const sortedValues = [...windowValues].sort((a, b) => a - b);
-        const trimAmount = Math.floor(sortedValues.length * 0.1);
-        const trimmedValues = sortedValues.slice(trimAmount, -trimAmount || undefined);
+        // Calculate mean and standard deviation
+        const mean = windowValues.reduce((sum, value) => sum + value, 0) / windowValues.length;
+        const stdDev = Math.sqrt(
+          windowValues.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / windowValues.length
+        );
 
-        // Calculate average of remaining values
-        return trimmedValues.length > 0
-          ? trimmedValues.reduce((sum, value) => sum + value, 0) / trimmedValues.length
+        // Filter out values more than 3 standard deviations from the mean
+        const validValues = windowValues.filter(value => 
+          Math.abs(value - mean) <= 3 * stdDev
+        );
+
+        // Calculate final average from remaining values
+        return validValues.length > 0
+          ? validValues.reduce((sum, value) => sum + value, 0) / validValues.length
           : 0;
       };
 
       // Calculate averages for each time window
       const averages = {
-        fifteenMin: calculateWindowAverage(timeWindows.fifteenMin),
+        fiveMin: calculateWindowAverage(timeWindows.fiveMin),
         oneHour: calculateWindowAverage(timeWindows.oneHour),
         twelveHour: calculateWindowAverage(timeWindows.twelveHour),
         twentyFourHour: calculateWindowAverage(timeWindows.twentyFourHour)
