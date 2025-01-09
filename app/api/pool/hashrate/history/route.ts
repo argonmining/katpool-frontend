@@ -1,18 +1,19 @@
 import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
-export const revalidate = 10; // Revalidate every 10 seconds
+export const revalidate = 10;
 
 interface TimeRange {
   days: number;
-  stepHours: number;
+  recentStepMinutes: number;
+  historicalStepHours: number;
 }
 
 const TIME_RANGES: Record<string, TimeRange> = {
-  '7d': { days: 7, stepHours: 4 },
-  '30d': { days: 30, stepHours: 18 },
-  '90d': { days: 90, stepHours: 24 * 4 },
-  '180d': { days: 180, stepHours: 24 * 2 }
+  '7d': { days: 7, recentStepMinutes: 5, historicalStepHours: 1 },
+  '30d': { days: 30, recentStepMinutes: 5, historicalStepHours: 2 },
+  '90d': { days: 90, recentStepMinutes: 5, historicalStepHours: 6 },
+  '180d': { days: 180, recentStepMinutes: 5, historicalStepHours: 12 }
 };
 
 export async function GET(request: Request) {
@@ -24,27 +25,59 @@ export async function GET(request: Request) {
       throw new Error('Invalid time range');
     }
 
-    const { days, stepHours } = TIME_RANGES[range];
+    const { days, recentStepMinutes, historicalStepHours } = TIME_RANGES[range];
     const end = Math.floor(Date.now() / 1000);
-    const start = end - (days * 24 * 60 * 60);
-    const step = stepHours * 60 * 60;
+    const recentStart = end - (2 * 60 * 60); // Last 2 hours
+    const historicalStart = end - (days * 24 * 60 * 60);
 
-    const url = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
-    url.searchParams.append('query', 'pool_hash_rate_GHps');
-    url.searchParams.append('start', start.toString());
-    url.searchParams.append('end', end.toString());
-    url.searchParams.append('step', step.toString());
+    // Fetch recent data with fine granularity
+    const recentUrl = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
+    recentUrl.searchParams.append('query', 'pool_hash_rate_GHps');
+    recentUrl.searchParams.append('start', recentStart.toString());
+    recentUrl.searchParams.append('end', end.toString());
+    recentUrl.searchParams.append('step', (recentStepMinutes * 60).toString());
 
-    const response = await fetch(url, {
-      next: { revalidate: 10 } // Cache for 10 seconds
-    });
+    // Fetch historical data with coarser granularity
+    const historicalUrl = new URL('http://kas.katpool.xyz:8080/api/v1/query_range');
+    historicalUrl.searchParams.append('query', 'pool_hash_rate_GHps');
+    historicalUrl.searchParams.append('start', historicalStart.toString());
+    historicalUrl.searchParams.append('end', recentStart.toString());
+    historicalUrl.searchParams.append('step', (historicalStepHours * 3600).toString());
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    const [recentResponse, historicalResponse] = await Promise.all([
+      fetch(recentUrl, { next: { revalidate: 10 } }),
+      fetch(historicalUrl, { next: { revalidate: 10 } })
+    ]);
+
+    if (!recentResponse.ok || !historicalResponse.ok) {
+      throw new Error(`HTTP error! status: ${recentResponse.status} / ${historicalResponse.status}`);
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const [recentData, historicalData] = await Promise.all([
+      recentResponse.json(),
+      historicalResponse.json()
+    ]);
+
+    // Merge the datasets
+    if (recentData.status === 'success' && historicalData.status === 'success') {
+      const mergedResult = recentData.data.result.map((series: any) => ({
+        ...series,
+        values: [...(historicalData.data.result[0]?.values || []), ...series.values]
+      }));
+
+      return NextResponse.json({
+        status: 'success',
+        data: {
+          resultType: recentData.data.resultType,
+          result: mergedResult
+        }
+      });
+    }
+
+    return NextResponse.json({
+      status: 'error',
+      error: 'Failed to fetch pool hashrate history'
+    });
   } catch (error) {
     console.error('Error proxying pool hashrate history:', error);
     return NextResponse.json(
