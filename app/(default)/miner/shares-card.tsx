@@ -105,13 +105,12 @@ export default function AnalyticsCard03() {
           const data = sortedDays.map((day, i) => {
             const todayValue = minerData[day]?.value || 0;
             if (i === 0) {
-              // For the first day (Jan 3rd), use the actual value since we don't have previous day
-              console.log(`${minerId} value for first day ${day}: ${todayValue}`);
               return todayValue;
             }
             const previousValue = minerData[sortedDays[i - 1]]?.value || 0;
-            const diff = todayValue - previousValue;
-            console.log(`${minerId} difference for ${day}: ${diff} (${todayValue} - ${previousValue})`);
+            // Ensure we don't return negative values - if the difference is negative, use 0
+            const diff = Math.max(0, todayValue - previousValue);
+            console.log(`${minerId} shares for ${day}: ${diff} (${todayValue} - ${previousValue})`);
             return diff;
           });
 

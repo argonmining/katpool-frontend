@@ -297,7 +297,6 @@ export default function AnalyticsCard11() {
                   const isOnline = secondsSinceLastShare < 300; // 5 minutes
                   
                   const rejectedShares = worker.invalidShares + worker.duplicatedShares + worker.jobsNotFound;
-                  const acceptedShares = worker.totalShares - rejectedShares;
 
                   return (
                     <tr key={worker.minerId}>
@@ -320,7 +319,7 @@ export default function AnalyticsCard11() {
                         <div className="text-center">{formatHashrate(worker.hashrates.twentyFourHour)}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center text-green-500">{acceptedShares}</div>
+                        <div className="text-center text-green-500">{worker.totalShares}</div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
                         <div className="text-center text-red-500">{rejectedShares}</div>
