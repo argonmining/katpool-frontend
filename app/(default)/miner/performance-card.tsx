@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import LineChart03 from '@/components/charts/line-chart-03'
+import TimeRangeMenu from '@/components/elements/time-range-menu'
 import { chartAreaGradient } from '@/components/charts/chartjs-config'
 import { tailwindConfig, hexToRGB, formatHashrate, formatHashrateCompact } from '@/components/utils/utils'
 import { $fetch } from 'ofetch'
@@ -17,12 +18,23 @@ export default function AnalyticsCard01() {
   const walletAddress = searchParams.get('wallet')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '180d'>('7d')
   const [currentHashrate, setCurrentHashrate] = useState<string>('')
   const [twoHourAvg, setTwoHourAvg] = useState<string>('')
   const [twelveHourAvg, setTwelveHourAvg] = useState<string>('')
   const [twentyFourHourAvg, setTwentyFourHourAvg] = useState<string>('')
   const [fortyEightHourAvg, setFortyEightHourAvg] = useState<string>('')
   const [chartData, setChartData] = useState<any>(null)
+
+  const menuItems = [
+    { label: 'Last 30 Days', value: '30d' },
+    { label: 'Last 3 Months', value: '90d' },
+    { label: 'Last 6 Months', value: '180d' },
+  ];
+
+  const handleRangeChange = (range: '7d' | '30d' | '90d' | '180d') => {
+    setTimeRange(range);
+  };
 
   const calculateTimeRangeAverage = (values: HashRateData[], hoursAgo: number): number => {
     const cutoffTime = Date.now() / 1000 - (hoursAgo * 3600);
@@ -41,36 +53,57 @@ export default function AnalyticsCard01() {
     
     try {
       setIsLoading(true);
-      const response = await $fetch(`/api/miner/hashrate?wallet=${walletAddress}`, {
-        retry: 3,
-        retryDelay: 1000,
-        timeout: 10000,
-      });
+      const [currentResponse, historyResponse] = await Promise.all([
+        $fetch(`/api/miner/currentHashrate?wallet=${walletAddress}`, {
+          retry: 3,
+          retryDelay: 1000,
+          timeout: 10000,
+        }),
+        $fetch(`/api/miner/hashrate?wallet=${walletAddress}&range=${timeRange}`, {
+          retry: 3,
+          retryDelay: 1000,
+          timeout: 10000,
+        })
+      ]);
 
-      if (!response || response.error) {
-        console.error('API Error:', response?.error || 'No response');
-        throw new Error(response?.error || 'Failed to fetch data');
+      // Handle current hashrate
+      if (!currentResponse || currentResponse.error) {
+        console.error('Current Hashrate API Error:', currentResponse?.error || 'No response');
+        throw new Error(currentResponse?.error || 'Failed to fetch current hashrate');
+      }
+
+      if (currentResponse.status === 'success' && currentResponse.data?.result?.[0]?.value?.[1]) {
+        const currentValue = Number(currentResponse.data.result[0].value[1]);
+        setCurrentHashrate(formatHashrateCompact(currentValue));
+      } else {
+        setCurrentHashrate('0 H/s');
+      }
+
+      // Handle historical data
+      if (!historyResponse || historyResponse.error) {
+        console.error('API Error:', historyResponse?.error || 'No response');
+        throw new Error(historyResponse?.error || 'Failed to fetch data');
       }
 
       // Check each level of the response structure
-      if (!response.status || response.status !== 'success') {
+      if (!historyResponse.status || historyResponse.status !== 'success') {
         throw new Error('Invalid response status');
       }
 
-      if (!response.data?.result) {
+      if (!historyResponse.data?.result) {
         throw new Error('Missing result data');
       }
 
-      if (!Array.isArray(response.data.result) || response.data.result.length === 0) {
+      if (!Array.isArray(historyResponse.data.result) || historyResponse.data.result.length === 0) {
         throw new Error('Empty result array');
       }
 
-      if (!response.data.result[0].values || !Array.isArray(response.data.result[0].values)) {
+      if (!historyResponse.data.result[0].values || !Array.isArray(historyResponse.data.result[0].values)) {
         throw new Error('Invalid values array');
       }
 
       // Parse the response data
-      const values: HashRateData[] = response.data.result[0].values.map(
+      const values: HashRateData[] = historyResponse.data.result[0].values.map(
         ([timestamp, value]: [number, string]) => ({
           timestamp,
           value: Number(value)
@@ -80,10 +113,6 @@ export default function AnalyticsCard01() {
       if (values.length === 0) {
         throw new Error('No data points available');
       }
-
-      // Set current hashrate (most recent value)
-      const lastValue = values[values.length - 1];
-      setCurrentHashrate(formatHashrateCompact(lastValue.value));
 
       // Calculate averages for different time periods
       setTwoHourAvg(formatHashrateCompact(calculateTimeRangeAverage(values, 2)));
@@ -134,22 +163,14 @@ export default function AnalyticsCard01() {
   };
 
   useEffect(() => {
-    let mounted = true;
-
-    const doFetch = async () => {
-      if (!mounted) return;
-      await fetchData();
-    };
-
-    doFetch();
+    fetchData();
     // Refresh every minute
-    const interval = setInterval(doFetch, 60000);
+    const interval = setInterval(fetchData, 60000);
 
     return () => {
-      mounted = false;
       clearInterval(interval);
     };
-  }, [walletAddress]);
+  }, [walletAddress, timeRange]);
 
   const chartOptions = {
     scales: {
@@ -225,8 +246,9 @@ export default function AnalyticsCard01() {
         </div>
       )}
 
-      <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex items-center">
+      <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex items-center justify-between">
         <h2 className="font-semibold text-gray-800 dark:text-gray-100">Miner Performance</h2>
+        <TimeRangeMenu align="right" onRangeChange={handleRangeChange} />
       </header>
       <div className="px-5 py-1">
         <div className="flex flex-wrap max-sm:*:w-1/2">
