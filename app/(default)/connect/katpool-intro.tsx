@@ -55,7 +55,8 @@ export default function KatpoolIntro() {
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Configure Pool Settings</h3>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Once logged in, navigate to your pool configuration settings and enter the following details into <strong>Pool1 only!</strong>
-                Leave Pool2 and Pool3 blank, or enter a backup pool stratum address for failover:
+                <br />
+                <span className="italic">Leave Pool2 and Pool3 blank, or enter a backup pool stratum address for failover:</span>
               </p>
               <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-3">
                 <div>
