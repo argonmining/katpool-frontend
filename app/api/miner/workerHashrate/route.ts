@@ -49,9 +49,61 @@ export async function GET(request: Request) {
       throw new Error('Invalid response format');
     }
 
+    // Process the data to calculate better averages
+    const processedResult = data.data.result.map((worker: WorkerHashrate) => {
+      const values = worker.values;
+      if (!values || values.length === 0) return worker;
+
+      // Calculate averages for different time windows
+      const now = Math.floor(Date.now() / 1000);
+      const timeWindows = {
+        fifteenMin: now - (15 * 60),
+        oneHour: now - (60 * 60),
+        twelveHour: now - (12 * 60 * 60),
+        twentyFourHour: now - (24 * 60 * 60)
+      };
+
+      // Function to calculate sophisticated average for a time window
+      const calculateWindowAverage = (startTime: number) => {
+        const windowValues = values
+          .filter(([timestamp]) => timestamp >= startTime)
+          .map(([_, value]) => Number(value))
+          .filter(value => !isNaN(value) && value > 0);
+
+        if (windowValues.length === 0) return 0;
+
+        // Sort values and remove outliers (top and bottom 10%)
+        const sortedValues = [...windowValues].sort((a, b) => a - b);
+        const trimAmount = Math.floor(sortedValues.length * 0.1);
+        const trimmedValues = sortedValues.slice(trimAmount, -trimAmount || undefined);
+
+        // Calculate average of remaining values
+        return trimmedValues.length > 0
+          ? trimmedValues.reduce((sum, value) => sum + value, 0) / trimmedValues.length
+          : 0;
+      };
+
+      // Calculate averages for each time window
+      const averages = {
+        fifteenMin: calculateWindowAverage(timeWindows.fifteenMin),
+        oneHour: calculateWindowAverage(timeWindows.oneHour),
+        twelveHour: calculateWindowAverage(timeWindows.twelveHour),
+        twentyFourHour: calculateWindowAverage(timeWindows.twentyFourHour)
+      };
+
+      // Add the averages to the response
+      return {
+        ...worker,
+        averages
+      };
+    });
+
     return NextResponse.json({
       status: 'success',
-      data: data.data
+      data: {
+        ...data.data,
+        result: processedResult
+      }
     });
   } catch (error) {
     console.error('Error fetching worker hashrate:', error);
