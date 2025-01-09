@@ -130,7 +130,7 @@ export default function PoolMinersOverTime() {
     <div className="flex flex-col col-span-full sm:col-span-6 xl:col-span-4 bg-white dark:bg-gray-800 shadow-sm rounded-xl">
       <div className="px-5 pt-5">
         <header className="flex justify-between items-start mb-2">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Pool Miners over Time</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Pool Miners over time</h2>
           <TimeRangeMenu align="right" currentRange={timeRange} onRangeChange={handleRangeChange} />
         </header>
         <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Current Active Miners</div>
