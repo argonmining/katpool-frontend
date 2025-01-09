@@ -108,7 +108,14 @@ export default function AnalyticsCard11() {
         if (hashrateRes?.status === 'success' && hashrateRes.data?.result) {
           const now = Math.floor(Date.now() / 1000);
           
+          console.log('Raw hashrate response:', hashrateRes.data.result);
+          
           hashrateRes.data.result.forEach((result: WorkerHashrateData) => {
+            if (!result.metric?.wokername) {
+              console.warn('Missing worker name in metric:', result.metric);
+              return;
+            }
+
             if (!result.values || !Array.isArray(result.values)) {
               console.warn(`No valid values array for worker ${result.metric.wokername}`);
               return;
@@ -119,10 +126,7 @@ export default function AnalyticsCard11() {
             
             // Debug logging
             console.log(`Processing hashrate data for worker ${minerId}`);
-            console.log(`Number of data points: ${values.length}`);
-            if (values.length > 0) {
-              console.log(`Sample data point: [${values[0][0]}, ${values[0][1]}]`);
-            }
+            console.log(`Raw values:`, values);
 
             // Calculate time windows
             const fifteenMinAgo = now - (15 * 60);
@@ -137,26 +141,26 @@ export default function AnalyticsCard11() {
             const twentyFourHourValues = values;
 
             // Debug logging for filtered values
-            console.log(`Filtered values counts:
-              15min: ${fifteenMinValues.length}
-              1h: ${oneHourValues.length}
-              12h: ${twelveHourValues.length}
-              24h: ${twentyFourHourValues.length}
+            console.log(`Filtered values for ${minerId}:
+              15min: ${fifteenMinValues.length} values
+              1h: ${oneHourValues.length} values
+              12h: ${twelveHourValues.length} values
+              24h: ${twentyFourHourValues.length} values
             `);
 
             const average = (vals: [number, string][], requiredPoints: number) => {
               if (!vals || vals.length === 0) {
-                console.log('No values to average');
+                console.log(`No values to average for ${minerId}`);
                 return 0;
               }
               
               // Convert all values to numbers and filter out invalid ones
               const validVals = vals
-                .map(([timestamp, val]) => Number(val))
+                .map(([_, val]) => Number(val))
                 .filter(val => !isNaN(val) && val >= 0);
 
               if (validVals.length === 0) {
-                console.log('No valid values after filtering');
+                console.log(`No valid values after filtering for ${minerId}`);
                 return 0;
               }
 
@@ -172,12 +176,12 @@ export default function AnalyticsCard11() {
               );
 
               if (filteredVals.length === 0) {
-                console.log('No values left after outlier removal');
+                console.log(`No values left after outlier removal for ${minerId}`);
                 return 0;
               }
 
               const finalAvg = filteredVals.reduce((sum, val) => sum + val, 0) / filteredVals.length;
-              console.log(`Calculated average: ${finalAvg} from ${filteredVals.length} values`);
+              console.log(`Calculated average for ${minerId}: ${finalAvg} from ${filteredVals.length} values`);
               return finalAvg;
             };
 
@@ -229,21 +233,26 @@ export default function AnalyticsCard11() {
         }
 
         // Combine all data
-        const processedWorkers: WorkerData[] = Array.from(totalSharesMap.entries()).map(([minerId, data]) => ({
-          minerId,
-          totalShares: data.shares,
-          invalidShares: invalidSharesMap.get(minerId) || 0,
-          duplicatedShares: duplicatedSharesMap.get(minerId) || 0,
-          jobsNotFound: jobsNotFoundMap.get(minerId) || 0,
-          lastShareTimestamp: data.timestamp,
-          hashrates: hashrateMap.get(minerId) || {
-            currentHashrate: 0,
-            oneHour: 0,
-            twelveHour: 0,
-            twentyFourHour: 0,
-          },
-        }));
+        const processedWorkers: WorkerData[] = Array.from(totalSharesMap.entries()).map(([minerId, data]) => {
+          const workerData = {
+            minerId,
+            totalShares: data.shares,
+            invalidShares: invalidSharesMap.get(minerId) || 0,
+            duplicatedShares: duplicatedSharesMap.get(minerId) || 0,
+            jobsNotFound: jobsNotFoundMap.get(minerId) || 0,
+            lastShareTimestamp: data.timestamp,
+            hashrates: hashrateMap.get(minerId) || {
+              currentHashrate: 0,
+              oneHour: 0,
+              twelveHour: 0,
+              twentyFourHour: 0,
+            },
+          };
+          console.log(`Processed worker data for ${minerId}:`, workerData);
+          return workerData;
+        });
 
+        console.log('Final processed workers:', processedWorkers);
         setWorkers(processedWorkers);
         setError(null);
       } catch (error) {
