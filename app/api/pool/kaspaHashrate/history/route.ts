@@ -3,37 +3,18 @@ import { NextResponse } from 'next/server';
 export const runtime = 'edge';
 export const revalidate = 21600;
 
-async function fetchKaspaHashrate() {
-  const baseUrl = 'https://kaspa-hashrate-api.tng-inc.workers.dev/historical';
-  
+export async function GET() {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-
-    const response = await fetch(baseUrl, {
-      signal: controller.signal
-    });
-
-    clearTimeout(timeoutId);
-
+    const response = await fetch('https://kaspa-hashrate-api.tng-inc.workers.dev/historical');
+    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching Kaspa hashrate:', error);
-    throw error;
-  }
-}
 
-export async function GET() {
-  try {
-    const response = await fetchKaspaHashrate();
-    const data = response.data.sort((a: any, b: any) => parseInt(a.key) - parseInt(b.key));
-
+    const data = await response.json();
     return NextResponse.json({
       status: 'success',
-      data: data
+      data: data.data
     });
 
   } catch (error) {
