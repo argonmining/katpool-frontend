@@ -35,11 +35,21 @@ export default function KaspaHashrateOverTime() {
       const values: HashRateData[] = data.data
         .map((item: { key: string; value: string }) => {
           const timestamp = parseInt(item.key);
-          const value = Number(item.value);
-          if (isNaN(timestamp) || isNaN(value) || value <= 0) {
+          try {
+            // Convert string directly to BigInt to maintain full precision
+            const valueBigInt = BigInt(item.value.split('.')[0]); // Remove decimal since BigInt doesn't support it
+            if (isNaN(timestamp) || valueBigInt <= 0) {
+              console.warn('Invalid data point:', { key: item.key, value: item.value });
+              return null;
+            }
+            return { 
+              timestamp,
+              value: Number(valueBigInt) // Convert to number only for chart display
+            };
+          } catch (e) {
+            console.warn('Error parsing value:', { key: item.key, value: item.value, error: e });
             return null;
           }
-          return { timestamp, value };
         })
         .filter((item: HashRateData | null): item is HashRateData => item !== null);
 
@@ -47,8 +57,15 @@ export default function KaspaHashrateOverTime() {
         throw new Error('No valid data points available');
       }
 
-      // Calculate average hashrate
-      const averageHashrate = values.reduce((sum, item) => sum + item.value, 0) / values.length;
+      // Calculate average hashrate using original string values for maximum precision
+      const sum = data.data.reduce((acc: bigint, item: { value: string }) => {
+        try {
+          return acc + BigInt(item.value.split('.')[0]);
+        } catch {
+          return acc;
+        }
+      }, BigInt(0));
+      const averageHashrate = Number(sum / BigInt(data.data.length));
       setCurrentHashrate(formatHashrate(averageHashrate));
 
       setChartData({
