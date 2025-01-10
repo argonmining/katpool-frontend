@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+export const revalidate = 21600;
+
 async function fetchKaspaHashrate(cursor?: string) {
   const baseUrl = 'https://kaspa-hashrate-api.tng-inc.workers.dev/historical';
   const url = cursor ? `${baseUrl}?cursor=${cursor}` : baseUrl;
@@ -48,6 +51,9 @@ export async function GET(request: Request) {
         parseInt(item.key) >= startTime
       );
     }
+
+    // Sort data by timestamp
+    allData.sort((a, b) => parseInt(a.key) - parseInt(b.key));
 
     return NextResponse.json({
       status: 'success',
