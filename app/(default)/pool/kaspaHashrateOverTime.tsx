@@ -28,14 +28,14 @@ export default function KaspaHashrateOverTime() {
         timeout: 10000,
       });
 
-      if (data.status !== 'success' || !data.data?.result?.[0]?.values) {
+      if (!data.data) {
         throw new Error('Invalid response format');
       }
 
-      const values: HashRateData[] = data.data.result[0].values.map(
-        ([timestamp, value]: [number, string]) => ({
-          timestamp,
-          value: Number(value)
+      const values: HashRateData[] = data.data.map(
+        (item: any) => ({
+          timestamp: parseInt(item.key),
+          value: parseInt(item.value) // Value is already the correct hashrate
         })
       );
 

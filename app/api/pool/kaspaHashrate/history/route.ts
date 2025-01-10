@@ -55,22 +55,20 @@ export async function GET(request: Request) {
     // Sort data by timestamp
     allData.sort((a, b) => parseInt(a.key) - parseInt(b.key));
 
+    // Return data in the exact format from the API
     return NextResponse.json({
-      status: 'success',
-      data: {
-        result: [{
-          values: allData.map(item => [
-            parseInt(item.key),    // timestamp
-            parseInt(item.value)   // hashrate
-          ])
-        }]
-      }
+      data: allData.map(item => ({
+        key: item.key,
+        value: item.value
+      })),
+      cursor: null,
+      hasMore: false
     });
 
   } catch (error) {
     console.error('Error in Kaspa hashrate route:', error);
     return NextResponse.json(
-      { status: 'error', message: 'Failed to fetch Kaspa hashrate data' },
+      { error: 'Internal Server Error', message: 'Failed to fetch Kaspa hashrate data' },
       { status: 500 }
     );
   }
