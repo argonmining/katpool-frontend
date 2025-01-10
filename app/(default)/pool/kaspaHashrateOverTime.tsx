@@ -41,10 +41,10 @@ export default function KaspaHashrateOverTime() {
       const data = await $fetch(`/api/pool/kaspaHashrate/history`, {
         retry: 2,
         retryDelay: 1000,
-        timeout: 15000, // 15 second timeout for the entire operation
+        timeout: 15000,
       });
 
-      if (!data.data) {
+      if (!data.data || !Array.isArray(data.data)) {
         throw new Error('Invalid response format');
       }
 
@@ -59,34 +59,31 @@ export default function KaspaHashrateOverTime() {
       };
       const startTime = now - (rangeInMs[range] || rangeInMs['7d']);
 
-      const filteredData = data.data.filter((item: { key: string; value: string }) => parseInt(item.key) >= startTime);
-
-      const values = filteredData
+      const values = data.data
         .map((item: { key: string; value: string }): ChartDataPoint | null => {
-          const timestamp = parseInt(item.key);
           try {
-            // Handle both decimal and scientific notation
-            const valueNum = Number(item.value);
-            if (isNaN(valueNum)) {
-              console.warn('Invalid value format:', item.value);
+            // Remove decimal portion and parse as integer for timestamp
+            const timestamp = parseInt(item.key.split('.')[0]);
+            // Parse the value, handling both regular numbers and scientific notation
+            const value = BigInt(Math.floor(Number(item.value)));
+            
+            if (isNaN(timestamp) || value <= 0) {
+              console.warn('Invalid data point:', { timestamp, value });
               return null;
             }
-            // Convert to integer H/s, handling both notations
-            const valueBigInt = BigInt(Math.floor(valueNum));
-            if (isNaN(timestamp) || valueBigInt <= 0) {
-              console.warn('Invalid data point:', { key: item.key, value: item.value });
-              return null;
-            }
-            return { 
+
+            return {
               timestamp,
-              value: valueBigInt
+              value
             };
           } catch (e) {
-            console.warn('Error parsing value:', { key: item.key, value: item.value, error: e });
+            console.warn('Error parsing data point:', e);
             return null;
           }
         })
-        .filter((item: ChartDataPoint | null): item is ChartDataPoint => item !== null);
+        .filter((item: ChartDataPoint | null): item is ChartDataPoint => 
+          item !== null && item.timestamp >= startTime
+        );
 
       if (values.length === 0) {
         throw new Error('No valid data points available');

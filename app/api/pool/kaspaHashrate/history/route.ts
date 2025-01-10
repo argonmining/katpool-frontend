@@ -12,6 +12,12 @@ export async function GET() {
     }
 
     const data = await response.json();
+    
+    // Ensure we have the expected data structure
+    if (!data.data || !Array.isArray(data.data)) {
+      throw new Error('Invalid data format received');
+    }
+
     return NextResponse.json({
       status: 'success',
       data: data.data
