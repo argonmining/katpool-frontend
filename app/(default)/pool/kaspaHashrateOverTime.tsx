@@ -32,12 +32,20 @@ export default function KaspaHashrateOverTime() {
         throw new Error('Invalid response format');
       }
 
-      const values: HashRateData[] = data.data.map(
-        (item: any) => ({
-          timestamp: parseInt(item.key),
-          value: Number(item.value)
+      const values: HashRateData[] = data.data
+        .map((item: { key: string; value: string }) => {
+          const timestamp = parseInt(item.key);
+          const value = Number(item.value);
+          if (isNaN(timestamp) || isNaN(value) || value <= 0) {
+            return null;
+          }
+          return { timestamp, value };
         })
-      );
+        .filter((item: HashRateData | null): item is HashRateData => item !== null);
+
+      if (values.length === 0) {
+        throw new Error('No valid data points available');
+      }
 
       // Calculate average hashrate
       const averageHashrate = values.reduce((sum, item) => sum + item.value, 0) / values.length;

@@ -55,12 +55,17 @@ export async function GET(request: Request) {
     // Sort data by timestamp
     allData.sort((a, b) => parseInt(a.key) - parseInt(b.key));
 
-    // Return data in the exact format from the API
+    // Filter out any invalid values and return data
     return NextResponse.json({
-      data: allData.map(item => ({
-        key: item.key,
-        value: item.value  // Values are already doubled in the API
-      })),
+      data: allData
+        .filter(item => {
+          const value = Number(item.value);
+          return !isNaN(value) && value > 0 && !isNaN(parseInt(item.key));
+        })
+        .map(item => ({
+          key: item.key,
+          value: item.value
+        })),
       cursor: null,
       hasMore: false
     });
