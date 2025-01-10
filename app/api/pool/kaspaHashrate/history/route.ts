@@ -24,17 +24,17 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const range = searchParams.get('range') || '7d';
 
-    // Calculate the start timestamp based on the range
-    const now = Math.floor(Date.now() / 1000);
-    const rangeInSeconds: { [key: string]: number } = {
-      '7d': 7 * 24 * 60 * 60,
-      '30d': 30 * 24 * 60 * 60,
-      '90d': 90 * 24 * 60 * 60,
-      '180d': 180 * 24 * 60 * 60,
-      '365d': 365 * 24 * 60 * 60,
+    // Calculate the start timestamp based on the range (in milliseconds)
+    const now = Date.now();
+    const rangeInMs: { [key: string]: number } = {
+      '7d': 7 * 24 * 60 * 60 * 1000,
+      '30d': 30 * 24 * 60 * 60 * 1000,
+      '90d': 90 * 24 * 60 * 60 * 1000,
+      '180d': 180 * 24 * 60 * 60 * 1000,
+      '365d': 365 * 24 * 60 * 60 * 1000,
     };
 
-    const startTime = now - (rangeInSeconds[range] || rangeInSeconds['7d']);
+    const startTime = now - (rangeInMs[range] || rangeInMs['7d']);
     let allData: any[] = [];
     let hasMore = true;
     let cursor: string | undefined;
