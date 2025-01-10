@@ -23,7 +23,7 @@ export default function KaspaHashrateOverTime() {
   const fetchData = async (range: string) => {
     try {
       setIsLoading(true);
-      const data = await $fetch(`/api/pool/kaspaHashrate/history?range=${range}`, {
+      const data = await $fetch(`/api/pool/kaspaHashrate/history`, {
         retry: 1,
         timeout: 10000,
       });
@@ -32,7 +32,20 @@ export default function KaspaHashrateOverTime() {
         throw new Error('Invalid response format');
       }
 
-      const values: HashRateData[] = data.data
+      // Filter data based on time range
+      const now = Date.now();
+      const rangeInMs: { [key: string]: number } = {
+        '7d': 7 * 24 * 60 * 60 * 1000,
+        '30d': 30 * 24 * 60 * 60 * 1000,
+        '90d': 90 * 24 * 60 * 60 * 1000,
+        '180d': 180 * 24 * 60 * 60 * 1000,
+        '365d': 365 * 24 * 60 * 60 * 1000,
+      };
+      const startTime = now - (rangeInMs[range] || rangeInMs['7d']);
+
+      const filteredData = data.data.filter((item: { key: string; value: string }) => parseInt(item.key) >= startTime);
+
+      const values: HashRateData[] = filteredData
         .map((item: { key: string; value: string }) => {
           const timestamp = parseInt(item.key);
           try {

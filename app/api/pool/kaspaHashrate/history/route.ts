@@ -19,55 +19,26 @@ async function fetchKaspaHashrate(cursor?: string) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const range = searchParams.get('range') || '7d';
-
-    // Calculate the start timestamp based on the range (in milliseconds)
-    const now = Date.now();
-    const rangeInMs: { [key: string]: number } = {
-      '7d': 7 * 24 * 60 * 60 * 1000,
-      '30d': 30 * 24 * 60 * 60 * 1000,
-      '90d': 90 * 24 * 60 * 60 * 1000,
-      '180d': 180 * 24 * 60 * 60 * 1000,
-      '365d': 365 * 24 * 60 * 60 * 1000,
-    };
-
-    const startTime = now - (rangeInMs[range] || rangeInMs['7d']);
     let allData: any[] = [];
     let hasMore = true;
     let cursor: string | undefined;
 
-    // Fetch all data and combine it
+    // Fetch all data using pagination
     while (hasMore) {
       const response = await fetchKaspaHashrate(cursor);
-      const filteredData = response.data.filter((item: any) => 
-        parseInt(item.key) >= startTime
-      );
-      allData = [...allData, ...filteredData];
+      allData = [...allData, ...response.data];
       cursor = response.cursor;
-      hasMore = response.hasMore && response.data.some((item: any) => 
-        parseInt(item.key) >= startTime
-      );
+      hasMore = response.hasMore;
     }
 
     // Sort data by timestamp
     allData.sort((a, b) => parseInt(a.key) - parseInt(b.key));
 
-    // Filter out any invalid values and return data
     return NextResponse.json({
+      status: 'success',
       data: allData
-        .filter(item => {
-          const value = Number(item.value);
-          return !isNaN(value) && value > 0 && !isNaN(parseInt(item.key));
-        })
-        .map(item => ({
-          key: item.key,
-          value: item.value
-        })),
-      cursor: null,
-      hasMore: false
     });
 
   } catch (error) {
