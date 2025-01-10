@@ -35,7 +35,7 @@ export default function KaspaHashrateOverTime() {
       const values: HashRateData[] = data.data.map(
         (item: any) => ({
           timestamp: parseInt(item.key),
-          value: parseInt(item.value) // Value is already the correct hashrate
+          value: parseFloat(item.value)
         })
       );
 
@@ -44,11 +44,11 @@ export default function KaspaHashrateOverTime() {
       setCurrentHashrate(formatHashrate(averageHashrate));
 
       setChartData({
-        labels: values.map(d => d.timestamp * 1000),
+        labels: values.map(d => d.timestamp),
         datasets: [
           {
             data: values.map(d => ({
-              x: d.timestamp * 1000,
+              x: d.timestamp,
               y: d.value
             })),
             fill: true,
