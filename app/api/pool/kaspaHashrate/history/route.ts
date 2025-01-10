@@ -3,12 +3,19 @@ import { NextResponse } from 'next/server';
 export const runtime = 'edge';
 export const revalidate = 21600;
 
-async function fetchKaspaHashrate(cursor?: string) {
+async function fetchKaspaHashrate() {
   const baseUrl = 'https://kaspa-hashrate-api.tng-inc.workers.dev/historical';
-  const url = cursor ? `${baseUrl}?cursor=${cursor}` : baseUrl;
   
   try {
-    const response = await fetch(url);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+    const response = await fetch(baseUrl, {
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -21,24 +28,12 @@ async function fetchKaspaHashrate(cursor?: string) {
 
 export async function GET() {
   try {
-    let allData: any[] = [];
-    let hasMore = true;
-    let cursor: string | undefined;
-
-    // Fetch all data using pagination
-    while (hasMore) {
-      const response = await fetchKaspaHashrate(cursor);
-      allData = [...allData, ...response.data];
-      cursor = response.cursor;
-      hasMore = response.hasMore;
-    }
-
-    // Sort data by timestamp
-    allData.sort((a, b) => parseInt(a.key) - parseInt(b.key));
+    const response = await fetchKaspaHashrate();
+    const data = response.data.sort((a: any, b: any) => parseInt(a.key) - parseInt(b.key));
 
     return NextResponse.json({
       status: 'success',
-      data: allData
+      data: data
     });
 
   } catch (error) {

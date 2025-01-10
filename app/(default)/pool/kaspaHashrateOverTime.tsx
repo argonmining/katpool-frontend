@@ -39,8 +39,9 @@ export default function KaspaHashrateOverTime() {
     try {
       setIsLoading(true);
       const data = await $fetch(`/api/pool/kaspaHashrate/history`, {
-        retry: 1,
-        timeout: 10000,
+        retry: 2,
+        retryDelay: 1000,
+        timeout: 15000, // 15 second timeout for the entire operation
       });
 
       if (!data.data) {
