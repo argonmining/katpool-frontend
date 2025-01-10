@@ -35,7 +35,7 @@ export default function KaspaHashrateOverTime() {
       const values: HashRateData[] = data.data.map(
         (item: any) => ({
           timestamp: parseInt(item.key),
-          value: parseFloat(item.value)
+          value: Number(item.value)
         })
       );
 

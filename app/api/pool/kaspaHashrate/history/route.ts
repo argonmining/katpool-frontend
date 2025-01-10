@@ -59,7 +59,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       data: allData.map(item => ({
         key: item.key,
-        value: item.value
+        value: item.value  // Values are already doubled in the API
       })),
       cursor: null,
       hasMore: false
