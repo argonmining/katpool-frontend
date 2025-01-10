@@ -153,26 +153,21 @@ export default function AnalyticsCard11() {
         }
 
         // Combine all data
-        const processedWorkers: WorkerData[] = Array.from(totalSharesMap.entries()).map(([minerId, data]) => {
-          const workerData = {
-            minerId,
-            totalShares: data.shares,
-            invalidShares: invalidSharesMap.get(minerId) || 0,
-            duplicatedShares: duplicatedSharesMap.get(minerId) || 0,
-            jobsNotFound: jobsNotFoundMap.get(minerId) || 0,
-            lastShareTimestamp: data.timestamp,
-            hashrates: hashrateMap.get(minerId) || {
-              fifteenMin: 0,
-              oneHour: 0,
-              twelveHour: 0,
-              twentyFourHour: 0,
-            },
-          };
-          console.log(`Processed worker data for ${minerId}:`, workerData);
-          return workerData;
-        });
+        const processedWorkers: WorkerData[] = Array.from(totalSharesMap.entries()).map(([minerId, data]) => ({
+          minerId,
+          totalShares: data.shares,
+          invalidShares: invalidSharesMap.get(minerId) || 0,
+          duplicatedShares: duplicatedSharesMap.get(minerId) || 0,
+          jobsNotFound: jobsNotFoundMap.get(minerId) || 0,
+          lastShareTimestamp: data.timestamp,
+          hashrates: hashrateMap.get(minerId) || {
+            fifteenMin: 0,
+            oneHour: 0,
+            twelveHour: 0,
+            twentyFourHour: 0,
+          },
+        }));
 
-        console.log('Final processed workers:', processedWorkers);
         setWorkers(processedWorkers);
         setError(null);
       } catch (error) {
