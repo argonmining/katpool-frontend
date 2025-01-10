@@ -8,10 +8,25 @@ import { tailwindConfig, hexToRGB, formatHashrate } from '@/components/utils/uti
 import { $fetch } from 'ofetch'
 import { ChartData } from 'chart.js'
 
-interface HashRateData {
+interface ChartDataPoint {
   timestamp: number;
-  value: number;
+  value: bigint;
 }
+
+// Format hashrate from H/s to appropriate unit
+const formatHashrateFromHs = (hashrateInHs: bigint | number): string => {
+  const hashrateAsBigInt = typeof hashrateInHs === 'number' ? BigInt(Math.floor(hashrateInHs)) : hashrateInHs;
+  const units = ['H/s', 'KH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s'];
+  let value = hashrateAsBigInt;
+  let unitIndex = 0;
+
+  while (value >= BigInt(1000) && unitIndex < units.length - 1) {
+    value = value / BigInt(1000);
+    unitIndex++;
+  }
+
+  return `${value.toString()} ${units[unitIndex]}`;
+};
 
 export default function KaspaHashrateOverTime() {
   const [isLoading, setIsLoading] = useState(true);
@@ -45,49 +60,49 @@ export default function KaspaHashrateOverTime() {
 
       const filteredData = data.data.filter((item: { key: string; value: string }) => parseInt(item.key) >= startTime);
 
-      const values: HashRateData[] = filteredData
-        .map((item: { key: string; value: string }) => {
+      const values = filteredData
+        .map((item: { key: string; value: string }): ChartDataPoint | null => {
           const timestamp = parseInt(item.key);
           try {
-            // Convert string directly to BigInt to maintain full precision
-            const valueBigInt = BigInt(item.value.split('.')[0]); // Remove decimal since BigInt doesn't support it
+            // Handle both decimal and scientific notation
+            const valueNum = Number(item.value);
+            if (isNaN(valueNum)) {
+              console.warn('Invalid value format:', item.value);
+              return null;
+            }
+            // Convert to integer H/s, handling both notations
+            const valueBigInt = BigInt(Math.floor(valueNum));
             if (isNaN(timestamp) || valueBigInt <= 0) {
               console.warn('Invalid data point:', { key: item.key, value: item.value });
               return null;
             }
             return { 
               timestamp,
-              value: Number(valueBigInt) // Convert to number only for chart display
+              value: valueBigInt
             };
           } catch (e) {
             console.warn('Error parsing value:', { key: item.key, value: item.value, error: e });
             return null;
           }
         })
-        .filter((item: HashRateData | null): item is HashRateData => item !== null);
+        .filter((item: ChartDataPoint | null): item is ChartDataPoint => item !== null);
 
       if (values.length === 0) {
         throw new Error('No valid data points available');
       }
 
-      // Calculate average hashrate using original string values for maximum precision
-      const sum = data.data.reduce((acc: bigint, item: { value: string }) => {
-        try {
-          return acc + BigInt(item.value.split('.')[0]);
-        } catch {
-          return acc;
-        }
-      }, BigInt(0));
-      const averageHashrate = Number(sum / BigInt(data.data.length));
-      setCurrentHashrate(formatHashrate(averageHashrate));
+      // Calculate average hashrate
+      const sum = values.reduce((acc: bigint, item: ChartDataPoint) => acc + item.value, BigInt(0));
+      const averageHashrate = sum / BigInt(values.length);
+      setCurrentHashrate(formatHashrateFromHs(averageHashrate));
 
       setChartData({
-        labels: values.map(d => d.timestamp),
+        labels: values.map((d: ChartDataPoint) => d.timestamp),
         datasets: [
           {
-            data: values.map(d => ({
+            data: values.map((d: ChartDataPoint) => ({
               x: d.timestamp,
-              y: d.value
+              y: Number(d.value) // Convert to number for chart display
             })),
             fill: true,
             backgroundColor: function(context: any) {
@@ -164,7 +179,7 @@ export default function KaspaHashrateOverTime() {
             data={chartData} 
             width={389} 
             height={128} 
-            tooltipFormatter={(value: number) => formatHashrate(value)}
+            tooltipFormatter={(value: number) => formatHashrateFromHs(value)}
             tooltipTitleFormatter={(timestamp: string) => {
               const date = new Date(timestamp);
               return date.toLocaleDateString('en-US', {
