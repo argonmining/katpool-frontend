@@ -31,7 +31,7 @@ const formatHashrateFromHs = (hashrateInHs: bigint | number): string => {
 export default function KaspaHashrateOverTime() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '180d' | '365d'>('7d');
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '180d' | '365d'>('30d');
   const [currentHashrate, setCurrentHashrate] = useState<string>('');
   const [chartData, setChartData] = useState<ChartData<'line'> | null>(null);
 
