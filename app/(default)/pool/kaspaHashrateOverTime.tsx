@@ -44,12 +44,16 @@ export default function KaspaHashrateOverTime() {
         timeout: 15000,
       });
 
+      console.log('Received data:', data);
+
       if (!data.data || !Array.isArray(data.data)) {
         throw new Error('Invalid response format');
       }
 
       // Filter data based on time range
       const now = Date.now();
+      console.log('Current time:', now);
+      
       const rangeInMs: { [key: string]: number } = {
         '7d': 7 * 24 * 60 * 60 * 1000,
         '30d': 30 * 24 * 60 * 60 * 1000,
@@ -58,6 +62,7 @@ export default function KaspaHashrateOverTime() {
         '365d': 365 * 24 * 60 * 60 * 1000,
       };
       const startTime = now - (rangeInMs[range] || rangeInMs['7d']);
+      console.log('Start time:', startTime, 'Range:', range);
 
       const values = data.data
         .map((item: { key: string; value: string }): ChartDataPoint | null => {
@@ -65,10 +70,16 @@ export default function KaspaHashrateOverTime() {
             // Remove decimal portion and parse as integer for timestamp
             const timestamp = parseInt(item.key.split('.')[0]);
             // Parse the value, handling both regular numbers and scientific notation
-            const value = BigInt(Math.floor(Number(item.value)));
+            const valueNum = Number(item.value);
+            const value = BigInt(Math.floor(valueNum));
+            
+            console.log('Processing point:', {
+              original: item,
+              parsed: { timestamp, valueNum, value: value.toString() }
+            });
             
             if (isNaN(timestamp) || value <= 0) {
-              console.warn('Invalid data point:', { timestamp, value });
+              console.warn('Invalid data point:', { timestamp, value: value.toString() });
               return null;
             }
 
@@ -77,13 +88,20 @@ export default function KaspaHashrateOverTime() {
               value
             };
           } catch (e) {
-            console.warn('Error parsing data point:', e);
+            console.warn('Error parsing data point:', e, item);
             return null;
           }
         })
-        .filter((item: ChartDataPoint | null): item is ChartDataPoint => 
-          item !== null && item.timestamp >= startTime
-        );
+        .filter((item: ChartDataPoint | null): item is ChartDataPoint => {
+          if (!item) return false;
+          const isValid = item.timestamp >= startTime;
+          if (!isValid) {
+            console.log('Filtered out point:', item, 'startTime:', startTime);
+          }
+          return isValid;
+        });
+
+      console.log('Processed values:', values.length, 'points');
 
       if (values.length === 0) {
         throw new Error('No valid data points available');
