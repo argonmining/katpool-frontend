@@ -33,9 +33,9 @@ interface WorkerHashrateData {
 interface WorkerData {
   minerId: string;
   totalShares: number;
-  invalidShares: number;
-  duplicatedShares: number;
-  jobsNotFound: number;
+  invalidShares?: number;
+  duplicatedShares?: number;
+  jobsNotFound?: number;
   lastShareTimestamp: number;
   hashrates: {
     fifteenMin: number;
@@ -74,13 +74,13 @@ export default function AnalyticsCard11() {
         setIsLoading(true);
         
         // Fetch data from all endpoints
-        const [totalSharesRes, invalidSharesRes, duplicatedSharesRes, jobsNotFoundRes, hashrateRes] = await Promise.all([
+        const [totalSharesRes, /* invalidSharesRes, duplicatedSharesRes, jobsNotFoundRes, */ hashrateRes] = await Promise.all([
           $fetch(`/api/miner/shares?wallet=${walletAddress}`, {
             retry: 3,
             retryDelay: 1000,
             timeout: 10000,
           }),
-          $fetch(`/api/miner/invalidShares?wallet=${walletAddress}`, {
+          /* $fetch(`/api/miner/invalidShares?wallet=${walletAddress}`, {
             retry: 3,
             retryDelay: 1000,
             timeout: 10000,
@@ -94,7 +94,7 @@ export default function AnalyticsCard11() {
             retry: 3,
             retryDelay: 1000,
             timeout: 10000,
-          }),
+          }), */
           $fetch(`/api/miner/workerHashrate?wallet=${walletAddress}`, {
             retry: 3,
             retryDelay: 1000,
@@ -128,7 +128,7 @@ export default function AnalyticsCard11() {
           });
         }
 
-        // Process invalid shares data
+        /* // Process invalid shares data
         const invalidSharesMap = new Map<string, number>();
         if (invalidSharesRes?.data?.result) {
           invalidSharesRes.data.result.forEach((result: SharesData) => {
@@ -150,15 +150,15 @@ export default function AnalyticsCard11() {
           jobsNotFoundRes.data.result.forEach((result: SharesData) => {
             jobsNotFoundMap.set(result.metric.miner_id, Number(result.values[0][1]));
           });
-        }
+        } */
 
         // Combine all data
         const processedWorkers: WorkerData[] = Array.from(totalSharesMap.entries()).map(([minerId, data]) => ({
           minerId,
           totalShares: data.shares,
-          invalidShares: invalidSharesMap.get(minerId) || 0,
+          /* invalidShares: invalidSharesMap.get(minerId) || 0,
           duplicatedShares: duplicatedSharesMap.get(minerId) || 0,
-          jobsNotFound: jobsNotFoundMap.get(minerId) || 0,
+          jobsNotFound: jobsNotFoundMap.get(minerId) || 0, */
           lastShareTimestamp: data.timestamp,
           hashrates: hashrateMap.get(minerId) || {
             fifteenMin: 0,
@@ -272,9 +272,9 @@ export default function AnalyticsCard11() {
                   <th className="p-2 whitespace-nowrap w-[11%]">
                     <div className="font-semibold text-center">Accepted</div>
                   </th>
-                  <th className="p-2 whitespace-nowrap w-[11%]">
+                  {/* <th className="p-2 whitespace-nowrap w-[11%]">
                     <div className="font-semibold text-center">Rejected</div>
-                  </th>
+                  </th> */}
                   <th className="p-2 whitespace-nowrap w-[10%]">
                     <div className="font-semibold text-center">Last Share</div>
                   </th>
@@ -286,7 +286,7 @@ export default function AnalyticsCard11() {
                   const secondsSinceLastShare = Date.now() / 1000 - worker.lastShareTimestamp;
                   const isOnline = secondsSinceLastShare < 300; // 5 minutes
                   
-                  const rejectedShares = worker.invalidShares + worker.duplicatedShares + worker.jobsNotFound;
+                  // const rejectedShares = worker.invalidShares + worker.duplicatedShares + worker.jobsNotFound;
 
                   return (
                     <tr key={worker.minerId}>
@@ -311,9 +311,9 @@ export default function AnalyticsCard11() {
                       <td className="p-2 whitespace-nowrap">
                         <div className="text-center text-green-500">{worker.totalShares}</div>
                       </td>
-                      <td className="p-2 whitespace-nowrap">
+                      {/* <td className="p-2 whitespace-nowrap">
                         <div className="text-center text-red-500">{rejectedShares}</div>
-                      </td>
+                      </td> */}
                       <td className="p-2 whitespace-nowrap">
                         <div className="text-center">
                           {formatTimeAgo(worker.lastShareTimestamp)}
