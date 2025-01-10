@@ -59,8 +59,12 @@ export default function KaspaHashrateOverTime() {
         '180d': 180 * 24 * 60 * 60 * 1000,
         '365d': 365 * 24 * 60 * 60 * 1000,
       };
-      const startTime = now - (rangeInMs[range] || rangeInMs['7d']);
-      console.log('Current time:', now, 'Start time:', startTime, 'Range:', range);
+      const startTime = now - (rangeInMs[range] || rangeInMs['30d']);
+      console.log('Time window:', {
+        now: new Date(now).toISOString(),
+        startTime: new Date(startTime).toISOString(),
+        range
+      });
 
       const values = data.data
         .map((item: { key: string; value: string }): ChartDataPoint | null => {
@@ -87,10 +91,18 @@ export default function KaspaHashrateOverTime() {
         })
         .filter((item: ChartDataPoint | null): item is ChartDataPoint => {
           if (!item) return false;
-          // Keep points between startTime and now
-          const isValid = item.timestamp >= startTime && item.timestamp <= now;
+          
+          // Convert timestamps to seconds for comparison (in case some are in seconds)
+          const itemTimestampMs = item.timestamp.toString().length === 10 ? item.timestamp * 1000 : item.timestamp;
+          const isValid = itemTimestampMs >= startTime && itemTimestampMs <= now;
+          
           if (!isValid) {
-            console.log('Filtered out point:', item, 'startTime:', startTime, 'now:', now);
+            console.log('Filtered out point:', {
+              timestamp: new Date(itemTimestampMs).toISOString(),
+              value: item.value.toString(),
+              startTime: new Date(startTime).toISOString(),
+              now: new Date(now).toISOString()
+            });
           }
           return isValid;
         });
