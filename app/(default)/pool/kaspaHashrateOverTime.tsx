@@ -50,10 +50,8 @@ export default function KaspaHashrateOverTime() {
         throw new Error('Invalid response format');
       }
 
-      // Filter data based on time range
+      // Filter data based on time range from now
       const now = Date.now();
-      console.log('Current time:', now);
-      
       const rangeInMs: { [key: string]: number } = {
         '7d': 7 * 24 * 60 * 60 * 1000,
         '30d': 30 * 24 * 60 * 60 * 1000,
@@ -62,7 +60,7 @@ export default function KaspaHashrateOverTime() {
         '365d': 365 * 24 * 60 * 60 * 1000,
       };
       const startTime = now - (rangeInMs[range] || rangeInMs['7d']);
-      console.log('Start time:', startTime, 'Range:', range);
+      console.log('Current time:', now, 'Start time:', startTime, 'Range:', range);
 
       const values = data.data
         .map((item: { key: string; value: string }): ChartDataPoint | null => {
@@ -72,11 +70,6 @@ export default function KaspaHashrateOverTime() {
             // Parse the value, handling both regular numbers and scientific notation
             const valueNum = Number(item.value);
             const value = BigInt(Math.floor(valueNum));
-            
-            console.log('Processing point:', {
-              original: item,
-              parsed: { timestamp, valueNum, value: value.toString() }
-            });
             
             if (isNaN(timestamp) || value <= 0) {
               console.warn('Invalid data point:', { timestamp, value: value.toString() });
@@ -94,9 +87,10 @@ export default function KaspaHashrateOverTime() {
         })
         .filter((item: ChartDataPoint | null): item is ChartDataPoint => {
           if (!item) return false;
-          const isValid = item.timestamp >= startTime;
+          // Keep points between startTime and now
+          const isValid = item.timestamp >= startTime && item.timestamp <= now;
           if (!isValid) {
-            console.log('Filtered out point:', item, 'startTime:', startTime);
+            console.log('Filtered out point:', item, 'startTime:', startTime, 'now:', now);
           }
           return isValid;
         });
