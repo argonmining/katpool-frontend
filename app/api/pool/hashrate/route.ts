@@ -26,22 +26,36 @@ export async function GET() {
 
     const data = await response.json();
 
-    if (data.status === 'success' && data.data?.result?.[0]?.values) {
-      // Calculate average of last 5 minutes for stability
-      const values = data.data.result[0].values;
-      const sum = values.reduce((acc: number, [_, value]: [number, string]) => acc + Number(value), 0);
-      const average = sum / values.length;
+    // Always return a valid response format
+    if (data.status === 'success') {
+      if (data.data?.result?.[0]?.values?.length > 0) {
+        // Calculate average of last 5 minutes for stability
+        const values = data.data.result[0].values;
+        const sum = values.reduce((acc: number, [_, value]: [number, string]) => acc + Number(value), 0);
+        const average = sum / values.length;
 
-      return NextResponse.json({
-        status: 'success',
-        data: {
-          result: [{
-            value: [Date.now() / 1000, average.toString()]
-          }]
-        }
-      });
+        return NextResponse.json({
+          status: 'success',
+          data: {
+            result: [{
+              value: [Date.now() / 1000, average.toString()]
+            }]
+          }
+        });
+      } else {
+        // Return 0 if no data points are available
+        return NextResponse.json({
+          status: 'success',
+          data: {
+            result: [{
+              value: [Date.now() / 1000, "0"]
+            }]
+          }
+        });
+      }
     }
 
+    // If upstream API returns an error status, maintain that error
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error proxying pool hashrate:', error);
