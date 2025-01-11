@@ -21,7 +21,13 @@ export async function GET(request: Request) {
 
     const poolRewardAddress = process.env.POOL_REWARD_ADDRESS;
     if (!poolRewardAddress) {
-      throw new Error('Pool reward address not configured');
+      return NextResponse.json({
+        status: 'success',
+        data: {
+          amount: '--',
+          fullAmount: '--'
+        }
+      });
     }
 
     const response = await fetch(`https://api.kaspa.org/blocks/${blockHash}?includeColor=false`);
@@ -32,13 +38,26 @@ export async function GET(request: Request) {
 
     const data = await response.json();
 
-    // Find the output that matches our pool address
-    const rewardOutput = data.transactions[0].outputs.find(
-      (output: BlockOutput) => output.verboseData.scriptPublicKeyAddress === poolRewardAddress
-    );
+    // Search through all transactions for outputs to our pool address
+    let rewardOutput = null;
+    for (const tx of data.transactions) {
+      const output = tx.outputs.find(
+        (output: BlockOutput) => output.verboseData.scriptPublicKeyAddress === poolRewardAddress
+      );
+      if (output) {
+        rewardOutput = output;
+        break;
+      }
+    }
 
     if (!rewardOutput) {
-      throw new Error('No matching reward output found');
+      return NextResponse.json({
+        status: 'success',
+        data: {
+          amount: '0',
+          fullAmount: '0'
+        }
+      });
     }
 
     // Convert the amount (moving decimal 8 places left)
