@@ -80,8 +80,11 @@ export default function RecentBlocks() {
   const todayStart = new Date().setHours(0, 0, 0, 0);
   const yesterdayStart = todayStart - 24 * 60 * 60 * 1000;
 
-  const todayBlocks = blocks.filter(block => new Date(block.timestamp).getTime() >= todayStart);
-  const yesterdayBlocks = blocks.filter(block => {
+  // Take only the 6 most recent blocks
+  const recentBlocks = blocks.slice(0, 6);
+
+  const todayBlocks = recentBlocks.filter(block => new Date(block.timestamp).getTime() >= todayStart);
+  const yesterdayBlocks = recentBlocks.filter(block => {
     const time = new Date(block.timestamp).getTime();
     return time >= yesterdayStart && time < todayStart;
   });

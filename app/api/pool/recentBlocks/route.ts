@@ -9,7 +9,7 @@ interface BlockMetric {
     daa_score: string;
     timestamp: string;
   };
-  value: [number, string];
+  values: [number, string][];
 }
 
 interface Block {
@@ -22,7 +22,7 @@ export async function GET() {
   try {
     // Calculate timestamps
     const end = Math.floor(Date.now() / 1000);
-    const start = end - 24 * 60 * 60; // Get last 24 hours of blocks to ensure we have enough recent ones
+    const start = 1735689600; // Jan 1 2025 at 12am midnight UTC
 
     const response = await fetch(
       `http://kas.katpool.xyz:8080/api/v1/query_range?query=miner_rewards&start=${start}&end=${end}&step=10000`
@@ -55,8 +55,7 @@ export async function GET() {
 
     // Convert Map to array and sort by timestamp (newest first)
     const blocks = Array.from(blocksMap.values())
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .slice(0, 6); // Get only the 6 most recent blocks
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
     return NextResponse.json({
       status: 'success',
