@@ -147,7 +147,7 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
                 timeout: 5000,
               });
               
-              if (data.status !== 'success' || !data.data?.totalBlocks24h) {
+              if (data.status !== 'success' || typeof data.data?.totalBlocks24h !== 'number') {
                 throw new Error('Invalid response format');
               }
               

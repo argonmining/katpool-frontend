@@ -64,9 +64,6 @@ export default function AnalyticsCard03() {
             const dayKey = date.toISOString().split('T')[0];
             const numValue = Number(value);
             
-            console.log(`Processing timestamp ${timestamp} (${new Date(timestamp * 1000).toLocaleString()}) for miner ${minerId}`);
-            console.log(`Mapped to day: ${dayKey}`);
-            
             // Keep track of the highest value for each day for this miner
             if (!acc[minerId][dayKey] || numValue > acc[minerId][dayKey].value) {
               acc[minerId][dayKey] = { 
@@ -85,16 +82,6 @@ export default function AnalyticsCard03() {
         });
         const sortedDays = Array.from(allDays).sort();
 
-        // Log the full date range we're working with
-        console.log('Date range analysis:');
-        console.log('First timestamp in data:', new Date(results[0].values[0][0] * 1000).toLocaleString());
-        console.log('Last timestamp in data:', new Date(results[0].values[results[0].values.length - 1][0] * 1000).toLocaleString());
-        console.log('Today is:', new Date().toLocaleString());
-        console.log('Sorted days we have:', sortedDays.map(day => ({
-          day,
-          date: new Date(day).toLocaleString()
-        })));
-
         // Create one dataset per miner
         const datasets = results.map((result, index) => {
           const colorIndex = index % COLORS.length;
@@ -110,7 +97,6 @@ export default function AnalyticsCard03() {
             const previousValue = minerData[sortedDays[i - 1]]?.value || 0;
             // Ensure we don't return negative values - if the difference is negative, use 0
             const diff = Math.max(0, todayValue - previousValue);
-            console.log(`${minerId} shares for ${day}: ${diff} (${todayValue} - ${previousValue})`);
             return diff;
           });
 
@@ -142,15 +128,6 @@ export default function AnalyticsCard03() {
 
           return isToday ? `${formatted} (Today)` : formatted;
         });
-
-        console.log('Final formatted labels:', labels);
-
-        console.log('Miner daily groups:', minerDailyGroups);
-        console.log('Days:', sortedDays);
-        console.log('Calculated shares:', datasets.map(ds => ({
-          miner: ds.label,
-          shares: ds.data
-        })));
 
         setChartData({
           labels,

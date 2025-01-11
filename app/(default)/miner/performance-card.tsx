@@ -83,7 +83,6 @@ export default function AnalyticsCard01() {
 
       // Handle current hashrate
       if (!currentResponse || currentResponse.error) {
-        console.error('Current Hashrate API Error:', currentResponse?.error || 'No response');
         throw new Error(currentResponse?.error || 'Failed to fetch current hashrate');
       }
 
@@ -97,7 +96,6 @@ export default function AnalyticsCard01() {
 
       // Handle averages data
       if (!averagesResponse || averagesResponse.error) {
-        console.error('API Error:', averagesResponse?.error || 'No response');
         throw new Error(averagesResponse?.error || 'Failed to fetch data');
       }
 
@@ -125,7 +123,6 @@ export default function AnalyticsCard01() {
 
       // Handle chart data
       if (!chartResponse || chartResponse.error) {
-        console.error('API Error:', chartResponse?.error || 'No response');
         throw new Error(chartResponse?.error || 'Failed to fetch data');
       }
 
