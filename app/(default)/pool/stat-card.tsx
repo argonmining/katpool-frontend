@@ -125,16 +125,18 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             break
           case 'poolMiners':
             try {
-              const data = await $fetch('/api/pool/miners', {
+              const data = await $fetch('/api/pool/minerTypes', {
                 retry: 1,
                 timeout: 5000,
               });
               
-              if (data.status !== 'success' || !data.data?.activeMiners) {
+              if (data.status !== 'success' || !Array.isArray(data.data?.values)) {
                 throw new Error('Invalid response format');
               }
               
-              result = data.data.activeMiners.toLocaleString('en-US');
+              // Sum up all miner counts
+              const totalMiners = data.data.values.reduce((sum: number, count: number) => sum + count, 0);
+              result = totalMiners.toLocaleString('en-US');
             } catch (error) {
               console.error('Error fetching active miners:', error);
               result = 'Error';
