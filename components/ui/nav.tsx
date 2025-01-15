@@ -96,7 +96,7 @@ export default function Nav() {
         </ul>
 
         {/* Beta Alert - Desktop */}
-        <div className="hidden lg:flex items-center mx-auto">
+        <div className="hidden lg:flex items-center ml-auto mr-4">
           <a 
             href="https://discord.gg/s6tXwKafFH"
             target="_blank"
@@ -107,15 +107,11 @@ export default function Nav() {
           </a>
         </div>
 
-        {/* Existing Desktop Navigation Elements */}
-        <ul className="flex items-center space-x-2">
-          <li>
-            <Announcements align="right" />
-          </li>
-          <li>
-            <DropdownHelp align="right" />
-          </li>
-        </ul>
+        {/* Desktop Navigation Elements */}
+        <div className="hidden lg:flex items-center space-x-2">
+          <Announcements align="right" />
+          <DropdownHelp align="right" />
+        </div>
       </nav>
 
       {/* Mobile Navigation */}
