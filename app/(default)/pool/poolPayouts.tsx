@@ -83,7 +83,7 @@ export default function PoolPayouts() {
   // Group payouts by day and limit to recent payouts
   const groupedPayouts = payouts
     .sort((a, b) => b.timestamp - a.timestamp) // Sort by most recent first
-    .slice(0, 6) // Limit to 6 most recent payouts
+    .slice(0, 4) // Limit to 4 most recent payouts
     .reduce((groups: Record<string, AggregatedPayout[]>, payout) => {
       const date = new Date(payout.timestamp)
       const today = new Date()
