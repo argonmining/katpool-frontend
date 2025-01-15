@@ -73,19 +73,38 @@ export default function PoolPayouts() {
       const minutes = Math.floor(diff / (1000 * 60))
       return `${minutes} minute${minutes === 1 ? '' : 's'} ago`
     }
-    return `${hours} hour${hours === 1 ? '' : 's'} ago`
+    if (hours < 24) {
+      return `${hours} hour${hours === 1 ? '' : 's'} ago`
+    }
+    const days = Math.floor(hours / 24)
+    return `${days} day${days === 1 ? '' : 's'} ago`
   }
 
-  // Group payouts by day
-  const groupedPayouts = payouts.reduce((groups: Record<string, AggregatedPayout[]>, payout) => {
-    const date = new Date(payout.timestamp)
-    const day = date.toLocaleDateString('en-US', { weekday: 'long' })
-    if (!groups[day]) {
-      groups[day] = []
-    }
-    groups[day].push(payout)
-    return groups
-  }, {})
+  // Group payouts by day and limit to recent payouts
+  const groupedPayouts = payouts
+    .sort((a, b) => b.timestamp - a.timestamp) // Sort by most recent first
+    .slice(0, 6) // Limit to 6 most recent payouts
+    .reduce((groups: Record<string, AggregatedPayout[]>, payout) => {
+      const date = new Date(payout.timestamp)
+      const today = new Date()
+      const yesterday = new Date(today)
+      yesterday.setDate(yesterday.getDate() - 1)
+      
+      let day
+      if (date.toDateString() === today.toDateString()) {
+        day = 'TODAY'
+      } else if (date.toDateString() === yesterday.toDateString()) {
+        day = 'YESTERDAY'
+      } else {
+        day = date.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()
+      }
+      
+      if (!groups[day]) {
+        groups[day] = []
+      }
+      groups[day].push(payout)
+      return groups
+    }, {})
 
   if (isLoading) {
     return (
