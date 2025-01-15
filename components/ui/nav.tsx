@@ -22,7 +22,7 @@ export default function Nav() {
   return (
     <>
       {/* Existing Desktop Navigation - Unchanged */}
-      <nav className="hidden lg:flex lg:grow">
+      <nav className="hidden lg:flex lg:grow items-center">
         <ul className="flex grow justify-start flex-wrap items-center">
           <li className="relative group">
             <Link
@@ -95,8 +95,8 @@ export default function Nav() {
           </li>
         </ul>
 
-        {/* Beta Alert - Desktop */}
-        <div className="hidden lg:flex items-center ml-auto mr-4">
+        <div className="flex items-center space-x-4">
+          {/* Beta Alert - Desktop */}
           <a 
             href="https://discord.gg/s6tXwKafFH"
             target="_blank"
@@ -105,10 +105,8 @@ export default function Nav() {
           >
             BETA - Report Bugs
           </a>
-        </div>
 
-        {/* Desktop Navigation Elements */}
-        <div className="hidden lg:flex items-center space-x-2">
+          {/* Desktop Navigation Elements */}
           <Announcements align="right" />
           <DropdownHelp align="right" />
         </div>
