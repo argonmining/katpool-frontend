@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Announcements from '@/components/elements/dropdown-announcements'
-import DropdownHelp from '@/components/elements/dropdown-help'
 import Nav from './nav'
 
 export default function Header({
@@ -20,12 +18,6 @@ export default function Header({
         <div className="flex items-center justify-between h-16">
           {/* Navigation */}
           <Nav />
-
-          {/* Header: Right side */}
-          <div className="flex items-center space-x-3">
-            <Announcements align="right" />
-            <DropdownHelp align="right" />
-          </div>
         </div>
       </div>
     </header>
