@@ -94,6 +94,28 @@ export default function Nav() {
             </Link>
           </li>
         </ul>
+
+        {/* Beta Alert - Desktop */}
+        <div className="hidden lg:flex items-center mx-auto">
+          <a 
+            href="https://discord.gg/s6tXwKafFH"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 animate-pulse hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors cursor-pointer"
+          >
+            BETA - Report Bugs
+          </a>
+        </div>
+
+        {/* Existing Desktop Navigation Elements */}
+        <ul className="flex items-center space-x-2">
+          <li>
+            <Announcements align="right" />
+          </li>
+          <li>
+            <DropdownHelp align="right" />
+          </li>
+        </ul>
       </nav>
 
       {/* Mobile Navigation */}
@@ -110,6 +132,15 @@ export default function Nav() {
             />
           </Link>
           <div className="flex items-center space-x-2">
+            {/* Beta Alert - Mobile */}
+            <a
+              href="https://discord.gg/s6tXwKafFH"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 animate-pulse hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors cursor-pointer"
+            >
+              BETA
+            </a>
             {/* Announcements Dropdown */}
             <Announcements align="right" />
             {/* Help Dropdown */}
