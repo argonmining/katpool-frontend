@@ -107,8 +107,12 @@ export default function Nav() {
           </a>
 
           {/* Desktop Navigation Elements */}
-          <Announcements align="right" />
-          <DropdownHelp align="right" />
+          <div className="hidden lg:block">
+            <Announcements align="right" />
+          </div>
+          <div className="hidden lg:block">
+            <DropdownHelp align="right" />
+          </div>
         </div>
       </nav>
 
@@ -135,10 +139,13 @@ export default function Nav() {
             >
               BETA
             </a>
-            {/* Announcements Dropdown */}
-            <Announcements align="right" />
-            {/* Help Dropdown */}
-            <DropdownHelp align="right" />
+            {/* Mobile Navigation Elements */}
+            <div className="lg:hidden">
+              <Announcements align="right" />
+            </div>
+            <div className="lg:hidden">
+              <DropdownHelp align="right" />
+            </div>
             {/* Hamburger Menu */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
