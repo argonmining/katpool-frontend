@@ -20,28 +20,27 @@ export async function GET() {
       throw new Error('Invalid response format');
     }
 
-    // Count active miners by ASIC type
+    // Count miners by ASIC type
     const minerTypeCount: { [key: string]: number } = {};
     
     data.data.result.forEach((item: any) => {
       const asicType = item.metric.asic_type;
-      const isActive = Number(item.value[1]) === 1;
-      
-      if (isActive) {
-        minerTypeCount[asicType] = (minerTypeCount[asicType] || 0) + 1;
-      }
+      // All returned miners are active, so just count them
+      minerTypeCount[asicType] = (minerTypeCount[asicType] || 0) + 1;
     });
 
-    // Convert to array format for the chart
-    const minerTypes = Object.keys(minerTypeCount);
-    const minerCounts = minerTypes.map(type => minerTypeCount[type]);
+    // Sort by count in descending order
+    const sortedTypes = Object.entries(minerTypeCount)
+      .sort(([, a], [, b]) => b - a)
+      .reduce((acc, [key, value]) => {
+        acc.labels.push(key);
+        acc.values.push(value);
+        return acc;
+      }, { labels: [] as string[], values: [] as number[] });
 
     return NextResponse.json({
       status: 'success',
-      data: {
-        labels: minerTypes,
-        values: minerCounts
-      }
+      data: sortedTypes
     });
 
   } catch (error) {

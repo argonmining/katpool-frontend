@@ -22,7 +22,7 @@ export default function Nav() {
   return (
     <>
       {/* Existing Desktop Navigation - Unchanged */}
-      <nav className="hidden lg:flex lg:grow">
+      <nav className="hidden lg:flex lg:grow items-center">
         <ul className="flex grow justify-start flex-wrap items-center">
           <li className="relative group">
             <Link
@@ -94,6 +94,26 @@ export default function Nav() {
             </Link>
           </li>
         </ul>
+
+        <div className="flex items-center space-x-4">
+          {/* Beta Alert - Desktop */}
+          <a 
+            href="https://discord.gg/s6tXwKafFH"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 animate-pulse hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors cursor-pointer"
+          >
+            BETA - Report Bugs
+          </a>
+
+          {/* Desktop Navigation Elements */}
+          <div className="hidden lg:block">
+            <Announcements align="right" />
+          </div>
+          <div className="hidden lg:block">
+            <DropdownHelp align="right" />
+          </div>
+        </div>
       </nav>
 
       {/* Mobile Navigation */}
@@ -110,10 +130,22 @@ export default function Nav() {
             />
           </Link>
           <div className="flex items-center space-x-2">
-            {/* Announcements Dropdown */}
-            <Announcements align="right" />
-            {/* Help Dropdown */}
-            <DropdownHelp align="right" />
+            {/* Beta Alert - Mobile */}
+            <a
+              href="https://discord.gg/s6tXwKafFH"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 animate-pulse hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors cursor-pointer"
+            >
+              BETA
+            </a>
+            {/* Mobile Navigation Elements */}
+            <div className="lg:hidden">
+              <Announcements align="right" />
+            </div>
+            <div className="lg:hidden">
+              <DropdownHelp align="right" />
+            </div>
             {/* Hamburger Menu */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
