@@ -57,7 +57,7 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             const supplyData = await KaspaAPI.network.getCoinSupply()
             try {
               const circulatingSupply = BigInt(supplyData.circulatingSupply)
-              const maxSupplyKAS = BigInt(28_700_000_000) * BigInt(100_000_000)
+              const maxSupplyKAS = BigInt(28_701_500_000) * BigInt(100_000_000)
               
               if (maxSupplyKAS <= BigInt(0)) {
                 throw new Error('Invalid supply values')
