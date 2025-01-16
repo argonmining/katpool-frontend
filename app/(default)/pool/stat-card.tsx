@@ -53,16 +53,16 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             result = `${(hashrate / 1e6).toFixed(2)} EH/s`
             break
           case 'minedPercent':
-            const currentSupply = await KaspaAPI.network.getCirculatingSupply(false)
+            const supplyInfo = await KaspaAPI.network.getCoinSupply()
             try {
-              const currentSupplyNum = Number(currentSupply)
-              const maxSupply = 28_700_000_000 // 28.7 billion KAS
+              const circulatingSupply = Number(supplyInfo.circulatingSupply) / 1e8
+              const maxSupply = Number(supplyInfo.maxSupply) / 1e8
               
-              if (isNaN(currentSupplyNum) || currentSupplyNum <= 0) {
-                throw new Error('Invalid supply value')
+              if (isNaN(circulatingSupply) || isNaN(maxSupply) || maxSupply <= 0) {
+                throw new Error('Invalid supply values')
               }
               
-              result = `${((currentSupplyNum / maxSupply) * 100).toFixed(2)}%`
+              result = `${((circulatingSupply / maxSupply) * 100).toFixed(2)}%`
             } catch (error) {
               console.error('Supply calculation error:', error)
               result = 'Error'
