@@ -15,6 +15,29 @@ interface Payout {
   walletAddress: string
 }
 
+const downloadCSV = (data: Payout[]) => {
+  const headers = ['Time', 'Transaction Hash', 'Amount (KAS)', 'Wallet Address']
+  const csvContent = [
+    headers.join(','),
+    ...data.map(payout => [
+      new Date(payout.timestamp).toISOString(),
+      payout.transactionHash,
+      payout.amount.toFixed(8),
+      payout.walletAddress
+    ].join(','))
+  ].join('\n')
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+  link.setAttribute('href', url)
+  link.setAttribute('download', `wallet-payouts-${new Date().toISOString().split('T')[0]}.csv`)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
 export default function PayoutsCard() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -70,14 +93,17 @@ export default function PayoutsCard() {
 
   const formatTimestamp = (timestamp: number) => {
     const date = new Date(timestamp)
-    return date.toLocaleDateString('en-US', {
+    const dateStr = date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
+    })
+    const timeStr = date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true
-    }).replace(',', ' @')
+    })
+    return `${dateStr} @ ${timeStr}`
   }
 
   const formatAmount = (amount: number) => {
@@ -126,13 +152,21 @@ export default function PayoutsCard() {
         </div>
       )}
 
-      <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
+      <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex justify-between items-center">
         <h2 className="font-semibold text-gray-800 dark:text-gray-100 break-all">
           {walletAddress 
             ? `Payout History for ${walletAddress}`
             : 'Payout History'
           }
         </h2>
+        {walletAddress && (
+          <button
+            onClick={() => downloadCSV(sortedPayouts)}
+            className="px-3 py-1 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-md transition-colors"
+          >
+            Export CSV
+          </button>
+        )}
       </header>
       
       <div className="p-3">
