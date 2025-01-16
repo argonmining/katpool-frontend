@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { $fetch } from 'ofetch'
+import { Download } from 'lucide-react'
 
 type SortDirection = 'asc' | 'desc'
 type SortKey = 'timestamp' | 'transactionHash' | 'amount'
@@ -145,9 +146,10 @@ export default function PoolPayoutsCard() {
         <h2 className="font-semibold text-gray-800 dark:text-gray-100">Pool Payouts</h2>
         <button
           onClick={() => downloadCSV(sortedPayouts)}
-          className="px-3 py-1 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-md transition-colors"
+          className="p-1.5 text-gray-500 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
+          title="Export as CSV"
         >
-          Export CSV
+          <Download className="w-5 h-5" />
         </button>
       </header>
       
