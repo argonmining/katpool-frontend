@@ -27,7 +27,7 @@ export default function KatpoolIntro() {
           <div className="text-lg text-gray-600 dark:text-gray-400">
             Let's get you set up and mining. Follow the steps below to point your ASIC to Kat Pool.
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-500 italic">
+          <div className="text-lg text-gray-600 dark:text-gray-400">
             IceRiver, Bitmain, and Goldshell ASICs are currently supported (Except for the IceRiver KS2Lite)
           </div>
         </div>
@@ -58,6 +58,7 @@ export default function KatpoolIntro() {
               </p>
               <div className="text-sm text-gray-500 dark:text-gray-500 italic">
                 Backup Pools: Do not add Kat Pool to more than 1 pool in settings. Leave Pool2 and Pool3 blank, or enter a another pool stratum address for failover.
+                <br />
               </div>
               <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-3">
                 <div>
