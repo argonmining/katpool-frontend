@@ -55,14 +55,15 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
           case 'minedPercent':
             const supplyInfo = await KaspaAPI.network.getCoinSupply()
             try {
-              const circulatingSupply = Number(supplyInfo.circulatingSupply) / 1e8
-              const maxSupply = Number(supplyInfo.maxSupply) / 1e8
+              const circulatingSupply = BigInt(supplyInfo.circulatingSupply)
+              const maxSupply = BigInt(supplyInfo.maxSupply)
               
-              if (isNaN(circulatingSupply) || isNaN(maxSupply) || maxSupply <= 0) {
+              if (maxSupply <= BigInt(0)) {
                 throw new Error('Invalid supply values')
               }
               
-              result = `${((circulatingSupply / maxSupply) * 100).toFixed(2)}%`
+              const percentage = Number(circulatingSupply * BigInt(10000) / maxSupply) / 100
+              result = `${percentage.toFixed(2)}%`
             } catch (error) {
               console.error('Supply calculation error:', error)
               result = 'Error'
