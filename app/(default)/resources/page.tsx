@@ -82,7 +82,7 @@ export default function Resources() {
           <ResourceCard
             title="Kaspa Mining Wiki"
             description="Comprehensive guide to mining Kaspa, including setup instructions and best practices"
-            link="https://kaspawiki.net/index.php/Mining"
+            link="https://wiki.kaspa.org/en/mining"
             icon={
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.424 10.223a7.5 7.5 0 00-10.61-10.61m11.89 9.337a7.493 7.493 0 01-10.61 10.61m9.337-11.89a7.5 7.5 0 01-10.61 10.61m11.89-9.337a7.493 7.493 0 00-10.61-10.61" />
