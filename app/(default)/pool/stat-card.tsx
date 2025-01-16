@@ -30,9 +30,10 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             result = Number(networkInfo.virtualDaaScore).toLocaleString('en-US')
             break
           case 'supply':
-            const supplyResponse = await KaspaAPI.network.getCirculatingSupply(false)
+            const supplyInfo = await KaspaAPI.network.getCoinSupply()
             try {
-              const supplyInBillions = Number(supplyResponse) / 1e9
+              const circulatingSupply = BigInt(supplyInfo.circulatingSupply)
+              const supplyInBillions = Number(circulatingSupply) / 1e8 / 1e9
               result = `${supplyInBillions.toFixed(4)} B`
             } catch (error) {
               console.error('Supply conversion error:', error)
@@ -53,16 +54,16 @@ export default function StatCard({ dataType, label, icon }: StatCardProps) {
             result = `${(hashrate / 1e6).toFixed(2)} EH/s`
             break
           case 'minedPercent':
-            const supplyInfo = await KaspaAPI.network.getCoinSupply()
+            const supplyData = await KaspaAPI.network.getCoinSupply()
             try {
-              const circulatingSupply = BigInt(supplyInfo.circulatingSupply)
-              const maxSupply = BigInt(supplyInfo.maxSupply)
+              const circulatingSupply = BigInt(supplyData.circulatingSupply)
+              const maxSupplyKAS = BigInt(28_700_654_242) * BigInt(100_000_000)
               
-              if (maxSupply <= BigInt(0)) {
+              if (maxSupplyKAS <= BigInt(0)) {
                 throw new Error('Invalid supply values')
               }
               
-              const percentage = Number(circulatingSupply * BigInt(10000) / maxSupply) / 100
+              const percentage = Number(circulatingSupply * BigInt(10000) / maxSupplyKAS) / 100
               result = `${percentage.toFixed(2)}%`
             } catch (error) {
               console.error('Supply calculation error:', error)
