@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { $fetch } from 'ofetch'
+import { Download } from 'lucide-react'
 
 type SortDirection = 'asc' | 'desc'
 type SortKey = 'timestamp' | 'transactionHash' | 'amount'
@@ -17,6 +18,28 @@ interface AggregatedPayout {
   amount: number
   timestamp: number
   transactionHash: string
+}
+
+const downloadCSV = (data: AggregatedPayout[]) => {
+  const headers = ['Time', 'Transaction Hash', 'Amount (KAS)']
+  const csvContent = [
+    headers.join(','),
+    ...data.map(payout => [
+      new Date(payout.timestamp).toISOString(),
+      payout.transactionHash,
+      (Math.floor(payout.amount * 100) / 100).toFixed(8)
+    ].join(','))
+  ].join('\n')
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+  link.setAttribute('href', url)
+  link.setAttribute('download', `pool-payouts-${new Date().toISOString().split('T')[0]}.csv`)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 
 export default function PoolPayoutsCard() {
@@ -68,14 +91,17 @@ export default function PoolPayoutsCard() {
 
   const formatTimestamp = (timestamp: number) => {
     const date = new Date(timestamp)
-    return date.toLocaleDateString('en-US', {
+    const dateStr = date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
+    })
+    const timeStr = date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true
-    }).replace(',', ' @')
+    })
+    return `${dateStr} @ ${timeStr}`
   }
 
   const formatAmount = (amount: number) => {
@@ -116,8 +142,15 @@ export default function PoolPayoutsCard() {
 
   return (
     <div className="relative col-span-full bg-white dark:bg-gray-800 shadow-sm rounded-xl">
-      <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-        <h2 className="font-semibold text-gray-800 dark:text-gray-100">Pool Payout History</h2>
+      <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex justify-between items-center">
+        <h2 className="font-semibold text-gray-800 dark:text-gray-100">Pool Payouts</h2>
+        <button
+          onClick={() => downloadCSV(sortedPayouts)}
+          className="p-1.5 text-gray-500 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
+          title="Export as CSV"
+        >
+          <Download className="w-5 h-5" />
+        </button>
       </header>
       
       <div className="p-3">

@@ -103,7 +103,7 @@ export default function Nav() {
             rel="noopener noreferrer"
             className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 animate-pulse hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors cursor-pointer"
           >
-            BETA - Report Bugs
+            Open Beta - Please Report Bugs
           </a>
 
           {/* Desktop Navigation Elements */}
