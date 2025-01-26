@@ -25,7 +25,7 @@ export async function GET() {
     const start = end - 24 * 60 * 60; // 24 hours ago
 
     const response = await fetch(
-      `http://kas.katpool.xyz:8080/api/v1/query_range?query=miner_rewards&start=${start}&end=${end}&step=10000`
+      `http://kas.katpool.xyz:8080/api/v1/query?query=(last_over_time(miner_rewards[1d]))`
     );
 
     if (!response.ok) {

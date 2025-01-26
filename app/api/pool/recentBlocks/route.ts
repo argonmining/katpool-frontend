@@ -21,11 +21,11 @@ interface Block {
 export async function GET() {
   try {
     // Calculate timestamps
-    const end = Math.floor(Date.now() / 1000);
-    const start = 1704067200; // Jan 1 2024 at 12am midnight UTC
+    // const end = Math.floor(Date.now() / 1000);
+    // const start = 1704067200; // Jan 1 2024 at 12am midnight UTC
 
     const response = await fetch(
-      `http://kas.katpool.xyz:8080/api/v1/query_range?query=miner_rewards&start=${start}&end=${end}&step=10000`
+      `http://kas.katpool.xyz:8080/api/v1/query?query=last_over_time(miner_rewards[12w])`
     );
 
     if (!response.ok) {

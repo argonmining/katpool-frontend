@@ -1,0 +1,226 @@
+openapi: 3.1.0
+info:
+  title: KatPool Frontend API Documentation
+  version: 1.0.0
+  description: API documentation for endpoints consumed by the KatPool frontend application
+
+servers:
+  - url: http://kas.katpool.xyz:8080
+    description: KatPool Main API Server
+
+paths:
+  /api/v1/query_range:
+    get:
+      summary: Query time-series metrics
+      description: |
+        Fetch time-series metrics from the Prometheus API. This endpoint is used for various metrics
+        with different query parameters depending on the desired data.
+        
+        Common metric queries include:
+        - Pool hashrate: pool_hash_rate_GHps
+        - Miner hashrate: sum(miner_hash_rate_GHps{wallet_address="$wallet"}) by (wallet_address)
+        - Worker hashrate: worker_hash_rate_GHps{wallet_address="$wallet"}
+        - Miner shares: added_miner_shares_1min_count{wallet_address="$wallet"}
+        - Jobs not found: jobs_not_found_1min_count{pool_address="$wallet"}
+        - Invalid shares: miner_invalid_shares_1min_count{wallet_address="$wallet"}
+        - Duplicated shares: miner_duplicated_shares_1min_count{wallet_address="$wallet"}
+        - Active workers: active_workers_10m_count
+        - Miner rewards: miner_rewards
+        - Total shares: sum(added_miner_shares_1min_count) by (wallet_address)
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          description: |
+            The Prometheus query to execute. See description for common queries.
+          examples:
+            pool_hashrate:
+              value: "pool_hash_rate_GHps"
+              summary: Get pool's total hashrate
+            miner_hashrate:
+              value: 'sum(miner_hash_rate_GHps{wallet_address="$wallet"}) by (wallet_address)'
+              summary: Get miner's total hashrate
+            worker_hashrate:
+              value: 'worker_hash_rate_GHps{wallet_address="$wallet"}'
+              summary: Get worker-specific hashrates
+            miner_shares:
+              value: 'added_miner_shares_1min_count{wallet_address="$wallet"}'
+              summary: Get miner's share submissions
+            jobs_not_found:
+              value: 'jobs_not_found_1min_count{pool_address="$wallet"}'
+              summary: Get jobs not found count
+        - name: start
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: |
+            Start timestamp in Unix seconds. Common ranges:
+            - Pool/miner hashrate: 2 hours ago for recent, up to 7 days for historical
+            - Worker hashrate: typically last 48 hours
+            - Miner shares: typically last 12 hours
+            - Jobs not found: typically last 48 hours
+        - name: end
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: End timestamp in Unix seconds (typically current time)
+        - name: step
+          in: query
+          required: true
+          schema:
+            type: string
+          description: |
+            Step interval between data points. Common values:
+            - Recent pool/miner data: 60 seconds
+            - Historical pool/miner data: 3600 seconds (1 hour)
+            - Worker data: 300 seconds (5 minutes)
+            - Share data: 60 seconds
+            - Jobs not found: 43200 seconds (12 hours)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSeriesData'
+        '400':
+          description: Bad request - invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/payments/{wallet}:
+    get:
+      summary: Get miner payments
+      description: Retrieve payment history for a specific wallet
+      parameters:
+        - name: wallet
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Wallet address to fetch payments for
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '400':
+          description: Bad request - invalid wallet address
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/pool/payouts:
+    get:
+      summary: Get pool payouts
+      description: Retrieve all pool payout information
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    TimeSeriesData:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+        data:
+          type: object
+          properties:
+            resultType:
+              type: string
+            result:
+              type: array
+              items:
+                type: object
+                properties:
+                  metric:
+                    type: object
+                    additionalProperties: true
+                    description: Contains labels like wallet_address, miner_id, etc.
+                  values:
+                    type: array
+                    items:
+                      type: array
+                      minItems: 2
+                      maxItems: 2
+                      items:
+                        oneOf:
+                          - type: number
+                          - type: string
+                    description: Array of [timestamp, value] pairs
+
+    Payment:
+      type: object
+      required:
+        - id
+        - wallet_address
+        - amount
+        - timestamp
+        - transaction_hash
+      properties:
+        id:
+          type: integer
+          description: Unique payment identifier
+        wallet_address:
+          type: array
+          items:
+            type: string
+          description: Array of recipient wallet addresses
+        amount:
+          type: string
+          description: Payment amount in sompi (smallest Kaspa unit)
+        timestamp:
+          type: string
+          format: date-time
+          description: Payment timestamp
+        transaction_hash:
+          type: string
+          description: Transaction hash on the Kaspa blockchain
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [error]
+        error:
+          type: string
+          description: Error message 
