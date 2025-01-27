@@ -131,13 +131,19 @@ export default function AnalyticsCard11() {
 
   const formatTimeAgo = (timestamp: number) => {
     const now = Math.floor(Date.now() / 1000);
-    const diff = now - timestamp;
+    let diff = now - timestamp;
+
+    // If timestamp is in the future or very close to now (within 1 second),
+    // just show "just now" to handle slight clock differences
+    if (diff <= 1) {
+      return 'just now';
+    }
 
     if (diff >= 12 * 60 * 60) {
       return '12+ hours ago';
     }
 
-    if (diff < 60) return `${diff}s ago`;
+    if (diff < 60) return `${Math.floor(diff)}s ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     return `${Math.floor(diff / 86400)}d ago`;
