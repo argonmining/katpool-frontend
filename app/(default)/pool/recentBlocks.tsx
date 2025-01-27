@@ -73,7 +73,7 @@ export default function RecentBlocks() {
 
   // Helper function to format block hash
   const formatBlockHash = (hash: string) => {
-    return `${hash.slice(0, 3)}...${hash.slice(-3)}`;
+    return `${hash.slice(0, 6)}...${hash.slice(-6)}`;
   };
 
   // Group blocks by day
