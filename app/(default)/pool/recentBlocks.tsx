@@ -128,8 +128,8 @@ export default function RecentBlocks() {
                               target="_blank"
                               rel="noopener noreferrer"
                             >{formatBlockHash(block.blockHash)}</a> found!
-                            <span className="text-gray-500 dark:text-gray-400"> • Reward: </span>
-                            <span className="text-green-500">{block.reward} KAS</span>
+                            {/* <span className="text-gray-500 dark:text-gray-400"> • Reward: </span> */}
+                            {/* <span className="text-green-500">{block.reward} KAS</span> */}
                           </div>
                           <div className="shrink-0 self-end ml-2">
                             <span className="text-gray-400 dark:text-gray-500">
